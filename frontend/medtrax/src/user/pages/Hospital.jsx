@@ -5,9 +5,9 @@ import React, { useState } from 'react';
 
 // Adjusting the top margin
 const AppContainer = styled.div`
- background: linear-gradient(135deg, #e0f7fa 0%, #80deea 100%);
-   min-height: 100vh;
-  padding: 20vh 20px 20px; /* 40vh margin at the top */
+  background: linear-gradient(135deg, #e0f7fa 0%, #80deea 100%);
+  min-height: 100vh;
+  padding: 20vh 20px 20px;
 `;
 
 const Header = styled.h2`
@@ -26,70 +26,44 @@ const ClinicsContainer = styled.div`
   flex-wrap: wrap;
 `;
 
+const Button = styled.button`
+  background-color: #005f73;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  &:hover {
+    background-color: #0a9396;
+  }
+`;
+
+// Clinic data (without timings)
 const clinicData = {
   Gurgaon: [
     {
       clinicName: 'Disha Clinic',
       doctorName: 'Dr. Astha Dayal',
       specialty: 'Gynaecologist',
-      timings: [
-        { day: 'Mon', time: '9 am to 1 pm' },
-        { day: 'Tue-Fri', time: '2 pm to 8 pm' },
-        { day: 'Sat', time: '9 am to 11 am, 6 pm to 8 pm' },
-        { day: 'Sun', time: '9 am to 1 pm' },
-      ],
+      imageUrl: 'https://via.placeholder.com/150', // Replace with actual image URLs
+      hospitalPage: '/hospital/disha-clinic', // Replace with actual hospital URLs
     },
     {
       clinicName: "Newmi Care's Dr Vandana Sherawat",
       doctorName: 'Dr. Vandana Sherawat',
       specialty: 'Gynaecologist',
-      timings: [{ day: 'Mon to Sat', time: '11 am to 2 pm' }],
+      imageUrl: 'https://via.placeholder.com/150',
+      hospitalPage: '/hospital/newmi-care',
     },
-    {
-        clinicName: 'Disha Clinic',
-        doctorName: 'Dr. Astha Dayal',
-        specialty: 'Gynaecologist',
-        timings: [
-          { day: 'Mon', time: '9 am to 1 pm' },
-          { day: 'Tue-Fri', time: '2 pm to 8 pm' },
-          { day: 'Sat', time: '9 am to 11 am, 6 pm to 8 pm' },
-          { day: 'Sun', time: '9 am to 1 pm' },
-        ],
-      },
-      {
-        clinicName: "Newmi Care's Dr Vandana Sherawat",
-        doctorName: 'Dr. Vandana Sherawat',
-        specialty: 'Gynaecologist',
-        timings: [{ day: 'Mon to Sat', time: '11 am to 2 pm' }],
-      },
-      {
-        clinicName: 'Disha Clinic',
-        doctorName: 'Dr. Astha Dayal',
-        specialty: 'Gynaecologist',
-        timings: [
-          { day: 'Mon', time: '9 am to 1 pm' },
-          { day: 'Tue-Fri', time: '2 pm to 8 pm' },
-          { day: 'Sat', time: '9 am to 11 am, 6 pm to 8 pm' },
-          { day: 'Sun', time: '9 am to 1 pm' },
-        ],
-      },
-      {
-        clinicName: "Newmi Care's Dr Vandana Sherawat",
-        doctorName: 'Dr. Vandana Sherawat',
-        specialty: 'Gynaecologist',
-        timings: [{ day: 'Mon to Sat', time: '11 am to 2 pm' }],
-      },
-      
   ],
   Ghaziabad: [
     {
       clinicName: 'Blossom Women and Child Clinic',
       doctorName: 'Dr. Daksh Yadav',
       specialty: 'Pediatrician',
-      timings: [
-        { day: 'Mon to Sat', time: '6 pm to 8:30 pm' },
-        { day: 'Sun', time: '11 am to 1 pm, 6 pm to 7 pm' },
-      ],
+      imageUrl: 'https://via.placeholder.com/150',
+      hospitalPage: '/hospital/blossom-clinic',
     },
   ],
   Delhi: [
@@ -97,10 +71,8 @@ const clinicData = {
       clinicName: 'Newmi Clinic Delhi',
       doctorName: 'Dr. Neha Sharma',
       specialty: 'Dermatologist',
-      timings: [
-        { day: 'Mon to Fri', time: '10 am to 5 pm' },
-        { day: 'Sat', time: '9 am to 1 pm' },
-      ],
+      imageUrl: 'https://via.placeholder.com/150',
+      hospitalPage: '/hospital/newmi-delhi',
     },
   ],
   Noida: [],
@@ -109,13 +81,19 @@ const clinicData = {
       clinicName: 'Healthy Women Clinic',
       doctorName: 'Dr. Riya Verma',
       specialty: 'Gynaecologist',
-      timings: [
-        { day: 'Mon to Fri', time: '2 pm to 6 pm' },
-        { day: 'Sat-Sun', time: '10 am to 1 pm' },
-      ],
+      imageUrl: 'https://via.placeholder.com/150',
+      hospitalPage: '/hospital/healthy-women',
     },
   ],
 };
+
+const HospitalCard = ({ clinicName, imageUrl, hospitalPage }) => (
+  <div style={{ textAlign: 'center', width: '200px' }}>
+    <img src={imageUrl} alt={clinicName} style={{ width: '100%', borderRadius: '10px' }} />
+    <h3>{clinicName}</h3>
+    <Button onClick={() => (window.location.href = hospitalPage)}>View Hospital</Button>
+  </div>
+);
 
 const Hospital = () => {
   const [selectedLocation, setSelectedLocation] = useState('Gurgaon');
@@ -128,18 +106,17 @@ const Hospital = () => {
 
   return (
     <AppContainer>
-      <Header>Where Can You Find Us</Header>
-      <LocationSelector selectedLocation={selectedLocation} onLocationChange={handleLocationChange} />
-      <h3 style={{ textAlign: 'center', marginTop: '20px', color: '#005f73' }}>MEDTRAX HOSPITALS </h3>
-      <ClinicsContainer>
+    <Header>Where Can You Find Us</Header>
+    <LocationSelector selectedLocation={selectedLocation} onLocationChange={handleLocationChange} />
+    <h3 style={{ textAlign: 'center', marginTop: '40px', color: '#005f73' }}>MEDTRAX MEDICAL SHOPS </h3>
+    <ClinicsContainer>
         {clinics.length > 0 ? (
           clinics.map((clinic, index) => (
-            <ClinicCard
+            <HospitalCard
               key={index}
               clinicName={clinic.clinicName}
-              doctorName={clinic.doctorName}
-              specialty={clinic.specialty}
-              timings={clinic.timings}
+              imageUrl={clinic.imageUrl}
+              hospitalPage={clinic.hospitalPage}
             />
           ))
         ) : (
@@ -149,6 +126,5 @@ const Hospital = () => {
     </AppContainer>
   );
 };
-
 
 export default Hospital;
