@@ -1,0 +1,71 @@
+.medical-care-container {
+    font-family: Arial, sans-serif;
+    text-align: center;
+  }
+  
+  .banner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(90deg, #ff9a9e 0%, #fad0c4 100%);
+    padding: 20px;
+    border-radius: 8px;
+  }
+  
+  .banner h1 {
+    color: white;
+    font-size: 24px;
+    margin: 0;
+  }
+  
+  .banner-image {
+    width: 150px;
+    height: auto;
+  }
+  
+  .tracker-card {
+    margin-top: 30px;
+    padding: 20px;
+    border: 2px solid #efefef;
+    border-radius: 10px;
+    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1);
+  }
+  
+  .card-content {
+    display: flex;
+    align-items: center;
+  }
+  
+  .tracker-image {
+    width: 100px;
+    height: auto;
+    margin-right: 20px;
+  }
+  
+  .tracker-info {
+    text-align: left;
+  }
+  
+  .tracker-info h2 {
+    font-size: 20px;
+    color: #333;
+  }
+  
+  .tracker-info p {
+    color: #666;
+  }
+  
+  .track-button {
+    background-color: #ff9a9e;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+  }
+  
+  .track-button:hover {
+    background-color: #f67575;
+  }

@@ -1,0 +1,125 @@
+.tracker-container {
+    width: 100%;
+    text-align: left;
+    background-color: #fff;
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.tracker-header {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 150px 100px;
+    background-color: #fefefe;
+    width: 100%;
+}
+
+.tracker-image {
+    float: left;
+}
+
+.tracker-image img {
+    height: 150px;
+    width: max-content;
+}
+
+.tracker-text {
+    margin-left: 10px;
+    margin-bottom: -20px;
+    font-size: 1.2em;
+    font-weight: 500;
+    color: #000;
+}
+
+/* .week-slider-container {
+    display: flex;
+    align-items: center;
+    margin-top: -120px;
+    margin-bottom: 20px;
+} */
+.week-slider {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #ff6584;
+    padding: 10px;
+    overflow-x: auto;
+}
+
+.week-button {
+    margin: 5px;
+    padding: 10px 15px;
+    background-color: #fff;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    color: #ff6584;
+}
+
+.week-button.active {
+    background-color: #ff6584;
+    color: #fff;
+}
+
+.prev, .next {
+    background: none;
+    border: none;
+    font-size: 18px;
+    color: #fff;
+    cursor: pointer;
+}
+
+
+.prev {
+    margin-right: 10px; /* Space between prev button and slider */
+}
+
+.next {
+    margin-left: 10px; /* Space between next button and slider */
+}
+
+.content {
+    padding: 40px 20px;
+    background-color: #fce4ec;
+    text-align: center;
+    width: 90%; /* Stretch the content */
+    margin-bottom: 20px;
+    border-radius: 15px;
+}
+
+.content h2 {
+    font-size: 2em;
+    color: #ff6584;
+}
+
+.content p {
+    font-size: 1.4em;
+}
+
+.fruit-image {
+    width: 120px;
+    height: 120px;
+    margin-top: 15px;
+}
+
+.details {
+    padding: 40px 20px;
+    background-color: #ffebee;
+    text-align: left;
+    width: 90%; /* Stretch details section */
+    margin: 0 auto;
+    margin-bottom: 20px;
+    border-radius: 15px;
+}
+
+.details h3 {
+    color: #ff6584;
+    font-size: 1.6em;
+}
+
+.details p {
+    font-size: 1.2em;
+}
