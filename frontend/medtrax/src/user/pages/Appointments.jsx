@@ -130,13 +130,14 @@ const Appointments = () => {
       <ClinicsContainer>
         {clinics.length > 0 ? (
           clinics.map((clinic, index) => (
-            <StyledClinicCard
+            <ClinicCard
               key={index}
               clinicName={clinic.clinicName}
               doctorName={clinic.doctorName}
               specialty={clinic.specialty}
-              timings={clinic.timings}
-            />
+              image={clinic.image}  // Pass the image URL
+              buttonLink={`/appform`}  // Navigate to a dynamic route (update as necessary)
+            /> 
           ))
         ) : (
           <NoClinicsMessage>

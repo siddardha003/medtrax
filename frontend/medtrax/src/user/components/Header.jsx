@@ -64,10 +64,10 @@ const Header = ({ data }) => {
                     <path d="m368.02 272c-8.836 0-16-7.164-16-16 0-52.935-43.065-96-96-96-8.836 0-16-7.164-16-16s7.164-16 16-16c70.58 0 128 57.42 128 128 0 8.836-7.163 16-16 16z" />
                   </g>
                 </svg>
-                <ScrollLink to='contact'> +01 - 234 567 890 </ScrollLink>
+                <ScrollLink to='contact'> +91 9876543210 </ScrollLink>
               </li>
             </ul>
-            <ScrollLink className="st-top-header-btn st-smooth-move" to="appointment" spy={true} duration={500}>Appointment</ScrollLink>
+            <Link className="st-top-header-btn st-smooth-move" to="/login" spy={true} duration={500}>Login</Link>
           </div>
         </div>
       </div>
@@ -75,8 +75,8 @@ const Header = ({ data }) => {
         <div className="container">
           <div className="st-main-header-in">
             <div className="st-main-header-left">
-              <Link to='' className="st-site-branding" >
-                <img src={logo} alt={logo} />
+              <Link to='/' className="st-site-branding" >
+                <img src={`/images/MED-removebg-preview.png`} alt={logo} />
               </Link>
             </div>
             <div className="st-main-header-right">

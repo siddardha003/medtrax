@@ -11,6 +11,15 @@ const Card = styled.div`
   flex-direction: column;
   justify-content: space-between;
   padding: 20px;
+  text-align: center;
+`;
+
+const Image = styled.img`
+  width: 100%;
+  height: 150px; /* Fixed height for the image */
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 15px;
 `;
 
 const ClinicName = styled.h4`
@@ -29,34 +38,29 @@ const Specialty = styled.p`
   margin-bottom: 10px;
 `;
 
-const Timings = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-`;
-
-const Timing = styled.div`
-  background-color: #fff;
-  padding: 5px 10px;
+const Button = styled.a`
+  padding: 10px 20px;
+  background-color: #00796b;
+  color: white;
+  text-decoration: none;
   border-radius: 5px;
-  font-size: 14px;
+  transition: background-color 0.3s;
+
+  &:hover {
+    background-color: #004d40;
+  }
 `;
 
-const ClinicCard = ({ clinicName, doctorName, specialty, timings }) => {
+const ClinicCard = ({ clinicName, doctorName, specialty, image, buttonLink }) => {
   return (
     <Card>
+      <Image src={image} alt={clinicName} />
       <div>
         <ClinicName>{clinicName}</ClinicName>
         <DoctorName>{doctorName}</DoctorName>
         <Specialty>{specialty}</Specialty>
       </div>
-      <Timings>
-        {timings.map((timing, index) => (
-          <Timing key={index}>
-            {timing.day}: {timing.time}
-          </Timing>
-        ))}
-      </Timings>
+      <Button href={buttonLink}>View Details</Button>
     </Card>
   );
 };

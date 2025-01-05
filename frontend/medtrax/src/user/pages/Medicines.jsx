@@ -135,12 +135,13 @@ const Medicines = () => {
         {clinics.length > 0 ? (
           clinics.map((clinic, index) => (
             <ClinicCard
-              key={index}
-              clinicName={clinic.clinicName}
-              doctorName={clinic.doctorName}
-              specialty={clinic.specialty}
-              timings={clinic.timings}
-            />
+            key={index}
+            clinicName={clinic.clinicName}
+            doctorName={clinic.doctorName}
+            specialty={clinic.specialty}
+            image={clinic.image}  // Pass the image URL
+            buttonLink={`/medicalshop`}  // Navigate to a dynamic route (update as necessary)
+          />
           ))
         ) : (
           <p style={{ textAlign: 'center', width: '100%' }}>No clinics available in this location.</p>

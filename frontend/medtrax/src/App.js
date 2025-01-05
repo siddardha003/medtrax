@@ -1,25 +1,30 @@
 import './App.css';
 import { Routes, Route } from 'react-router-dom';  // Remove Router import here
-
+import 'leaflet/dist/leaflet.css';
 import Home2 from './user/pages/Homepage';
 import Layout from './user/components/Layout';
+
 import Hospital from './user/pages/Hospital';
+import HospitalDetails from './user/pages/HospitalDetails';
+
 import Appointments from './user/pages/Appointments';
 import AppForm from './user/pages/AppForm';
+
 import Medicines from './user/pages/Medicines';
+import MedicalshopDetails from './user/pages/MedicalshopDetails';
+
 import MedicalCarePage from './user/pages/MedicalCare';
 import HealthTracker from './user/pages/HealthTracker';
 import BabyDevelopmentTracker from './user/pages/BabyDevelopmentTracker';
 import PeriodCalculator from './user/pages/PeriodCalci';
 
+import Signin from './user/components/Signin';
+import Signup from './user/components/Signup';
+
+import HospitalBooking from './user/pages/example';
 
 
-import HomeStyle3 from './user/hospitals/hospages/HomeStyle3';
-import Layout1 from './user/hospitals/hoscomponents/Layout1';
 
-
-
-import ShopDetailsPage from './user/medicines/medpages/ShopDetailsPage';
 
 
 function App() {
@@ -30,28 +35,26 @@ function App() {
 
       <Route index element={<Home2 />} />    
       <Route path="/Hospital" element={<Hospital />}/> 
+      <Route path="/HospitalDetails" element={<HospitalDetails/>}/> 
+
       <Route path="/Appointments" element={<Appointments />}/> 
       <Route path="/AppForm" element={<AppForm />}/> 
+
       <Route path="/Medicines" element={<Medicines />}/> 
+      <Route path="/MedicalshopDetails" element={<MedicalshopDetails/>}/> 
+
       <Route path="/MedicalCare" element={<MedicalCarePage />}/> 
       <Route path="/HealthTracker" element={<HealthTracker />}/> 
       <Route path="/Baby" element={<BabyDevelopmentTracker />}/> 
       <Route path="/PeriodCalci" element={<PeriodCalculator />}/> 
 
+      <Route path="/login" element={<Signin />}/> 
+      <Route path="/Signup" element={<Signup/>}/> 
 
+
+
+      <Route path="/example" element={<HospitalBooking/>}/> 
       </Route>
-
-
-      <Route path="hosui" element={<Layout1/>}>
-        <Route index element={<HomeStyle3 />} />
-      </Route>
-
-
-
-      <Route path="/MedicalShop" element={<ShopDetailsPage />}/> 
-
-
-
       </Routes>
     </div>
   );

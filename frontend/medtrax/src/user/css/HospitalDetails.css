@@ -1,0 +1,538 @@
+/* Global Styling */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    color: #333;
+}
+
+/* Container */
+.hospital-ui {
+    max-width: 1400px;
+    margin: auto;
+    padding: 20px;
+    margin-top: 130px;
+}
+
+/* Header Section */
+.hospital-header {
+    text-align: left;
+    margin-bottom: 25px;
+}
+
+.hospital-header h1 {
+    font-size: 3 rem;
+    margin: 0;
+}
+
+.rating {
+    color: #ffb400;
+    margin-top: 5px;
+}
+
+.hospital-timing,
+.hospital-location {
+    margin: 5px 0;
+    font-size: 1rem;
+}
+
+.hospital-location a {
+    color: #007aff;
+    text-decoration: none;
+}
+
+/* Images Section */
+.hospital-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.main-image {
+    flex: 3;
+    height: 500px;
+    border-radius: 15px;
+    object-fit: cover;
+}
+
+.image-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    position: relative;
+}
+
+.image-grid img {
+    width: 100%;
+    height: 245px; 
+    object-fit: cover;
+    border-radius: 15px;
+}
+.see-all-btn {
+    position: absolute;
+    bottom: 10px;
+    right: 10px; 
+    padding: 8px 20px;
+    background-color: rgb(255, 255, 255);
+    color: black;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    z-index: 5; /* Ensures it stays above the image */
+}
+
+.see-all-btn:hover {
+    background-color: azure;
+    color: rgb(0, 0, 0);
+}
+/* Responsive Adjustments for Smaller Screens */
+@media (max-width: 768px) {
+    .hospital-images {
+        flex-direction: column;
+    }
+
+    .main-image {
+        height: 300px;
+    }
+
+    .image-grid img {
+        height: 180px;
+    }
+}
+
+/* Services Section */
+.services-booking {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.services-section {
+    flex: 2;
+}
+
+.services-section h2 {
+    text-align: left;
+    font-size:  40px;
+    margin-bottom: 15px;
+    margin-top: 20px;
+}
+
+/* Scrollable Container */
+.scroll-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+/* Tabs */
+
+/* Scrollable Tabs Container */
+.service-tabs-container {
+    overflow: hidden; 
+    white-space: nowrap;
+    scroll-behavior: smooth;
+    width: 900px;
+    position: relative;
+}
+
+/* Tabs Wrapper */
+.service-tabs {
+    display: flex;
+    gap: 20px;
+    flex-wrap: nowrap; /* Prevent wrapping to the next line */
+    min-width: 100%; /* Prevent shrinking */
+    height: 260px;
+    overflow: hidden; /* Prevent cards from spilling out */
+}
+
+/* Individual Tab Cards */
+.tab-card {
+    margin-left: 10px;
+    flex: 0 0 auto; /* Prevent cards from growing/shrinking */
+    width: 200px; /* Fixed width for each card */
+    height: 250px;
+    background: #f3f3f3;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(10, 10, 10, 0.1);
+    text-align: center;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: transform 0.3s, box-shadow 0.3s;
+    gap: 20px;
+    overflow: hidden;
+}
+
+.tab-card:hover {
+    transform: scale(1.05);
+}
+
+.tab-image {
+    width: 100%;
+    height: 130px;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+.tab-name {
+    font-size: 0.9rem;
+    font-weight: bold;
+    margin: 5px 0;
+}
+
+.tab-description {
+    font-size: 0.75rem;
+    color: gray;
+}
+
+/* Scroll Buttons */
+.scroll-button {
+    background: #e0e0e0;
+    border: 2px solid #cccccc;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: background 0.3s, box-shadow 0.3s;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+}
+
+.scroll-button:hover {
+    background: #f0f0f0;
+}
+
+.scroll-button.left-button {
+    left: -10px;
+}
+
+.scroll-button.right-button {
+    right: 20px;
+}
+
+/* Team Section */
+.team-container {
+    margin-top: 30px;
+}
+
+.team-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 20px;
+}
+
+.team-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 10px;
+}
+
+.image-container {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+.doctor-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.doctor-name {
+    font-size: 1rem;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.doctor-degree {
+    font-size: 0.9rem;
+    color: gray;
+}
+
+/* Booking Section */
+.booking-card {
+    flex: 1;
+    background-color: #f8f8f8;
+    padding: 20px;
+    border-radius: 20px;
+    text-align: center;
+    height: fit-content;
+    position: sticky;
+    top: 150px;
+    margin-top: 40px;
+}
+
+.book-now-btn {
+    background-color: #007aff;
+    color: white;
+    border: none;
+    width: 100%;
+    margin-bottom: 15px;
+    padding: 10px 25px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+/* Modal Section */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    position: relative;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    max-width: 90%;
+    max-height: 90%;
+    overflow-y: auto;
+    display: grid;
+    gap: 20px;
+    align-items: center;
+}
+
+.modal-image {
+    width: 500px;
+    height: 400px; /* Fixed modal image height */
+    border-radius: 8px;
+    object-fit: cover;
+}
+
+.close-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 3rem;
+    color: rgb(251, 249, 249);
+    cursor: pointer;
+}
+
+/* Responsive Adjustments for Small Screens */
+@media (max-width: 768px) {
+    .hospital-header h1 {
+        font-size: 1.8rem;
+    }
+
+    .booking-card {
+        position: static;
+        margin-top: 20px;
+    }
+}
+
+
+.booking-card {
+    background-color: #f8f8f8;
+    padding: 20px;
+    border-radius: 20px;
+    text-align: center;
+    height:fit-content;
+    position: sticky;
+    margin-top: 20px;
+    top: 150px; /* Keeps it sticky 150px from the top */
+    width: 100%; /* Optional: Adjust based on layout */
+    max-width: 400px; /* Ensure it doesn't stretch too much */
+  }
+  
+  .book-now-btn {
+    background-color: #007aff;
+    color: white;
+    border: none;
+    width: 365px;
+    margin-bottom: 15px;
+    padding: 10px 25px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 16px;
+  }
+  
+  .booking-hospital-header {
+    text-align: left;
+    margin-bottom: 10px;
+  }
+  
+  .booking-rating {
+    color: #ffb400;
+    margin-top: 10px;
+    margin-bottom: 10px;
+  }
+  
+  .reviews-section {
+    margin-top: 50px;
+    gap: 20px;
+    flex: 2;
+  }
+  
+  .reviews-container {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 20px;
+    overflow: hidden; 
+    scroll-behavior: smooth;
+    width: 900px;
+  }
+  
+  .review-card {
+    margin-left: 10px;
+    flex: 0 0 auto; /* Prevent cards from growing/shrinking */
+    width: 270px; /* Fixed width for each card */
+    height: 430px;
+    background: #f3f3f3;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: transform 0.3s, box-shadow 0.3s;
+    gap: 20px;
+    overflow: hidden;
+  }
+  
+  .review-stars {
+    color: #ffb400;
+    font-size: 20px;
+    margin-top: 15px;
+    margin-bottom: 10px;
+  }
+  
+  .add-review {
+    margin-top: 30px;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #f8f8f8;
+  }
+  
+  .add-review input,
+  .add-review textarea {
+    display: block;
+    width: 100%;
+    margin-bottom: 15px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+  }
+  
+  .add-review button {
+    background-color: #007aff;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  .review-tabs {
+    margin-left: 10px;
+    margin-top: 20px;
+    display: flex;
+    gap: 20px;
+    flex-wrap: nowrap; /* Prevent wrapping to the next line */
+    max-width: 920px; /* Prevent shrinking */
+    height: 480px;
+    overflow: hidden; /* Prevent cards from spilling out */
+}
+.review-form {
+    margin-left: 15px;
+    border: 1px solid #ddd;
+    padding: 20px;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    width: 600px;
+    height: 290px;
+  }
+  
+  .review-form label {
+    display: block;
+    margin-right: 600px;
+    margin-bottom: 5px;
+  }
+
+  .review-form .star-rating {
+    margin-right: 630px;
+    display: inline-flex;
+    cursor: pointer;
+  }
+  
+ .star {
+    margin-left: 10px;
+    font-size: 30px;
+    color: #ccc;
+    cursor: pointer;
+  }
+  
+ .star.filled {
+    color: #ffd505;
+  }
+  
+  .review-form textarea {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    min-height: 100px;
+  }
+  
+  .review-form button {
+    margin-top: 10px;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+  }
+  
+  .review-form button:hover {
+    background-color: #0056b3;
+  }
+
+  .map-container {
+    width: 100%;
+    height: 500px;
+    border-radius: 12px;
+    overflow: auto;
+    border: 2px solid #e0e0e0;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.leaflet-container {
+    width: 100%;
+    height: 100%;
+    z-index: 1; /* Lower value so it's under the navbar */
+    position: relative;
+}

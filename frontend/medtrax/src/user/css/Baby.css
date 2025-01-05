@@ -17,14 +17,14 @@
     width: 100%;
 }
 
-.tracker-image {
+/* .tracker-image {
     float: left;
 }
 
 .tracker-image img {
     height: 150px;
     width: max-content;
-}
+} */
 
 .tracker-text {
     margin-left: 10px;
@@ -49,7 +49,7 @@
     overflow-x: auto;
 }
 
-.week-button {
+.week-button60 {
     margin: 5px;
     padding: 10px 15px;
     background-color: #fff;
@@ -59,7 +59,7 @@
     color: #ff6584;
 }
 
-.week-button.active {
+.week-button60.active {
     background-color: #ff6584;
     color: #fff;
 }

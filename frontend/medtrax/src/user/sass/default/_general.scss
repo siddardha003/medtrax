@@ -199,8 +199,8 @@ hr {
 
 .st-blue-box {
   color: $blue;
-  fill: $blue;
-  background-color: rgba($blue, 0.1);
+  fill: #008b95;
+  background-color: rgba( $gray, 0.1);
 }
 
 .st-purple-box {
@@ -211,31 +211,32 @@ hr {
 
 .st-green-box {
   color: $green;
-  fill: $green;
-  background-color: rgba($green, 0.1);
+  fill:   #3ba4ab
+  ;
+  background-color: rgba($gray, 0.1);
 }
 
 .st-red-box {
   color: $red;
-  fill: $red;
-  background-color: rgba($red, 0.1);
+  fill: #2f9aa2;
+  background-color: rgba($gray, 0.1);
 }
 
 .st-dip-blue-box {
   color: $dip-blue;
-  fill: $dip-blue;
-  background-color: rgba($dip-blue, 0.1);
+  fill: #52a7ad;
+  background-color: rgba($gray, 0.1);
 }
 
 .st-orange-box {
   color: $orange;
-  fill: $orange;
-  background-color: rgba($orange, 0.1);
+  fill: #63b0b6;
+  background-color: rgba($gray, 0.1);
 }
 
 .st-gray-box {
   color: $gray;
-  fill: $gray;
+  fill: #86c2c6;
   background-color: rgba($gray, 0.1);
 }
 

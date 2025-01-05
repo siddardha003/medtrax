@@ -1,8 +1,8 @@
-.period-calculator {
+/* .period-calculator {
     width: 320px;
     margin: 20px auto;
     padding: 25px;
-    border: 2px solid #ff6f8e;
+    border: 2px solid #02a2ae;
     border-radius: 15px;
     background-color: #fff;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
@@ -16,34 +16,31 @@
     display: block;
     margin-bottom: 8px;
     font-weight: bold;
-    color: #ff6f8e;
+    color: #02a2ae;
     font-size: 15px;
   }
   
   input[type="date"] {
     width: 92%;
     padding: 12px;
-    border: 2px solid #ff6f8e;
+    border: 2px solid #02a2ae;
     border-radius: 8px;
     outline: none;
     font-size: 14px;
     transition: border-color 0.3s;
   }
-  
-  input[type="date"]:focus {
-    border-color: #ff8ca1;
-  }
+
   
   .input-group {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    border: 2px solid #ff6f8e;
+    border: 2px solid #02a2ae;
     border-radius: 8px;
     overflow: hidden;
   }
   
-  button {
+  .button6143 {
     background-color: #fff;
     border: none;
     padding: 10px;
@@ -53,17 +50,16 @@
     transition: background-color 0.3s;
   }
   
-  button:hover {
-    background-color: #ffced7;
+  .button6143:hover {
+    background-color: #68e3c2;
   }
   
   span {
-    padding: 10px;
-    font-weight: bold;
-    color: #ff6f8e;
+    padding: 8px;
+    color: #e3e3e3;
     font-size: 15px;
   }
-  
+
   .submit-btn, .reset-btn {
     width: 100%;
     padding: 15px;
@@ -143,18 +139,18 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: linear-gradient(90deg, #ff9a9e 0%, #fad0c4 100%);
+    background: linear-gradient(90deg, #008b95 0%, #86c2c6 100%);
     padding: 20px;
-    border-radius: 8px;
+    border-radius: 20px;
   }
   
   .banner h1 {
-    color: white;
-    font-size: 24px;
+    color: rgb(28, 27, 27);
+    font-size: 28px;
     margin: 0;
   }
   
   .banner-image {
-    width: 150px;
-    height: auto;
-  }
+    width: 200px;
+    height: 200px;
+  } */

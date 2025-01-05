@@ -43,11 +43,11 @@ const Footer = ({ data, varient }) => {
             <div className="col-lg-3">
               <div className="st-footer-widget">
                 <div className="st-text-field">
-                  <img src={logo} alt={logo} className="st-footer-logo" />
+                  {/* <img src={logo} alt={logo} className="st-footer-logo" /> */}
                   <div className="st-height-b25 st-height-lg-b25" />
-                  <div className="st-footer-text">{subTitle}</div>
+                  {/* <div className="st-footer-text">{subTitle}</div> */}
                   <div className="st-height-b25 st-height-lg-b25" />
-                  <Social data={links} />
+                  {/* <Social data={links} /> */}
                 </div>
               </div>
             </div>
@@ -71,13 +71,13 @@ const Footer = ({ data, varient }) => {
                   <li>
                     <Link to="">
                       <Icon icon="fa:angle-right" />
-                      Weekly timetable
+                      abcd
                     </Link>
                   </li>
                   <li>
                     <Link to="">
                       <Icon icon="fa:angle-right" />
-                      Terms &amp; Conditions
+                      Terms & Conditions
                     </Link>
                   </li>
                 </ul>
@@ -91,25 +91,25 @@ const Footer = ({ data, varient }) => {
                   <li>
                     <Link to="">
                       <Icon icon="fa:angle-right" />
-                      Rehabilitation
+                       hospitals
                     </Link>
                   </li>
                   <li>
                     <Link to="">
                       <Icon icon="fa:angle-right" />
-                      Laboratory Analysis
+                       appointments
                     </Link>
                   </li>
                   <li>
                     <Link to="">
                       <Icon icon="fa:angle-right" />
-                      Face Lift Surgery
+                       medicines
                     </Link>
                   </li>
                   <li>
                     <Link to="">
                       <Icon icon="fa:angle-right" />
-                      Liposuction
+                       medical care
                     </Link>
                   </li>
                 </ul>
@@ -121,17 +121,16 @@ const Footer = ({ data, varient }) => {
                 <h2 className="st-footer-widget-title">Contacts</h2>
                 <ul className="st-footer-contact-list st-mp0">
                   <li>
-                    <span className="st-footer-contact-title">Address:</span> 1223
-                    Fulton Street San Diego CA 941-23 USA
+                    <span className="st-footer-contact-title">Address:</span> 
+                     abcd area, street no. 4321, xyz city, klm state
                   </li>
                   <li>
                     <span className="st-footer-contact-title">Email:</span>{" "}
-                    nischinto@Gmail.Com
+                    medtrax_info@gmail.Com
                   </li>
                   <li>
-                    <span className="st-footer-contact-title">Phone:</span> (+01) -
-                    234 567 890 <br />
-                    (+01) - 345 678 901
+                    <span className="st-footer-contact-title">Phone:</span> 
+                   +91 9876543210
                   </li>
                 </ul>
               </div>
@@ -144,9 +143,9 @@ const Footer = ({ data, varient }) => {
         <div className="container">
           <div className="st-copyright-in">
             <div className="st-left-copyright">
-              <div className="st-copyright-text">
+              {/* <div className="st-copyright-text">
                 Copyright {currentYear}. Design by Laralink
-              </div>
+              </div> */}
             </div>
             <div className="st-right-copyright">
               <div id="st-backtotop" style={{ scale: `${scrollPosition >= 100 ? "1" : "0"}` }} onClick={scrollToTop}>

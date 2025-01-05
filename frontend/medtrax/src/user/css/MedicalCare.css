@@ -2,34 +2,41 @@
     font-family: Arial, sans-serif;
     text-align: center;
     padding: 20vh 50px;
+    height: 335vh;
   }
   
-  .banner {
+  .medcare-banner {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: linear-gradient(90deg, #ff9a9e 0%, #fad0c4 100%);
+    background: linear-gradient(90deg, #008b95 0%, #86c2c6 100%);
     padding: 20px;
-    border-radius: 8px;
+    border-radius: 20px;
+    width: 180vh;
+    margin-left: 40px;
   }
   
-  .banner h1 {
+  .medcare-banner h1 {
     color: white;
-    font-size: 24px;
+    font-size: 28px;
     margin: 0;
   }
   
-  .banner-image {
-    width: 150px;
-    height: auto;
+  .medcare-banner-image {
+    width: 200px;
+    height: 200px;
   }
   
   .tracker-card {
     margin-top: 30px;
     padding: 20px;
     border: 2px solid #efefef;
-    border-radius: 10px;
+    border-radius: 20px;
     box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1);
+    width: 160vh;
+    height: 200px;
+    margin-left: 110px;
+    overflow: hidden;
   }
   
   .card-content {
@@ -38,9 +45,11 @@
   }
   
   .tracker-image {
-    width: 100px;
-    height: auto;
+    width:200px;
+    height: 160px;
+    object-fit: cover;
     margin-right: 20px;
+    border-radius: 10px;
   }
   
   .tracker-info {
@@ -54,10 +63,11 @@
   
   .tracker-info p {
     color: #666;
+    font-size: 15px;
   }
-  
-  .track-button {
-    background-color: #ff9a9e;
+
+  .track-butto {
+    background-color: #02a2ae;
     color: white;
     border: none;
     padding: 10px 20px;
@@ -67,6 +77,6 @@
     transition: background-color 0.3s ease;
   }
   
-  .track-button:hover {
-    background-color: #f67575;
+  .track-butto:hover {
+    background-color: #008b95;
   }

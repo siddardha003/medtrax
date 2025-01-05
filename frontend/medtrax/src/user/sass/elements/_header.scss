@@ -539,8 +539,13 @@
 
 .st-site-branding {
   display: inline-block;
+  margin-top: -38px;
 }
-
+.st-site-branding img {
+  display: inline-block;
+  height: 180px;
+  margin-bottom: -55px;
+}
 .st-opening-hr {
   margin-top: 57px;
 
