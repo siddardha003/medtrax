@@ -21,7 +21,7 @@ import PeriodCalculator from './user/pages/PeriodCalci';
 import Signin from './user/components/Signin';
 import Signup from './user/components/Signup';
 
-import HospitalBooking from './user/pages/example';
+import MedReminder from './user/pages/Medreminder';
 
 
 
@@ -47,13 +47,14 @@ function App() {
       <Route path="/HealthTracker" element={<HealthTracker />}/> 
       <Route path="/Baby" element={<BabyDevelopmentTracker />}/> 
       <Route path="/PeriodCalci" element={<PeriodCalculator />}/> 
+      <Route path="/Medreminder" element={<MedReminder />}/> 
+
 
       <Route path="/login" element={<Signin />}/> 
       <Route path="/Signup" element={<Signup/>}/> 
 
 
 
-      <Route path="/example" element={<HospitalBooking/>}/> 
       </Route>
       </Routes>
     </div>
