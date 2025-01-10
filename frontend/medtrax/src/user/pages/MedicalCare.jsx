@@ -9,10 +9,10 @@ const MedicalCarePage = () => {
     navigate('/HealthTracker');
   };
   const handleTrackNow2 = () => {
-    navigate('/track');
+    navigate('/PeriodCalci');
   };
   const handleTrackNow3 = () => {
-    navigate('/track');
+    navigate('/EssentialTest');
   };
   const handleTrackNow4 = () => {
     navigate('/track');
@@ -41,7 +41,9 @@ const MedicalCarePage = () => {
       </div>
       <div className="tracker-card">
         <div className="card-content">
-          <img src="images\health-tracker.png" alt="Health Tracker" className="tracker-image" />
+          <div className="tracke-imag-box">
+            <img src="images\health-tracker.png" alt="Health Tracker" className="tracker-image" />
+          </div>
           <div className="tracker-info">
             <h2>Health Tracker</h2>
             <p>
@@ -56,11 +58,13 @@ const MedicalCarePage = () => {
       </div>
       <div className="tracker-card">
         <div className="card-content">
-          <img src="images\period-tracking.png" alt="Health Tracker" className="tracker-image" />
+          <div className="tracke-imag-box">
+            <img src="images\period-tracking.png" alt="Health Tracker" className="tracker-image" />
+          </div>
           <div className="tracker-info">
             <h2>Period Calculator</h2>
             <p>
-              Effortlessly track your menstrual cycle with our Period Calculator, 
+              Effortlessly track your menstrual cycle with our Period Calculator,
               predicting ovulation windows and upcoming periods for better reproductive health management.
             </p>
             <button className="track-butto" onClick={handleTrackNow2}>
@@ -71,12 +75,14 @@ const MedicalCarePage = () => {
       </div>
       <div className="tracker-card">
         <div className="card-content">
-          <img src="images\essential-test-tracker.png" alt="Health Tracker" className="tracker-image" />
+          <div className="tracke-imag-box">
+            <img src="images\essential-test-tracker.png" alt="Health Tracker" className="tracker-image" />
+          </div>
           <div className="tracker-info">
             <h2>Essential Tests Tracker</h2>
             <p>
-            Manage your health journey with our Essential Tests Tracker, 
-            tailored to every life stage from adolescence to adulthood, ensuring timely screenings and proactive healthcare management.
+              Manage your health journey with our Essential Tests Tracker,
+              tailored to every life stage from adolescence to adulthood, ensuring timely screenings and proactive healthcare management.
             </p>
             <button className="track-butto" onClick={handleTrackNow3}>
               Track Now &rarr;
@@ -86,12 +92,14 @@ const MedicalCarePage = () => {
       </div>
       <div className="tracker-card">
         <div className="card-content">
-          <img src="images\baby-dev-tracker.png" alt="Health Tracker" className="tracker-image" />
+          <div className="tracke-imag-box">
+            <img src="images\baby-dev-tracker.png" alt="Health Tracker" className="tracker-image" />
+          </div>
           <div className="tracker-info">
             <h2>Baby Development Tracker</h2>
             <p>
-            Track your little one's growth journey week by week with our Baby Development Tracker, 
-            offering insights into height, weight, and size milestones coupled with pregnancy tips.
+              Track your little one's growth journey week by week with our Baby Development Tracker,
+              offering insights into height, weight, and size milestones coupled with pregnancy tips.
             </p>
             <button className="track-butto" onClick={handleTrackNow4}>
               Track Now &rarr;
@@ -101,12 +109,14 @@ const MedicalCarePage = () => {
       </div>
       <div className="tracker-card">
         <div className="card-content">
-          <img src="images\baby-vac-tracker.png" alt="Health Tracker" className="tracker-image" />
+          <div className="tracke-imag-box">
+            <img src="images\baby-vac-tracker.png" alt="Health Tracker" className="tracker-image" />
+          </div>
           <div className="tracker-info">
             <h2>Baby Vaccination Tracker</h2>
             <p>
-            Ensure your baby's health is on track with our Baby Vaccination Tracker,
-             guiding you through the crucial first year with schedules for vaccinations.
+              Ensure your baby's health is on track with our Baby Vaccination Tracker,
+              guiding you through the crucial first year with schedules for vaccinations.
             </p>
             <button className="track-butto" onClick={handleTrackNow5}>
               Track Now &rarr;
@@ -116,7 +126,9 @@ const MedicalCarePage = () => {
       </div>
       <div className="tracker-card">
         <div className="card-content">
+        <div className="tracke-imag-box">
           <img src="path-to-health-tracker-image.png" alt="Health Tracker" className="tracker-image" />
+          </div>
           <div className="tracker-info">
             <h2>Prescription Prediction</h2>
             <p>
@@ -131,7 +143,9 @@ const MedicalCarePage = () => {
       </div>
       <div className="tracker-card">
         <div className="card-content">
+        <div className="tracke-imag-box">
           <img src="path-to-health-tracker-image.png" alt="Health Tracker" className="tracker-image" />
+          </div>
           <div className="tracker-info">
             <h2>Symptom Checker</h2>
             <p>
@@ -146,7 +160,9 @@ const MedicalCarePage = () => {
       </div>
       <div className="tracker-card">
         <div className="card-content">
+        <div className="tracke-imag-box">
           <img src="path-to-health-tracker-image.png" alt="Health Tracker" className="tracker-image" />
+          </div>
           <div className="tracker-info">
             <h2>Skin Disease Detection</h2>
             <p>
@@ -161,7 +177,9 @@ const MedicalCarePage = () => {
       </div>
       <div className="tracker-card">
         <div className="card-content">
+        <div className="tracke-imag-box">
           <img src="path-to-health-tracker-image.png" alt="Health Tracker" className="tracker-image" />
+          </div>
           <div className="tracker-info">
             <h2>Medical Remainder</h2>
             <p>

@@ -492,10 +492,10 @@ const Home2 = () => {
       <Iconbox data={iconboxData} />
       <About data={aboutData} />
       <hr />
-      <BeforeAfter data={beforeAfterData} />
+      {/* <BeforeAfter data={beforeAfterData} /> */}
       <TestimonialSlider data={testimonialData} />
       <Funfact />
-      <Accordion data={faqData} />
+      {/* <Accordion data={faqData} /> */}
       <BrandSlider data={brandData} />
       <Contact />
     </>

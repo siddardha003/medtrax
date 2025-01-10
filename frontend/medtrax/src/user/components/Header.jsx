@@ -99,10 +99,10 @@ const Header = ({ data }) => {
                     <Link to="/MedicalCare" spy={true} duration={500} onClick={() => setMobileToggle(false)} >Medical Care</Link>
                   </li>
                   <li>
-                    <ScrollLink to="about" spy={true} duration={500} onClick={() => setMobileToggle(false)} >About</ScrollLink>
+                    <Link to="/About" spy={true} duration={500} onClick={() => setMobileToggle(false)} >About</Link>
                   </li>
                   <li>
-                    <ScrollLink to="contact" spy={true} duration={500} onClick={() => setMobileToggle(false)} >Contact</ScrollLink>
+                    <Link to="/Contact" spy={true} duration={500} onClick={() => setMobileToggle(false)} >Contact</Link>
                   </li>
                 </ul>
                 <div className={`st-munu-toggle ${mobileToggle ? "st-toggle-active" : ""} `} onClick={handleMobileToggle}>

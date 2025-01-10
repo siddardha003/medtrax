@@ -6,6 +6,9 @@ import Layout from './user/components/Layout';
 
 import Hospital from './user/pages/Hospital';
 import HospitalDetails from './user/pages/HospitalDetails';
+import AboutPage from './user/pages/AboutPage';
+import ContactPage from './user/pages/ContactPage';
+
 
 import Appointments from './user/pages/Appointments';
 import AppForm from './user/pages/AppForm';
@@ -17,6 +20,7 @@ import MedicalCarePage from './user/pages/MedicalCare';
 import HealthTracker from './user/pages/HealthTracker';
 import BabyDevelopmentTracker from './user/pages/BabyDevelopmentTracker';
 import PeriodCalculator from './user/pages/PeriodCalci';
+import EssentialTest from './user/pages/EssentialTests';
 
 import Signin from './user/components/Signin';
 import Signup from './user/components/Signup';
@@ -36,6 +40,9 @@ function App() {
       <Route index element={<Home2 />} />    
       <Route path="/Hospital" element={<Hospital />}/> 
       <Route path="/HospitalDetails" element={<HospitalDetails/>}/> 
+      <Route path="/About" element={< AboutPage/>}/>
+      <Route path="/Contact" element={< ContactPage/>}/>
+
 
       <Route path="/Appointments" element={<Appointments />}/> 
       <Route path="/AppForm" element={<AppForm />}/> 
@@ -47,6 +54,8 @@ function App() {
       <Route path="/HealthTracker" element={<HealthTracker />}/> 
       <Route path="/Baby" element={<BabyDevelopmentTracker />}/> 
       <Route path="/PeriodCalci" element={<PeriodCalculator />}/> 
+      
+      <Route path="/EssentialTest" element={<EssentialTest />}/>
 
       <Route path="/login" element={<Signin />}/> 
       <Route path="/Signup" element={<Signup/>}/> 

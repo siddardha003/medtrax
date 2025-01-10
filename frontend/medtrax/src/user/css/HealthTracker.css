@@ -6,23 +6,24 @@
     padding: 20px;
     border-radius: 8px;
   }
-  
+
   .banner h1 {
     color: white;
     font-size: 28px;
     margin: 0;
   }
+
   .banner h2 {
     color: white;
     font-size: 20px;
     margin: 0;
   }
-  
+
   .banner-image {
     width: 150px;
     height: auto;
   }
-  
+
   /* weight tracker */
 
   .tracker-container20 {
@@ -32,7 +33,7 @@
     border-radius: 10px;
     font-family: Arial, sans-serif;
   }
-  
+
   .track-section20 {
     text-align: center;
     border: 2px solid #86c2c6;
@@ -40,7 +41,7 @@
     border-radius: 10px;
     margin-bottom: 20px;
   }
-  
+
   .butto-group20 button {
     margin: 0 5px;
     padding: 10px 20px;
@@ -54,23 +55,24 @@
     background-color: #008b95;
   }
 
- .weightinp-group20 {
-  display: flex;
-  flex-direction: column;
-  gap: 15px; /* Adds space between input fields */
-  justify-content: center;
-  margin-left: 100px;
-}
+  .weightinp-group20 {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    /* Adds space between input fields */
+    justify-content: center;
+    margin-left: 100px;
+  }
 
-.weightinp-field20 {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  margin-right: 100px;
-  
-}
+  .weightinp-field20 {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    margin-right: 100px;
 
-.weightinp-section20 {
+  }
+
+  .weightinp-section20 {
     text-align: center;
     border: 2px solid #86c2c6;
     padding: 20px;
@@ -81,28 +83,31 @@
     margin-top: -19px;
   }
 
-.image-icon20 {
-  width: 30px; /* Set width of the icon */
-  height: 30px;
-  margin-right: 10px; /* Add space between the icon and the input field */
-}
+  .image-icon20 {
+    width: 30px;
+    /* Set width of the icon */
+    height: 30px;
+    margin-right: 10px;
+    /* Add space between the icon and the input field */
+  }
 
-.weightinp-field20 input {
-  width: 150px; /* Set the width of the input fields */
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 10px;
-}
+  .weightinp-field20 input {
+    width: 150px;
+    /* Set the width of the input fields */
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+  }
 
-.sav-btn20 {
-  margin-top: 20px;
-  padding: 5px 20px;
-  background-color: #fff;
-  border: 2px solid #86c2c6;
-  border-radius: 15px;
-  cursor: pointer;
-  font-size: 18px;
-}
+  .sav-btn20 {
+    margin-top: 20px;
+    padding: 5px 20px;
+    background-color: #fff;
+    border: 2px solid #86c2c6;
+    border-radius: 15px;
+    cursor: pointer;
+    font-size: 18px;
+  }
 
   .weight-display20 {
     text-align: center;
@@ -110,9 +115,9 @@
     padding: 20px;
     border-radius: 10px;
     width: 460px;
-    margin-left: 395px; 
+    margin-left: 395px;
   }
-  
+
   .circl20 {
     width: 80px;
     height: 80px;
@@ -122,11 +127,10 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 20px ;
+    font-size: 20px;
     font-weight: bold;
-  
   }
-  
+
   .history-section20 {
     margin-top: -19px;
     border: 2px solid #86c2c6;
@@ -137,784 +141,513 @@
     overflow-y: auto;
     margin-bottom: 20px;
     margin-left: 395px;
-}
-  
-.history-table20 {
+  }
+
+  .history-table20 {
     width: 100%;
     border-collapse: collapse;
-}
+  }
 
-.history-table20 th, .history-table20 td {
+  .history-table20 th,
+  .history-table20 td {
     padding: 10px;
     border-bottom: 1px solid #86c2c6;
-}
+  }
 
-.history-table20 tr:nth-child(even) {
+  .history-table20 tr:nth-child(even) {
     background-color: #86c2c6;
     color: white;
-}
-
-/* Custom Scrollbar Styles */
-.history-section20::-webkit-scrollbar {
-    width: 5px;  /* Set the width of the scrollbar */
-}
-
-.history-section20::-webkit-scrollbar-track {
-    background: #f0f0f0;  /* Scrollbar track color */
-    border-radius: 10px;  /* Rounded track */
-}
-
-.history-section20::-webkit-scrollbar-thumb {
-    background-color: #86c2c6;  /* Scrollbar thumb color */
-    border-radius: 10px;  /* Rounded scrollbar */
-    border: 2px solid #fff;  /* Adds a border around the thumb */
-}
-
-.history-section20::-webkit-scrollbar-thumb:hover {
-    background-color: #86c2c6;  /* Color when hovering over the thumb */
-}
-
-/* For non-webkit browsers (like Firefox), you can use the following */
-.history-section20 {
-    scrollbar-width: thin;  /* For Firefox, set the scrollbar to be thin */
-    scrollbar-color: #86c2c6 #f0f0f0;  /* Thumb and track colors */
-}
-  
-/* hormones tracker */
-
-.hortracker-container20 {
-  width: 500px;
-  margin: 0 auto;
-  padding: 20px;
-  border-radius: 10px;
-  font-family: Arial, sans-serif;
-}
-
-.hortrack-section20 {
-text-align: center;
-  border: 2px solid #86c2c6;
-  padding: 15px;
-  border-radius: 10px;
-  margin-bottom: 20px;
-}
-
-.butto-group20 button {
-  margin: 0 5px;
-  padding: 10px 20px;
-  border: 1px solid #008b95;
-  border-radius: 10px;
-  background-color: #fff;
-  cursor: pointer;
-}
-
-.hormonesinp-group20 {
-display: flex;
-flex-direction: column;
-gap: 30px;
-justify-content: center;
-margin-left: 100px;
-width: 280px;
-}
-
-.hormonesinp-field20 {
-display: flex;
-align-items: center;
-justify-content: space-between;
-margin-right: 100px;
-width: 285px;
-margin-left: -40px;
-
-}
-
-.hormonesinp-section20 {
-text-align: center;
-border: 2px solid #86c2c6;
-padding: 20px;
-border-radius: 10px;
-margin-bottom: 20px;
-margin-top: 20px;
-}
-
-.hormonesinp-field20 input {
-width: 150px; /* Set the width of the input fields */
-padding: 8px;
-border: 1px solid #ccc;
-border-radius: 10px;
-}
-
-.image-icon20 {
-width: 30px;
-height: 30px;
-margin-right: 10px;
-}
-
-
-.save-btn20 {
-margin-top: 20px;
-padding: 10px 20px;
-background-color: #fff;
-border: 2px solid #86c2c6;
-border-radius: 5px;
-cursor: pointer;
-}
-
-.hormone-display20 {
-text-align: center;
-border: 2px solid #86c2c6;
-padding: 20px;
-border-radius: 10px;
-}
-
-.circle20 {
-width: 80px;
-height: 80px;
-border-radius: 50%;
-border: 2px solid #86c2c6;
-margin: 0 auto;
-display: flex;
-justify-content: center;
-align-items: center;
-font-size: 20px;
-font-weight: bold;
-}
-
-.hormoneshist-section20 {
-margin-top: 20px;
-border: 2px solid #86c2c6;
-border-radius: 10px;
-text-align: center;
-max-height: 200px;
-max-width: 500px;
-overflow-y: auto;
-margin-bottom: 20px;
-}
-
-.hormoneshist-table20 {
-width: 100%;
-border-collapse: collapse;
-}
-
-.hormoneshist-table20 th, .hormoneshist-table20 td {
-padding: 10px;
-border-bottom: 1px solid #86c2c6;
-}
-
-.hormoneshist-table20 tr:nth-child(even) {
-background-color: #86c2c6;
-color: white;
-}
-
-/* Custom Scrollbar Styles */
-.hormoneshist-section20::-webkit-scrollbar {
-width: 5px;  /* Set the width of the scrollbar */
-}
-
-.hormoneshist-section20::-webkit-scrollbar-track {
-background: #f0f0f0;  /* Scrollbar track color */
-border-radius: 10px;  /* Rounded track */
-}
-
-.hormoneshist-section20::-webkit-scrollbar-thumb {
-background-color: #86c2c6;  /* Scrollbar thumb color */
-border-radius: 10px;  /* Rounded scrollbar */
-border: 2px solid #fff;  /* Adds a border around the thumb */
-}
-
-.hormoneshist-section20::-webkit-scrollbar-thumb:hover {
-background-color: #86c2c6;  /* Color when hovering over the thumb */
-}
-
-/* For non-webkit browsers (like Firefox), you can use the following */
-.hormoneshist-section20 {
-scrollbar-width: thin;  /* For Firefox, set the scrollbar to be thin */
-scrollbar-color: #86c2c6 #f0f0f0;  /* Thumb and track colors */
-}
-
-/*headache Tracker */
-
-.headachetracker-container20 {
-  width: 500px;
-  margin: 0 auto;
-  padding: 20px;
-  border-radius: 10px;
-  font-family: Arial, sans-serif;
-}
-
-.headachetrack-section20 {
-text-align: center;
-  border: 2px solid #86c2c6;
-  padding: 15px;
-  border-radius: 10px;
-  margin-bottom: 20px;
-}
-
-.butto-group20 button {
-  margin: 0 5px;
-  padding: 10px 20px;
-  border: 1px solid #008b95;
-  border-radius: 10px;
-  background-color: #fff;
-  cursor: pointer;
-}
-
-.headacheinp-section20 {
-  text-align: center;
-  border: 2px solid #86c2c6;
-  padding: 20px;
-  border-radius: 10px;
-  width: 460px;
-  margin-left: 395px;
-  margin-bottom: 20px;
-  margin-top: -19px;
-}
-
-.headacheinp-group20 {
-  display: flex;
-  flex-direction: column;
-  gap: 15px; /* Adds space between input fields */
-  justify-content: center;
-  margin-left: 10px;
-}
-
-.headacheinp-field20 {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 20px;
-}
-
-.headacheinp-field20 input {
-  width: 150px; /* Set the width of the input fields */
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 10px;
-}
-
-.image-icon20 {
-  width: 30px;
-  height: 30px;
-  margin-right: 10px;
-}
-
-.headache-options {
-  display: flex;
-  justify-content: center;
-  gap: 15px;
-}
-
-.headache-option {
-  border: 2px solid #86c2c6;
-  border-radius: 50%;
-  width: 80px;
-  height: 80px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  font-weight: bold;
-  transition: background-color 1s;
-}
-
-.headache-option.selected {
-  background-color: #86c2c6;
-  color: white;
-}
-
-.sav-btn20 {
-  margin-top: 20px;
-  padding: 5px 20px;
-  background-color: #fff;
-  border: 2px solid #86c2c6;
-  border-radius: 15px;
-  cursor: pointer;
-  font-size: 18px;
-}
-
-.headache-display20 {
-  text-align: center;
-  border: 2px solid #86c2c6;
-  padding: 20px;
-  border-radius: 10px;
-  width: 460px;
-  margin-left: 395px; 
-}
-
-.circle21 {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  border: 2px solid #86c2c6;
-  margin: 0 auto;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 15px;
-  font-weight: bold;
   }
 
-.headachehis-section20 {
-  margin-top: -19px;
-  border: 2px solid #86c2c6;
-  border-radius: 10px;
-  text-align: center;
-  max-height: 200px;
-  max-width: 460px;
-  overflow-y: auto;
-  margin-bottom: 20px;
-  margin-left: 395px;
-}
+  /* Custom Scrollbar Styles */
+  .history-section20::-webkit-scrollbar {
+    width: 5px;
+    /* Set the width of the scrollbar */
+  }
 
+  .history-section20::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    /* Scrollbar track color */
+    border-radius: 10px;
+    /* Rounded track */
+  }
 
- .headachehis-table20 {
-  width: 100%;
-  border-collapse: collapse;
+  .history-section20::-webkit-scrollbar-thumb {
+    background-color: #86c2c6;
+    /* Scrollbar thumb color */
+    border-radius: 10px;
+    /* Rounded scrollbar */
+    border: 2px solid #fff;
+    /* Adds a border around the thumb */
+  }
+
+  .history-section20::-webkit-scrollbar-thumb:hover {
+    background-color: #86c2c6;
+    /* Color when hovering over the thumb */
+  }
+
+  /* For non-webkit browsers (like Firefox), you can use the following */
+  .history-section20 {
+    scrollbar-width: thin;
+    /* For Firefox, set the scrollbar to be thin */
+    scrollbar-color: #86c2c6 #f0f0f0;
+    /* Thumb and track colors */
+  }
+
+  
+  /*Essential tests */
+
+  .life-stages-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    padding: 20px;
   }
   
-  .headachehis-table20 th, .headachehis-table20 td {
-  padding: 10px;
-  border-bottom: 1px solid #86c2c6;
+  .stage-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
   }
   
+  .stage-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
+  }
+  
+  .stage-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+  }
+  
+  .stage-label {
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+    padding: 10px;
+    text-align: center;
+  }
+  
+  .essential-container {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    padding: 20vh 50px;
+  }
+  
+  .essential-banner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(90deg, #008b95 0%, #86c2c6 100%);
+    padding: 20px;
+    border-radius: 20px;
+    width: 180vh;
+    margin-left: 10px;
+
+  }
+  
+  .essential-banner h1 {
+    color: white;
+    font-size: 28px;
+    margin: 0;
+  }
+  
+  .essential-banner-image {
+    width: 200px;
+    height: 200px;
+  }
+  
+  /* hormones tracker */
+
+  .hortracker-container20 {
+    width: 500px;
+    margin: 0 auto;
+    padding: 20px;
+    border-radius: 10px;
+    font-family: Arial, sans-serif;
+  }
+
+  .hortrack-section20 {
+    text-align: center;
+    border: 2px solid #86c2c6;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+  }
+
+  .butto-group20 button {
+    margin: 0 5px;
+    padding: 10px 20px;
+    border: 1px solid #008b95;
+    border-radius: 10px;
+    background-color: #fff;
+    cursor: pointer;
+  }
+
+  .hormonesinp-group20 {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    justify-content: center;
+    margin-left: 100px;
+    width: 280px;
+  }
+
+  .hormonesinp-field20 {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-right: 100px;
+    width: 285px;
+    margin-left: -40px;
+
+  }
+
+  .hormonesinp-section20 {
+    text-align: center;
+    border: 2px solid #86c2c6;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    margin-top: 20px;
+  }
+
+  .hormonesinp-field20 input {
+    width: 150px;
+    /* Set the width of the input fields */
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+  }
+
+  .image-icon20 {
+    width: 30px;
+    height: 30px;
+    margin-right: 10px;
+  }
+
+
+  .save-btn20 {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #fff;
+    border: 2px solid #86c2c6;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  .hormone-display20 {
+    text-align: center;
+    border: 2px solid #86c2c6;
+    padding: 20px;
+    border-radius: 10px;
+  }
+
+  .circle20 {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 2px solid #86c2c6;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 20px;
+    font-weight: bold;
+  }
+
+  .hormoneshist-section20 {
+    margin-top: 20px;
+    border: 2px solid #86c2c6;
+    border-radius: 10px;
+    text-align: center;
+    max-height: 200px;
+    max-width: 500px;
+    overflow-y: auto;
+    margin-bottom: 20px;
+  }
+
+  .hormoneshist-table20 {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .hormoneshist-table20 th,
+  .hormoneshist-table20 td {
+    padding: 10px;
+    border-bottom: 1px solid #86c2c6;
+  }
+
+  .hormoneshist-table20 tr:nth-child(even) {
+    background-color: #86c2c6;
+    color: white;
+  }
+
+  /* Custom Scrollbar Styles */
+  .hormoneshist-section20::-webkit-scrollbar {
+    width: 5px;
+    /* Set the width of the scrollbar */
+  }
+
+  .hormoneshist-section20::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    /* Scrollbar track color */
+    border-radius: 10px;
+    /* Rounded track */
+  }
+
+  .hormoneshist-section20::-webkit-scrollbar-thumb {
+    background-color: #86c2c6;
+    /* Scrollbar thumb color */
+    border-radius: 10px;
+    /* Rounded scrollbar */
+    border: 2px solid #fff;
+    /* Adds a border around the thumb */
+  }
+
+  .hormoneshist-section20::-webkit-scrollbar-thumb:hover {
+    background-color: #86c2c6;
+    /* Color when hovering over the thumb */
+  }
+
+  /* For non-webkit browsers (like Firefox), you can use the following */
+  .hormoneshist-section20 {
+    scrollbar-width: thin;
+    /* For Firefox, set the scrollbar to be thin */
+    scrollbar-color: #86c2c6 #f0f0f0;
+    /* Thumb and track colors */
+  }
+
+  /*headache Tracker */
+
+  .headachetracker-container20 {
+    width: 500px;
+    margin: 0 auto;
+    padding: 20px;
+    border-radius: 10px;
+    font-family: Arial, sans-serif;
+  }
+
+  .headachetrack-section20 {
+    text-align: center;
+    border: 2px solid #86c2c6;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+  }
+
+  .butto-group20 button {
+    margin: 0 5px;
+    padding: 10px 20px;
+    border: 1px solid #008b95;
+    border-radius: 10px;
+    background-color: #fff;
+    cursor: pointer;
+  }
+
+  .headacheinp-section20 {
+    text-align: center;
+    border: 2px solid #86c2c6;
+    padding: 20px;
+    border-radius: 10px;
+    width: 460px;
+    margin-left: 395px;
+    margin-bottom: 20px;
+    margin-top: -19px;
+  }
+
+  .headacheinp-group20 {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    /* Adds space between input fields */
+    justify-content: center;
+    margin-left: 10px;
+  }
+
+  .headacheinp-field20 {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+
+  .headacheinp-field20 input {
+    width: 150px;
+    /* Set the width of the input fields */
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+  }
+
+  .image-icon20 {
+    width: 30px;
+    height: 30px;
+    margin-right: 10px;
+  }
+
+  .headache-options {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+  }
+
+  .headache-option {
+    border: 2px solid #86c2c6;
+    border-radius: 50%;
+    width: 80px;
+    height: 80px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 1s;
+  }
+
+  .headache-option.selected {
+    background-color: #86c2c6;
+    color: white;
+  }
+
+  .sav-btn20 {
+    margin-top: 20px;
+    padding: 5px 20px;
+    background-color: #fff;
+    border: 2px solid #86c2c6;
+    border-radius: 15px;
+    cursor: pointer;
+    font-size: 18px;
+  }
+
+  .headache-display20 {
+    text-align: center;
+    border: 2px solid #86c2c6;
+    padding: 20px;
+    border-radius: 10px;
+    width: 460px;
+    margin-left: 395px;
+  }
+
+  .circle21 {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 2px solid #86c2c6;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 15px;
+    font-weight: bold;
+  }
+
+  .headachehis-section20 {
+    margin-top: -19px;
+    border: 2px solid #86c2c6;
+    border-radius: 10px;
+    text-align: center;
+    max-height: 200px;
+    max-width: 460px;
+    overflow-y: auto;
+    margin-bottom: 20px;
+    margin-left: 395px;
+  }
+
+
+  .headachehis-table20 {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .headachehis-table20 th,
+  .headachehis-table20 td {
+    padding: 10px;
+    border-bottom: 1px solid #86c2c6;
+  }
+
   .headachehis-table20 tr:nth-child(even) {
-  background-color: #86c2c6;
-  color: white;
+    background-color: #86c2c6;
+    color: white;
   }
-  
+
   /* Custom Scrollbar Styles */
   .headachehis-section20::-webkit-scrollbar {
-  width: 5px;  /* Set the width of the scrollbar */
+    width: 5px;
+    /* Set the width of the scrollbar */
   }
-  
+
   .headachehis-section20::-webkit-scrollbar-track {
-  background: #f0f0f0;  /* Scrollbar track color */
-  border-radius: 10px;  /* Rounded track */
+    background: #f0f0f0;
+    /* Scrollbar track color */
+    border-radius: 10px;
+    /* Rounded track */
   }
-  
+
   .headachehis-section20::-webkit-scrollbar-thumb {
-  background-color: #86c2c6;  /* Scrollbar thumb color */
-  border-radius: 10px;  /* Rounded scrollbar */
-  border: 2px solid #fff;  /* Adds a border around the thumb */
+    background-color: #86c2c6;
+    /* Scrollbar thumb color */
+    border-radius: 10px;
+    /* Rounded scrollbar */
+    border: 2px solid #fff;
+    /* Adds a border around the thumb */
   }
-  
+
   .headachehis-section20::-webkit-scrollbar-thumb:hover {
-  background-color: #86c2c6;  /* Color when hovering over the thumb */
+    background-color: #86c2c6;
+    /* Color when hovering over the thumb */
   }
-  
+
   /* For non-webkit browsers (like Firefox), you can use the following */
   .headachehis-section20 {
-  scrollbar-width: thin;  /* For Firefox, set the scrollbar to be thin */
-  scrollbar-color: #86c2c6 #f0f0f0;  /* Thumb and track colors */
-  }
-  
-.headache-list {
-  list-style: none;
-  padding: 0;
-}
-
-
-/* stress level */
-
-.stresstracker-container20 {
-  width: 500px;
-  margin: 0 auto;
-  padding: 20px;
-  border-radius: 10px;
-  font-family: Arial, sans-serif;
-}
-
-.stresstrack-section20 {
-text-align: center;
-  border: 2px solid #86c2c6;
-  padding: 15px;
-  border-radius: 10px;
-  margin-bottom: 20px;
-}
-
-.butto-group20 button {
-  margin: 0 5px;
-  padding: 10px 20px;
-  border: 1px solid #008b95;
-  border-radius: 10px;
-  background-color: #fff;
-  cursor: pointer;
-}
-
-
-.stressinp-section20 {
-  text-align: center;
-  border: 2px solid #86c2c6;
-  padding: 20px;
-  border-radius: 10px;
-  width: 460px;
-  margin-bottom: 20px;
-  margin-top: 20px;
-}
-
-.stressinp-group20 {
-  display: flex;
-  flex-direction: column;
-  gap: 15px; /* Adds space between input fields */
-  justify-content: center;
-  margin-left: 10px;
-}
-
-.stressinp-field20 {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 20px;
-}
-
-.stressinp-field20 input {
-  width: 150px; /* Set the width of the input fields */
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 10px;
-}
-
-.image-icon20 {
-  width: 30px;
-  height: 30px;
-  margin-right: 10px;
-}
-
-.stress-options {
-  display: flex;
-  justify-content: center;
-  gap: 15px;
-}
-
-.stress-option {
-  border: 2px solid #86c2c6;
-  border-radius: 50%;
-  width: 80px;
-  height: 80px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  font-weight: bold;
-  transition: background-color 0.5s;
-}
-
-.stress-option.selected {
-  background-color: #86c2c6;
-  color: white;
-}
-
-.sav-btn20 {
-  margin-top: 20px;
-  padding: 5px 20px;
-  background-color: #fff;
-  border: 2px solid #86c2c6;
-  border-radius: 15px;
-  cursor: pointer;
-  font-size: 18px;
-}
-
-.stress-display20 {
-  text-align: center;
-  border: 2px solid #86c2c6;
-  padding: 20px;
-  border-radius: 10px;
-  width: 460px;
-}
-
-.circle21 {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  border: 2px solid #86c2c6;
-  margin: 0 auto;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 15px;
-  font-weight: bold;
+    scrollbar-width: thin;
+    /* For Firefox, set the scrollbar to be thin */
+    scrollbar-color: #86c2c6 #f0f0f0;
+    /* Thumb and track colors */
   }
 
-.stresshis-section20 {
-  margin-top: 20px;
-  border: 2px solid #86c2c6;
-  border-radius: 10px;
-  text-align: center;
-  max-height: 200px;
-  max-width: 460px;
-  overflow-y: auto;
-  margin-bottom: 20px;
-}
-
-
- .stresshis-table20 {
-  width: 100%;
-  border-collapse: collapse;
-  }
-  
-  .stresshis-table20 th, .stresshis-table20 td {
-  padding: 10px;
-  border-bottom: 1px solid #86c2c6;
-  }
-  
-  .stresshis-table20 tr:nth-child(even) {
-  background-color: #86c2c6;
-  color: white;
-  }
-  
-  /* Custom Scrollbar Styles */
-  .stresshis-section20::-webkit-scrollbar {
-  width: 5px;  /* Set the width of the scrollbar */
-  }
-  
-  .stresshis-section20::-webkit-scrollbar-track {
-  background: #f0f0f0;  /* Scrollbar track color */
-  border-radius: 10px;  /* Rounded track */
-  }
-  
-  .stresshis-section20::-webkit-scrollbar-thumb {
-  background-color: #86c2c6;  /* Scrollbar thumb color */
-  border-radius: 10px;  /* Rounded scrollbar */
-  border: 2px solid #fff;  /* Adds a border around the thumb */
-  }
-  
-  .stresshis-section20::-webkit-scrollbar-thumb:hover {
-  background-color: #86c2c6;  /* Color when hovering over the thumb */
-  }
-  
-  /* For non-webkit browsers (like Firefox), you can use the following */
-  .stresshis-section20 {
-  scrollbar-width: thin;  /* For Firefox, set the scrollbar to be thin */
-  scrollbar-color: #86c2c6 #f0f0f0;  /* Thumb and track colors */
-  }
-  
-.stress-list {
-  list-style: none;
-  padding: 0;
-}
-
-/* stomach */
-
-.stomachtracker-container20 {
-  width: 500px;
-  margin: 0 auto;
-  padding: 20px;
-  border-radius: 10px;
-  font-family: Arial, sans-serif;
-}
-
-.stomachtrack-section20 {
-text-align: center;
-  border: 2px solid #86c2c6;
-  padding: 15px;
-  border-radius: 10px;
-  margin-bottom: 20px;
-}
-
-.butto-group20 button {
-  margin: 0 5px;
-  padding: 10px 20px;
-  border: 1px solid #008b95;
-  border-radius: 10px;
-  background-color: #fff;
-  cursor: pointer;
-}
-
-
-.stomachinp-section20 {
-  text-align: center;
-  border: 2px solid #86c2c6;
-  padding: 20px;
-  border-radius: 10px;
-  width: 460px;
-  margin-bottom: 20px;
-  margin-top: 20px;
-}
-
-.stomachinp-group20 {
-  display: flex;
-  flex-direction: column;
-  gap: 15px; /* Adds space between input fields */
-  justify-content: center;
-  margin-left: 10px;
-}
-
-.stomachinp-field20 {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 20px;
-}
-
-.stomachinp-field20 input {
-  width: 150px; /* Set the width of the input fields */
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 10px;
-}
-
-.image-icon20 {
-  width: 30px;
-  height: 30px;
-  margin-right: 10px;
-}
-
-.stomach-options {
-  display: flex;
-  justify-content: center;
-  gap: 15px;
-}
-
-.stomach-option {
-  border: 2px solid #86c2c6;
-  border-radius: 50%;
-  width: 80px;
-  height: 80px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  font-weight: bold;
-  transition: background-color 0.5s;
-}
-
-.stomach-option.selected {
-  background-color: #86c2c6;
-  color: white;
-}
-
-.sav-btn20 {
-  margin-top: 20px;
-  padding: 5px 20px;
-  background-color: #fff;
-  border: 2px solid #86c2c6;
-  border-radius: 15px;
-  cursor: pointer;
-  font-size: 18px;
-}
-
-.stomach-display20 {
-  text-align: center;
-  border: 2px solid #86c2c6;
-  padding: 20px;
-  border-radius: 10px;
-  width: 460px;
-}
-
-.circle21 {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  border: 2px solid #86c2c6;
-  margin: 0 auto;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 15px;
-  font-weight: bold;
+  .headache-list {
+    list-style: none;
+    padding: 0;
   }
 
-.stomachhis-section20 {
-  margin-top: 20px;
-  border: 2px solid #86c2c6;
-  border-radius: 10px;
-  text-align: center;
-  max-height: 200px;
-  max-width: 460px;
-  overflow-y: auto;
-  margin-bottom: 20px;
-}
 
+  /* stress level */
 
- .stomachhis-table20 {
-  width: 100%;
-  border-collapse: collapse;
+  .stresstracker-container20 {
+    width: 500px;
+    margin: 0 auto;
+    padding: 20px;
+    border-radius: 10px;
+    font-family: Arial, sans-serif;
   }
-  
-  .stomachhis-table20 th, .stomachhis-table20 td {
-  padding: 10px;
-  border-bottom: 1px solid #86c2c6;
+
+  .stresstrack-section20 {
+    text-align: center;
+    border: 2px solid #86c2c6;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
   }
-  
-  .stomachhis-table20 tr:nth-child(even) {
-  background-color: #86c2c6;
-  color: white;
+
+  .butto-group20 button {
+    margin: 0 5px;
+    padding: 10px 20px;
+    border: 1px solid #008b95;
+    border-radius: 10px;
+    background-color: #fff;
+    cursor: pointer;
   }
-  
-  /* Custom Scrollbar Styles */
-  .stomachhis-section20::-webkit-scrollbar {
-  width: 5px;  /* Set the width of the scrollbar */
-  }
-  
-  .stomachhis-section20::-webkit-scrollbar-track {
-  background: #f0f0f0;  /* Scrollbar track color */
-  border-radius: 10px;  /* Rounded track */
-  }
-  
-  .stomachhis-section20::-webkit-scrollbar-thumb {
-  background-color: #86c2c6;  /* Scrollbar thumb color */
-  border-radius: 10px;  /* Rounded scrollbar */
-  border: 2px solid #fff;  /* Adds a border around the thumb */
-  }
-  
-  .stomachhis-section20::-webkit-scrollbar-thumb:hover {
-  background-color: #86c2c6;  /* Color when hovering over the thumb */
-  }
-  
-  /* For non-webkit browsers (like Firefox), you can use the following */
-  .stomachhis-section20 {
-  scrollbar-width: thin;  /* For Firefox, set the scrollbar to be thin */
-  scrollbar-color: #86c2c6 #f0f0f0;  /* Thumb and track colors */
-  }
-  
-.stomach-list {
-  list-style: none;
-  padding: 0;
-}
-
-/* sleep cycle */
-
-.sleeptracker-container20 {
-  width: 500px;
-  margin: 0 auto;
-  padding: 20px;
-  border-radius: 10px;
-  font-family: Arial, sans-serif;
-}
-
-.sleeptrack-section20 {
-text-align: center;
-  border: 2px solid #86c2c6;
-  padding: 15px;
-  border-radius: 10px;
-  margin-bottom: 20px;
-}
-
-.butto-group20 button {
-  margin: 0 5px;
-  padding: 10px 20px;
-  border: 1px solid #008b95;
-  border-radius: 10px;
-  background-color: #fff;
-  cursor: pointer;
-}
 
 
-.sleepinp-group20 {
-  display: flex;
-  flex-direction: column;
-  gap: 15px; /* Adds space between input fields */
-  justify-content: center;
-  margin-left: 100px;
-}
-
-.sleepinp-field20 {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  margin-right: 100px;
-  
-}
-
-.sleepinp-section20 {
+  .stressinp-section20 {
     text-align: center;
     border: 2px solid #86c2c6;
     padding: 20px;
@@ -924,28 +657,430 @@ text-align: center;
     margin-top: 20px;
   }
 
-.image-icon20 {
-  width: 30px; /* Set width of the icon */
-  height: 30px;
-  margin-right: 10px; /* Add space between the icon and the input field */
-}
+  .stressinp-group20 {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    /* Adds space between input fields */
+    justify-content: center;
+    margin-left: 10px;
+  }
 
-.sleepinp-field20 input {
-  width: 150px; /* Set the width of the input fields */
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 10px;
-}
+  .stressinp-field20 {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
 
-.sav-btn20 {
-  margin-top: 20px;
-  padding: 5px 20px;
-  background-color: #fff;
-  border: 2px solid #86c2c6;
-  border-radius: 15px;
-  cursor: pointer;
-  font-size: 18px;
-}
+  .stressinp-field20 input {
+    width: 150px;
+    /* Set the width of the input fields */
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+  }
+
+  .image-icon20 {
+    width: 30px;
+    height: 30px;
+    margin-right: 10px;
+  }
+
+  .stress-options {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+  }
+
+  .stress-option {
+    border: 2px solid #86c2c6;
+    border-radius: 50%;
+    width: 80px;
+    height: 80px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.5s;
+  }
+
+  .stress-option.selected {
+    background-color: #86c2c6;
+    color: white;
+  }
+
+  .sav-btn20 {
+    margin-top: 20px;
+    padding: 5px 20px;
+    background-color: #fff;
+    border: 2px solid #86c2c6;
+    border-radius: 15px;
+    cursor: pointer;
+    font-size: 18px;
+  }
+
+  .stress-display20 {
+    text-align: center;
+    border: 2px solid #86c2c6;
+    padding: 20px;
+    border-radius: 10px;
+    width: 460px;
+  }
+
+  .circle21 {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 2px solid #86c2c6;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 15px;
+    font-weight: bold;
+  }
+
+  .stresshis-section20 {
+    margin-top: 20px;
+    border: 2px solid #86c2c6;
+    border-radius: 10px;
+    text-align: center;
+    max-height: 200px;
+    max-width: 460px;
+    overflow-y: auto;
+    margin-bottom: 20px;
+  }
+
+
+  .stresshis-table20 {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .stresshis-table20 th,
+  .stresshis-table20 td {
+    padding: 10px;
+    border-bottom: 1px solid #86c2c6;
+  }
+
+  .stresshis-table20 tr:nth-child(even) {
+    background-color: #86c2c6;
+    color: white;
+  }
+
+  /* Custom Scrollbar Styles */
+  .stresshis-section20::-webkit-scrollbar {
+    width: 5px;
+    /* Set the width of the scrollbar */
+  }
+
+  .stresshis-section20::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    /* Scrollbar track color */
+    border-radius: 10px;
+    /* Rounded track */
+  }
+
+  .stresshis-section20::-webkit-scrollbar-thumb {
+    background-color: #86c2c6;
+    /* Scrollbar thumb color */
+    border-radius: 10px;
+    /* Rounded scrollbar */
+    border: 2px solid #fff;
+    /* Adds a border around the thumb */
+  }
+
+  .stresshis-section20::-webkit-scrollbar-thumb:hover {
+    background-color: #86c2c6;
+    /* Color when hovering over the thumb */
+  }
+
+  /* For non-webkit browsers (like Firefox), you can use the following */
+  .stresshis-section20 {
+    scrollbar-width: thin;
+    /* For Firefox, set the scrollbar to be thin */
+    scrollbar-color: #86c2c6 #f0f0f0;
+    /* Thumb and track colors */
+  }
+
+  .stress-list {
+    list-style: none;
+    padding: 0;
+  }
+
+  /* stomach */
+
+  .stomachtracker-container20 {
+    width: 500px;
+    margin: 0 auto;
+    padding: 20px;
+    border-radius: 10px;
+    font-family: Arial, sans-serif;
+  }
+
+  .stomachtrack-section20 {
+    text-align: center;
+    border: 2px solid #86c2c6;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+  }
+
+  .butto-group20 button {
+    margin: 0 5px;
+    padding: 10px 20px;
+    border: 1px solid #008b95;
+    border-radius: 10px;
+    background-color: #fff;
+    cursor: pointer;
+  }
+
+
+  .stomachinp-section20 {
+    text-align: center;
+    border: 2px solid #86c2c6;
+    padding: 20px;
+    border-radius: 10px;
+    width: 460px;
+    margin-bottom: 20px;
+    margin-top: 20px;
+  }
+
+  .stomachinp-group20 {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    /* Adds space between input fields */
+    justify-content: center;
+    margin-left: 10px;
+  }
+
+  .stomachinp-field20 {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+
+  .stomachinp-field20 input {
+    width: 150px;
+    /* Set the width of the input fields */
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+  }
+
+  .image-icon20 {
+    width: 30px;
+    height: 30px;
+    margin-right: 10px;
+  }
+
+  .stomach-options {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+  }
+
+  .stomach-option {
+    border: 2px solid #86c2c6;
+    border-radius: 50%;
+    width: 80px;
+    height: 80px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.5s;
+  }
+
+  .stomach-option.selected {
+    background-color: #86c2c6;
+    color: white;
+  }
+
+  .sav-btn20 {
+    margin-top: 20px;
+    padding: 5px 20px;
+    background-color: #fff;
+    border: 2px solid #86c2c6;
+    border-radius: 15px;
+    cursor: pointer;
+    font-size: 18px;
+  }
+
+  .stomach-display20 {
+    text-align: center;
+    border: 2px solid #86c2c6;
+    padding: 20px;
+    border-radius: 10px;
+    width: 460px;
+  }
+
+  .circle21 {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 2px solid #86c2c6;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 15px;
+    font-weight: bold;
+  }
+
+  .stomachhis-section20 {
+    margin-top: 20px;
+    border: 2px solid #86c2c6;
+    border-radius: 10px;
+    text-align: center;
+    max-height: 200px;
+    max-width: 460px;
+    overflow-y: auto;
+    margin-bottom: 20px;
+  }
+
+
+  .stomachhis-table20 {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .stomachhis-table20 th,
+  .stomachhis-table20 td {
+    padding: 10px;
+    border-bottom: 1px solid #86c2c6;
+  }
+
+  .stomachhis-table20 tr:nth-child(even) {
+    background-color: #86c2c6;
+    color: white;
+  }
+
+  /* Custom Scrollbar Styles */
+  .stomachhis-section20::-webkit-scrollbar {
+    width: 5px;
+    /* Set the width of the scrollbar */
+  }
+
+  .stomachhis-section20::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    /* Scrollbar track color */
+    border-radius: 10px;
+    /* Rounded track */
+  }
+
+  .stomachhis-section20::-webkit-scrollbar-thumb {
+    background-color: #86c2c6;
+    /* Scrollbar thumb color */
+    border-radius: 10px;
+    /* Rounded scrollbar */
+    border: 2px solid #fff;
+    /* Adds a border around the thumb */
+  }
+
+  .stomachhis-section20::-webkit-scrollbar-thumb:hover {
+    background-color: #86c2c6;
+    /* Color when hovering over the thumb */
+  }
+
+  /* For non-webkit browsers (like Firefox), you can use the following */
+  .stomachhis-section20 {
+    scrollbar-width: thin;
+    /* For Firefox, set the scrollbar to be thin */
+    scrollbar-color: #86c2c6 #f0f0f0;
+    /* Thumb and track colors */
+  }
+
+  .stomach-list {
+    list-style: none;
+    padding: 0;
+  }
+
+  /* sleep cycle */
+
+  .sleeptracker-container20 {
+    width: 500px;
+    margin: 0 auto;
+    padding: 20px;
+    border-radius: 10px;
+    font-family: Arial, sans-serif;
+  }
+
+  .sleeptrack-section20 {
+    text-align: center;
+    border: 2px solid #86c2c6;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+  }
+
+  .butto-group20 button {
+    margin: 0 5px;
+    padding: 10px 20px;
+    border: 1px solid #008b95;
+    border-radius: 10px;
+    background-color: #fff;
+    cursor: pointer;
+  }
+
+
+  .sleepinp-group20 {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    /* Adds space between input fields */
+    justify-content: center;
+    margin-left: 100px;
+  }
+
+  .sleepinp-field20 {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    margin-right: 100px;
+
+  }
+
+  .sleepinp-section20 {
+    text-align: center;
+    border: 2px solid #86c2c6;
+    padding: 20px;
+    border-radius: 10px;
+    width: 460px;
+    margin-bottom: 20px;
+    margin-top: 20px;
+  }
+
+  .image-icon20 {
+    width: 30px;
+    /* Set width of the icon */
+    height: 30px;
+    margin-right: 10px;
+    /* Add space between the icon and the input field */
+  }
+
+  .sleepinp-field20 input {
+    width: 150px;
+    /* Set the width of the input fields */
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+  }
+
+  .sav-btn20 {
+    margin-top: 20px;
+    padding: 5px 20px;
+    background-color: #fff;
+    border: 2px solid #86c2c6;
+    border-radius: 15px;
+    cursor: pointer;
+    font-size: 18px;
+  }
 
   .sleep-display20 {
     text-align: center;
@@ -954,7 +1089,7 @@ text-align: center;
     border-radius: 10px;
     width: 460px;
   }
-  
+
   .sleephis-section20 {
     margin-top: 20px;
     border: 2px solid #86c2c6;
@@ -964,45 +1099,55 @@ text-align: center;
     max-width: 460px;
     overflow-y: auto;
     margin-bottom: 20px;
-   }
-  
-.sleephis-table20 {
+  }
+
+  .sleephis-table20 {
     width: 100%;
     border-collapse: collapse;
-}
+  }
 
-.sleephis-table20 th, .sleephis-table20 td {
+  .sleephis-table20 th,
+  .sleephis-table20 td {
     padding: 10px;
     border-bottom: 1px solid #86c2c6;
-}
+  }
 
-.sleephis-table20 tr:nth-child(even) {
+  .sleephis-table20 tr:nth-child(even) {
     background-color: #86c2c6;
     color: white;
-}
+  }
 
-/* Custom Scrollbar Styles */
-.sleephis-section20::-webkit-scrollbar {
-    width: 5px;  /* Set the width of the scrollbar */
-}
+  /* Custom Scrollbar Styles */
+  .sleephis-section20::-webkit-scrollbar {
+    width: 5px;
+    /* Set the width of the scrollbar */
+  }
 
-.sleephis-section20::-webkit-scrollbar-track {
-    background: #f0f0f0;  /* Scrollbar track color */
-    border-radius: 10px;  /* Rounded track */
-}
+  .sleephis-section20::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    /* Scrollbar track color */
+    border-radius: 10px;
+    /* Rounded track */
+  }
 
-.sleephis-section20::-webkit-scrollbar-thumb {
-    background-color: #86c2c6;  /* Scrollbar thumb color */
-    border-radius: 10px;  /* Rounded scrollbar */
-    border: 2px solid #fff;  /* Adds a border around the thumb */
-}
+  .sleephis-section20::-webkit-scrollbar-thumb {
+    background-color: #86c2c6;
+    /* Scrollbar thumb color */
+    border-radius: 10px;
+    /* Rounded scrollbar */
+    border: 2px solid #fff;
+    /* Adds a border around the thumb */
+  }
 
-.sleephis-section20::-webkit-scrollbar-thumb:hover {
-    background-color: #86c2c6;  /* Color when hovering over the thumb */
-}
+  .sleephis-section20::-webkit-scrollbar-thumb:hover {
+    background-color: #86c2c6;
+    /* Color when hovering over the thumb */
+  }
 
-/* For non-webkit browsers (like Firefox), you can use the following */
-.sleephis-section20 {
-    scrollbar-width: thin;  /* For Firefox, set the scrollbar to be thin */
-    scrollbar-color: #86c2c6 #f0f0f0;  /* Thumb and track colors */
-}
+  /* For non-webkit browsers (like Firefox), you can use the following */
+  .sleephis-section20 {
+    scrollbar-width: thin;
+    /* For Firefox, set the scrollbar to be thin */
+    scrollbar-color: #86c2c6 #f0f0f0;
+    /* Thumb and track colors */
+  }

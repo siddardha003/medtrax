@@ -154,3 +154,100 @@
     width: 200px;
     height: 200px;
   } */
+  /* Period tracker */
+
+  .pertracker-container20 {
+    width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    border-radius: 10px;
+    font-family: Arial, sans-serif;
+  }
+
+  .periodinp-section20 {
+    text-align: center;
+    border: 2px solid #86c2c6;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    margin-top: 20px;
+  }
+
+  .periodinp-group20 {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    justify-content: center;
+    margin-left: 100px;
+    width: 280px;
+  }
+
+  .periodinp-field20 {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-right: 100px;
+    width: 400px;
+    margin-left: -40px;
+
+  }
+
+  .periodinp-field20 input {
+    width: 150px;
+    /* Set the width of the input fields */
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+  }
+
+  .bu-group20 button {
+    margin: 10px 10px;
+    padding: 10px 20px;
+    border: 1px solid #008b95;
+    border-radius: 10px;
+    background-color: #fff;
+    cursor: pointer;
+    margin-top: 25px;
+  }
+
+  .period20 {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    /* Space between the sections */
+    margin-top: 20px;
+  }
+
+
+  .period-display20 {
+    text-align: center;
+    border: 2px solid #86c2c6;
+    padding: 20px;
+    border-radius: 10px;
+    margin-top: 10px;
+    width: 560px;
+  }
+
+  .period-circle20 {
+    display: inline-block;
+    width: 100px;
+    height: 100px;
+    border: 2px solid #86c2c6;
+    border-radius: 50%;
+    font-size: 14px;
+    font-weight: bold;
+    color: #02a2ae;
+    margin: 10px 0;
+    overflow: none;
+    gap: 20px;
+    padding: 16px;
+    text-align: center;
+  }
+
+  .period-dates-container20 {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
