@@ -1,12 +1,20 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import '../css/Baby.css';
 
+const BabyDevelopmentTracker = () => {
+    const [selectedWeek, setSelectedWeek] = useState(4);
+    const [isDragging, setIsDragging] = useState(false);
+    const [startX, setStartX] = useState(0);
+    const [scrollLeft, setScrollLeft] = useState(0);
+    const sliderRef = useRef(null);
+
+  
 const weekData = [
     { 
         week: 4, 
         fruit: 'Poppy Seed', 
-        details: 'Your baby is as small as a poppy seed.', 
-        structure: 'Height: 0.1 cm & Weight: 0.004 g',
+        details: 'Your baby is a tiny poppy seed and you won’t feel anything at all.', 
+        structure: 'Height: 0.4 cms & Weight: 0.4 gms',
         symptoms: 'Nausea, fatigue, and mood swings', 
         tips: 'Stay hydrated and eat small, frequent meals.'
     },
@@ -308,34 +316,70 @@ const weekData = [
     }
 ];
 
-
-const BabyDevelopmentTracker = () => {
-    const [selectedWeek, setSelectedWeek] = useState(4);
-    const sliderRef = useRef(null);
-
     const handleWeekClick = (week) => {
         setSelectedWeek(week);
+        const element = document.querySelector(`[data-week="${week}"]`);
+        if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        }
+    };
+
+    const handleMouseDown = (e) => {
+        setIsDragging(true);
+        setStartX(e.pageX - sliderRef.current.offsetLeft);
+        setScrollLeft(sliderRef.current.scrollLeft);
+    };
+
+    const handleMouseUp = () => {
+        setIsDragging(false);
+    };
+
+    const handleMouseMove = (e) => {
+        if (!isDragging) return;
+        e.preventDefault();
+        const x = e.pageX - sliderRef.current.offsetLeft;
+        const walk = (x - startX) * 20;
+        sliderRef.current.scrollLeft = scrollLeft - walk;
+    };
+
+    const handleTouchStart = (e) => {
+        setIsDragging(true);
+        setStartX(e.touches[0].pageX - sliderRef.current.offsetLeft);
+        setScrollLeft(sliderRef.current.scrollLeft);
+    };
+
+    const handleTouchMove = (e) => {
+        if (!isDragging) return;
+        e.preventDefault();
+        const x = e.touches[0].pageX - sliderRef.current.offsetLeft;
+        const walk = (x - startX) * 20;
+        sliderRef.current.scrollLeft = scrollLeft - walk;
+    };
+
+    const handleTouchEnd = () => {
+        setIsDragging(false);
     };
 
     const handlePrevClick = () => {
-        setSelectedWeek((prevWeek) => (prevWeek > 4 ? prevWeek - 1 : prevWeek)); // Min week 4
-        if (sliderRef.current) {
-            sliderRef.current.scrollBy({
-                left: -100, // Scroll left by 100px
-                behavior: 'smooth'
-            });
-        }
+        sliderRef.current.scrollBy({ left: -100, behavior: 'smooth' });
     };
 
     const handleNextClick = () => {
-        setSelectedWeek((prevWeek) => (prevWeek < 41 ? prevWeek + 1 : prevWeek)); // Max week 41
-        if (sliderRef.current) {
-            sliderRef.current.scrollBy({
-                left: 100, // Scroll right by 100px
-                behavior: 'smooth'
-            });
-        }
+        sliderRef.current.scrollBy({ left: 100, behavior: 'smooth' });
     };
+
+    useEffect(() => {
+        const slider = sliderRef.current;
+        if (slider) {
+            const handleWheel = (e) => {
+                e.preventDefault();
+                slider.scrollLeft += e.deltaY;
+            };
+            
+            slider.addEventListener('wheel', handleWheel, { passive: false });
+            return () => slider.removeEventListener('wheel', handleWheel);
+        }
+    }, []);
 
     const selectedData = weekData.find(data => data.week === selectedWeek);
 
@@ -350,12 +394,23 @@ const BabyDevelopmentTracker = () => {
                 </div>
             </header>
 
-            <div className="week-slider">
-                <button className="prev" onClick={handlePrevClick}>&lt;</button>
-                <div className="weeks" ref={sliderRef}>
+            <div className="week-slider-wrapper">
+                <button className="prev" onClick={handlePrevClick}>&#10094;</button>
+                <div 
+                    className="week-slider"
+                    ref={sliderRef}
+                    onMouseDown={handleMouseDown}
+                    onMouseUp={handleMouseUp}
+                    onMouseLeave={handleMouseUp}
+                    onMouseMove={handleMouseMove}
+                    onTouchStart={handleTouchStart}
+                    onTouchMove={handleTouchMove}
+                    onTouchEnd={handleTouchEnd}
+                >
                     {weekData.map(data => (
                         <button
                             key={data.week}
+                            data-week={data.week}
                             className={`week-button ${data.week === selectedWeek ? 'active' : ''}`}
                             onClick={() => handleWeekClick(data.week)}
                         >
@@ -363,34 +418,30 @@ const BabyDevelopmentTracker = () => {
                         </button>
                     ))}
                 </div>
-                <button className="next" onClick={handleNextClick}>&gt;</button>
+                <button className="next" onClick={handleNextClick}>&#10095;</button>
             </div>
 
-            {selectedData ? (
-                <div className="content">
-                    <h2>Congratulations!!</h2>
-                    <p>Your Baby Size Is A {selectedData.fruit} Now!</p>
-                    <img 
-                        src={`https://www.newmi.in/s/6123687a0e3882eabaee1e6e/6621fefc02af15231c48df1b/${selectedData.fruit.toLowerCase().replace(/\s/g, '-')}.png`} 
-                        alt={selectedData.fruit} 
-                        className="fruit-image" 
-                    />
-                </div>
-            ) : (
-                <div className="content">
-                    <h2>Oops! Data not available for this week!</h2>
-                </div>
-            )}
-
             {selectedData && (
-                <div className="details">
-                    <h3>Baby’s Structure</h3>
-                    <p>{selectedData.details}<br/>{selectedData.structure}</p>
-                    <h3>Common Symptoms</h3>
-                    <p>{selectedData.symptoms}</p>
-                    <h3>Tips</h3>
-                    <p>{selectedData.tips}</p>
-                </div>
+                <>
+                    <div className="content">
+                        <h2>Congratulations!!</h2>
+                        <p>Your Baby Size Is A {selectedData.fruit} Now!</p>
+                        <img 
+                            src={`https://www.newmi.in/s/6123687a0e3882eabaee1e6e/6621fefc02af15231c48df1b/${selectedData.fruit.toLowerCase().replace(/\s/g, '-')}.png`} 
+                            alt={selectedData.fruit} 
+                            className="fruit-image" 
+                        />
+                    </div>
+
+                    <div className="details">
+                        <h3>Baby's Structure</h3>
+                        <p>{selectedData.details}<br/>{selectedData.structure}</p>
+                        <h3>Common Symptoms</h3>
+                        <p>{selectedData.symptoms}</p>
+                        <h3>Tips</h3>
+                        <p>{selectedData.tips}</p>
+                    </div>
+                </>
             )}
         </div>
     );

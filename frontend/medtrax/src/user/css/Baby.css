@@ -17,14 +17,14 @@
     width: 100%;
 }
 
-/* .tracker-image {
+.tracker-image {
     float: left;
 }
 
 .tracker-image img {
     height: 150px;
     width: max-content;
-} */
+}
 
 .tracker-text {
     margin-left: 10px;
@@ -34,65 +34,78 @@
     color: #000;
 }
 
-/* .week-slider-container {
+.week-slider-wrapper {
     display: flex;
     align-items: center;
     margin-top: -120px;
     margin-bottom: 20px;
-} */
-.week-slider {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: #ff6584;
-    padding: 10px;
-    overflow-x: auto;
+    width: 95%;
 }
 
-.week-button60 {
+.week-slider {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    background-color: #02a2ae;
+    padding: 10px;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    flex-grow: 1;
+    position: relative;
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+    border-radius: 20px;
+}
+
+.week-slider::-webkit-scrollbar {
+    display: none;  /* Chrome, Safari, and Opera */
+}
+
+.week-button {
     margin: 5px;
     padding: 10px 15px;
-    background-color: #fff;
+    background-color: #008b95;
     border: none;
     border-radius: 20px;
     cursor: pointer;
-    color: #ff6584;
+    color: #fff;
+    white-space: nowrap;
 }
 
-.week-button60.active {
-    background-color: #ff6584;
-    color: #fff;
+.week-button.active {
+    background-color: #eae7e7;
+    color: #000;
 }
 
 .prev, .next {
     background: none;
     border: none;
-    font-size: 18px;
-    color: #fff;
+    font-size: 24px;
+    color: #008b95;
     cursor: pointer;
+    padding: 10px;
 }
 
-
 .prev {
-    margin-right: 10px; /* Space between prev button and slider */
+    margin-right: 10px;
 }
 
 .next {
-    margin-left: 10px; /* Space between next button and slider */
+    margin-left: 10px;
 }
 
 .content {
     padding: 40px 20px;
-    background-color: #fce4ec;
+    background-color: #9bdce0;
     text-align: center;
-    width: 90%; /* Stretch the content */
+    width: 90%;
     margin-bottom: 20px;
     border-radius: 15px;
 }
 
 .content h2 {
     font-size: 2em;
-    color: #ff6584;
+    color: #02a2ae;
 }
 
 .content p {
@@ -107,16 +120,16 @@
 
 .details {
     padding: 40px 20px;
-    background-color: #ffebee;
+    background-color: #9bdce0;
     text-align: left;
-    width: 90%; /* Stretch details section */
+    width: 90%;
     margin: 0 auto;
     margin-bottom: 20px;
     border-radius: 15px;
 }
 
 .details h3 {
-    color: #ff6584;
+    color: #02a2ae;
     font-size: 1.6em;
 }
 
