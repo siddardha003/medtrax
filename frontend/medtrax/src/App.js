@@ -21,6 +21,8 @@ import HealthTracker from './user/pages/HealthTracker';
 import BabyDevelopmentTracker from './user/pages/BabyDevelopmentTracker';
 import PeriodCalculator from './user/pages/PeriodCalci';
 import EssentialTest from './user/pages/EssentialTests';
+import BabyVaccination from './user/pages/BabyVaccination';
+
 
 import Signin from './user/components/Signin';
 import Signup from './user/components/Signup';
@@ -53,6 +55,7 @@ function App() {
       <Route path="/MedicalCare" element={<MedicalCarePage />}/> 
       <Route path="/HealthTracker" element={<HealthTracker />}/> 
       <Route path="/Baby" element={<BabyDevelopmentTracker />}/> 
+      <Route path="/BabyVaccine" element={<BabyVaccination />} />
       <Route path="/PeriodCalci" element={<PeriodCalculator />}/> 
       <Route path="/Medreminder" element={<MedReminder />}/> 
 
