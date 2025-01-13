@@ -52,13 +52,16 @@
     scroll-behavior: smooth;
     flex-grow: 1;
     position: relative;
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
     border-radius: 20px;
 }
 
 .week-slider::-webkit-scrollbar {
-    display: none;  /* Chrome, Safari, and Opera */
+    display: none;
+    /* Chrome, Safari, and Opera */
 }
 
 .week-button {
@@ -77,7 +80,8 @@
     color: #000;
 }
 
-.prev, .next {
+.prev,
+.next {
     background: none;
     border: none;
     font-size: 24px;
@@ -120,7 +124,7 @@
 
 .details {
     padding: 40px 20px;
-    background-color: #9bdce0;
+    background-color: #b8ebee;
     text-align: left;
     width: 90%;
     margin: 0 auto;
@@ -135,4 +139,13 @@
 
 .details p {
     font-size: 1.2em;
+}
+
+.fruit-image {
+    margin-left: 45%;
+    height: 140px;
+    width: auto;
+}
+.side-heading{
+    color: #02a2ae;
 }

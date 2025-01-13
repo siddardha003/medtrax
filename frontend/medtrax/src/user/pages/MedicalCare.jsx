@@ -15,10 +15,10 @@ const MedicalCarePage = () => {
     navigate('/EssentialTest');
   };
   const handleTrackNow4 = () => {
-    navigate('/track');
+    navigate('/baby');
   };
   const handleTrackNow5 = () => {
-    navigate('/track');
+    navigate('/BabyVaccine');
   };
   const handleTrackNow6 = () => {
     navigate('/track');
