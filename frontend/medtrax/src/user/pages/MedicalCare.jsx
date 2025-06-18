@@ -24,14 +24,9 @@ const MedicalCarePage = () => {
     navigate('/track');
   };
   const handleTrackNow7 = () => {
-    navigate('/track');
+    navigate('/Medreminder');
   };
-  const handleTrackNow8 = () => {
-    navigate('/track');
-  };
-  const handleTrackNow9 = () => {
-    navigate('/track');
-  };
+
 
   return (
     <div className="medical-care-container">
@@ -126,14 +121,14 @@ const MedicalCarePage = () => {
       </div>
       <div className="tracker-card">
         <div className="card-content">
-        <div className="tracke-imag-box">
-          <img src="path-to-health-tracker-image.png" alt="Health Tracker" className="tracker-image" />
+          <div className="tracke-imag-box">
+            <img src="images\prescription (2).png" alt="Health Tracker" className="tracker-img2" />
           </div>
           <div className="tracker-info">
             <h2>Prescription Prediction</h2>
             <p>
-              A comprehensive health tracker that monitors weight, hormonal fluctuations,
-              sleep patterns, headaches, and menstrual flow provides holistic insights into one's well-being.
+              An AI-driven tool that analyzes symptoms to identify potential health conditions and suggests appropriate prescriptions
+              based on the diagnosis—streamlining the path from understanding your symptoms to possible treatment options.
             </p>
             <button className="track-butto" onClick={handleTrackNow6}>
               Track Now &rarr;
@@ -143,50 +138,16 @@ const MedicalCarePage = () => {
       </div>
       <div className="tracker-card">
         <div className="card-content">
-        <div className="tracke-imag-box">
-          <img src="path-to-health-tracker-image.png" alt="Health Tracker" className="tracker-image" />
-          </div>
-          <div className="tracker-info">
-            <h2>Symptom Checker</h2>
-            <p>
-              A comprehensive health tracker that monitors weight, hormonal fluctuations,
-              sleep patterns, headaches, and menstrual flow provides holistic insights into one's well-being.
-            </p>
-            <button className="track-butto" onClick={handleTrackNow7}>
-              Track Now &rarr;
-            </button>
-          </div>
-        </div>
-      </div>
-      <div className="tracker-card">
-        <div className="card-content">
-        <div className="tracke-imag-box">
-          <img src="path-to-health-tracker-image.png" alt="Health Tracker" className="tracker-image" />
-          </div>
-          <div className="tracker-info">
-            <h2>Skin Disease Detection</h2>
-            <p>
-              A comprehensive health tracker that monitors weight, hormonal fluctuations,
-              sleep patterns, headaches, and menstrual flow provides holistic insights into one's well-being.
-            </p>
-            <button className="track-butto" onClick={handleTrackNow8}>
-              Track Now &rarr;
-            </button>
-          </div>
-        </div>
-      </div>
-      <div className="tracker-card">
-        <div className="card-content">
-        <div className="tracke-imag-box">
-          <img src="path-to-health-tracker-image.png" alt="Health Tracker" className="tracker-image" />
+          <div className="tracke-imag-box">
+            <img src="images\remainder.png" alt="Health Tracker" className="tracker-image" />
           </div>
           <div className="tracker-info">
             <h2>Medical Remainder</h2>
             <p>
-              A comprehensive health tracker that monitors weight, hormonal fluctuations,
-              sleep patterns, headaches, and menstrual flow provides holistic insights into one's well-being.
+              A smart medical reminder system that keeps track of medications, appointments,
+              and daily health routines—ensuring nothing important is ever missed.
             </p>
-            <button className="track-butto" onClick={handleTrackNow9}>
+            <button className="track-butto" onClick={handleTrackNow7}>
               Track Now &rarr;
             </button>
           </div>

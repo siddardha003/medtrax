@@ -1,8 +1,11 @@
 .medical-care-container {
     font-family: Arial, sans-serif;
     text-align: center;
-    padding: 20vh 50px;
-    height: 335vh;
+    padding-top: 10%;
+    padding-left: 3%;
+    padding-right: 3%;
+    padding-bottom: 3%;
+    height: 100%;
   }
   
   .medcare-banner {
@@ -12,8 +15,7 @@
     background: linear-gradient(90deg, #008b95 0%, #86c2c6 100%);
     padding: 20px;
     border-radius: 20px;
-    width: 180vh;
-    margin-left: 40px;
+    width: 100%;
   }
   
   .medcare-banner h1 {
@@ -50,6 +52,14 @@
     object-fit: contain;
     margin-right: 20px;
     border-radius: 10px;
+  }
+    .tracker-img2 {
+    width:200px;
+    height: 200px;
+    object-fit:cover;
+    margin-right: 20px;
+    border-radius: 10px;
+    padding-bottom: 5%;
   }
   .tracke-imag-box {
     width: 200px;

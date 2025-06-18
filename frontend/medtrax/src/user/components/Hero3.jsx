@@ -2,7 +2,7 @@ import { Icon } from '@iconify/react';
 import React from 'react'
 import Slider from 'react-slick';
 import parser from 'html-react-parser';
-import { Link as ScrollLink } from 'react-scroll';
+import { Link } from 'react-router-dom';
 
 const Hero3 = ({ data }) => {
   const SlickArrowLeft = ({ currentSlide, slideCount, ...props }) => (
@@ -41,18 +41,17 @@ const Hero3 = ({ data }) => {
                   <h1 className="st-hero-title">{parser(elements.title)}</h1>
                   <div className="st-hero-subtitle">{parser(elements.subTitle)}</div>
                   <div className="st-hero-btn-group">
-                    <ScrollLink
-                      to="appointment"
+                    <Link
+                      to="/Appointments"
                       className="st-btn st-style1 st-size-medium st-color1 st-smooth-move"
-                    >
-                      Appointment
-                    </ScrollLink>
-                    <ScrollLink
-                      to="about"
+                    >Appointment</Link>
+                      
+                    <Link
+                      to="/About"
                       className="st-btn st-style1 st-size-medium st-color3 st-smooth-move"
                     >
                       About Us
-                    </ScrollLink>
+                    </Link>
                   </div>
                   <div className="st-height-b15 st-height-lg-b15" />
                 </div>

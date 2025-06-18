@@ -38,64 +38,78 @@ const PeriodCalculator = () => {
   };
 
   return (
-    <div className="pertracker-container20">
-      <h2 style={{ color: '#02a2ae', textAlign: 'center', marginBottom: '30px', marginTop: '150px' }}>
-        Period Calculator
-      </h2>
-      <div className="periodinp-section20">
-        <div className="periodinp-group20">
-          <div className="periodinp-field20">
-            <label style={{ fontWeight: 'bold', color: '#026a6e' }}>
-              When did your last period start?
-            </label>
-            <input
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-            />
-          </div>
-          <div className="periodinp-field20">
-            <label style={{ fontWeight: 'bold', color: '#026a6e' }}>
-              How many days did it last?
-            </label>
-            <input
-              type="number"
-              value={duration}
-              onChange={(e) => setDuration(Math.max(1, parseInt(e.target.value, 10) || 1))}
-            />
-          </div>
-          <div className="periodinp-field20">
-            <label style={{ fontWeight: 'bold', color: '#026a6e' }}>
-              Average cycle length (days)
-            </label>
-            <input
-              type="number"
-              value={cycleLength}
-              onChange={(e) => setCycleLength(Math.max(1, parseInt(e.target.value, 10) || 1))}
-            />
-          </div>
-        </div>
-        <div className="bu-group20">
-          <button onClick={calculateDates}>See Results</button>
-          <button onClick={resetForm}>Start Over</button>
-        </div>
+    <div className="period-calci-container">
+      <div className="percalcibanner">
+        <h1>
+          Stay on top of your health with our comprehensive health trackers!
+          <br />
+        </h1>
+        <img
+          src="https://preggerz.storehippo.com/s/6123687a0e3882eabaee1e6e/ms.files/newtoolnew.png"
+          alt="Health tracker illustration"
+          className="percalcibanner-image"
+        />
       </div>
-      {results && (
-        <div className="period20">
-          <div className="period-display20">
-            <h6>Your Estimated Ovulation Date </h6><br></br>
-            <span className="period-circle20">{results.ovulationDate}</span>
-          </div>
-          <div className="period-display20">
-            <h6>Your Estimated Period Dates</h6>
-            <div className="period-dates-container20">
-              <span className="period-circle20">{results.periodStart}</span>
-              <span>-</span>
-              <span className="period-circle20">{results.periodEnd}</span>
+      <div className="pertracker-container20">
+
+        <div className="periodinp-section20">
+          <h2 style={{ color: '#02a2ae', textAlign: 'center', marginBottom: '30px' }}>
+            Period Calculator
+          </h2>
+          <div className="periodinp-group20">
+            <div className="periodinp-field20">
+              <label style={{ fontWeight: 'bold', color: '#026a6e' }}>
+                When did your last period start?
+              </label>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+              />
+            </div>
+            <div className="periodinp-field20">
+              <label style={{ fontWeight: 'bold', color: '#026a6e' }}>
+                How many days did it last?
+              </label>
+              <input
+                type="number"
+                value={duration}
+                onChange={(e) => setDuration(Math.max(1, parseInt(e.target.value, 10) || 1))}
+              />
+            </div>
+            <div className="periodinp-field20">
+              <label style={{ fontWeight: 'bold', color: '#026a6e' }}>
+                Average cycle length (days)
+              </label>
+              <input
+                type="number"
+                value={cycleLength}
+                onChange={(e) => setCycleLength(Math.max(1, parseInt(e.target.value, 10) || 1))}
+              />
             </div>
           </div>
+          <div className="bu-group20">
+            <button onClick={calculateDates}>See Results</button>
+            <button onClick={resetForm}>Start Over</button>
+          </div>
         </div>
-      )}
+        {results && (
+          <div className="period20">
+            <div className="period-display20">
+              <h6>Your Estimated Ovulation Date </h6><br></br>
+              <span className="period-circle20">{results.ovulationDate}</span>
+            </div>
+            <div className="period-display20">
+              <h6>Your Estimated Period Dates</h6>
+              <div className="period-dates-container20">
+                <span className="period-circle20">{results.periodStart}</span>
+                <span>-</span>
+                <span className="period-circle20">{results.periodEnd}</span>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
