@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import SectionHeading from './SectionHeading';
-import emailjs from '@emailjs/browser'; 
+import emailjs from '@emailjs/browser';
 
 const Contact = () => {
   const [loading, setLoading] = useState(false);
@@ -12,9 +12,10 @@ const Contact = () => {
     msg: ''
   });
 
-  emailjs.init("siddarthakarumuri003@gmail.com");
+  // Initialize EmailJS with your Public Key
+  emailjs.init("8VDp0qPgXpe2ya-uS");
 
-  const handleInputChange = (event) => {
+  const handleInputChange = event => {
     const { name, value } = event.target;
     setFormData(prevFormData => ({
       ...prevFormData,
@@ -28,17 +29,17 @@ const Contact = () => {
 
     try {
       const response = await emailjs.send(
-        "service_qj2q7qk",  
-        "template_0jd6k6l", 
+        "service_qj2q7qk", 
+        "template_0jd6k6l",
         {
-        from_name: formData.name,
-        from_email: formData.email, // User's email (for reply-to)
-        phone: formData.phone,
-        subject: formData.subject,
-        message: formData.msg,
-        reply_to: formData.email, // Optional: Set reply-to dynamically
-        to_email: "siddarthakarumuri003@gmail.com", // Hardcoded recipient (you)
-      }
+          from_name: formData.name,
+          from_email: formData.email,
+          phone: formData.phone,
+          subject: formData.subject,
+          message: formData.msg,
+          reply_to: formData.email,
+          to_email: "siddarthakarumuri003@gmail.com",
+        }
       );
 
       if (response.status === 200) {
@@ -62,16 +63,18 @@ const Contact = () => {
   return (
     <section className="st-shape-wrap" id="contact">
       <div className="st-shape1">
-        <img src="shape/contact-shape1.svg" alt="shape1" />
+        <img src="/shape/contact-shape1.svg" alt="shape1" />
       </div>
       <div className="st-shape2">
-        <img src="shape/contact-shape2.svg" alt="shape2" />
+        <img src="/shape/contact-shape2.svg" alt="shape2" />
       </div>
       <div className="st-height-b120 st-height-lg-b80" />
-      <SectionHeading
-        title="Stay connect with us"
+      
+      <SectionHeading 
+        title="Stay connected with us"
         subTitle="Lorem Ipsum is simply dummy text of the printing and typesetting industry. <br /> Lorem Ipsum the industry's standard dummy text."
       />
+      
       <div className="container">
         <div className="row">
           <div className="col-lg-10 offset-lg-1">
@@ -89,18 +92,19 @@ const Contact = () => {
                     type="text"
                     id="name"
                     name="name"
-                    placeholder="Jhon Doe"
+                    placeholder="John Doe"
                     required
                     onChange={handleInputChange}
                     value={formData.name}
                   />
                 </div>
               </div>
+              
               <div className="col-lg-6">
                 <div className="st-form-field st-style1">
                   <label>Email Address</label>
                   <input
-                    type="text"
+                    type="email"
                     id="email"
                     name="email"
                     placeholder="example@gmail.com"
@@ -110,6 +114,7 @@ const Contact = () => {
                   />
                 </div>
               </div>
+              
               <div className="col-lg-6">
                 <div className="st-form-field st-style1">
                   <label>Subject</label>
@@ -124,11 +129,12 @@ const Contact = () => {
                   />
                 </div>
               </div>
+              
               <div className="col-lg-6">
                 <div className="st-form-field st-style1">
                   <label>Phone</label>
                   <input
-                    type="text"
+                    type="tel"
                     id="phone"
                     name="phone"
                     placeholder="+00 376 12 465"
@@ -138,6 +144,7 @@ const Contact = () => {
                   />
                 </div>
               </div>
+              
               <div className="col-lg-12">
                 <div className="st-form-field st-style1">
                   <label>Your Message</label>
@@ -153,6 +160,7 @@ const Contact = () => {
                   />
                 </div>
               </div>
+              
               <div className="col-lg-12">
                 <div className="text-center">
                   <div className="st-height-b10 st-height-lg-b10" />
@@ -163,7 +171,14 @@ const Contact = () => {
                     name="submit"
                     disabled={loading}
                   >
-                    {loading ? "Sending..." : "Send Message"}
+                    {loading ? (
+                      <>
+                        <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        Sending...
+                      </>
+                    ) : (
+                      "Send Message"
+                    )}
                   </button>
                 </div>
               </div>
