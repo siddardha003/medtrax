@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Link as ScrollLink } from 'react-scroll';
 
 const Header = ({ data }) => {
   const {logo} = data;
@@ -49,9 +48,9 @@ const Header = ({ data }) => {
                 >
                   <path d="m434.146 59.882h-389.234c-24.766 0-44.912 20.146-44.912 44.912v269.47c0 24.766 20.146 44.912 44.912 44.912h389.234c24.766 0 44.912-20.146 44.912-44.912v-269.47c0-24.766-20.146-44.912-44.912-44.912zm0 29.941c2.034 0 3.969.422 5.738 1.159l-200.355 173.649-200.356-173.649c1.769-.736 3.704-1.159 5.738-1.159zm0 299.411h-389.234c-8.26 0-14.971-6.71-14.971-14.971v-251.648l199.778 173.141c2.822 2.441 6.316 3.655 9.81 3.655s6.988-1.213 9.81-3.655l199.778-173.141v251.649c-.001 8.26-6.711 14.97-14.971 14.97z" />
                 </svg>
-                <ScrollLink to='contact'> medtrax_info@gmail.com </ScrollLink>
+                <Link to='/Contact'> medtrax_info@gmail.com </Link>
               </li>
-              <li>
+              {/* <li>
                 <svg
                   enableBackground="new 0 0 512.021 512.021"
                   viewBox="0 0 512.021 512.021"
@@ -65,7 +64,7 @@ const Header = ({ data }) => {
                   </g>
                 </svg>
                 <ScrollLink to='contact'> +91 9876543210 </ScrollLink>
-              </li>
+              </li> */}
             </ul>
             <Link className="st-top-header-btn st-smooth-move" to="/login" spy={true} duration={500}>Login</Link>
           </div>

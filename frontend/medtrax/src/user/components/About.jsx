@@ -1,12 +1,11 @@
 import React from 'react';
 import parse from 'html-react-parser';
 import SectionHeading from './SectionHeading';
-import { Link as ScrollLink } from 'react-scroll';
-
+import { Link } from 'react-router-dom';
 
 
 const About = ({ data }) => {
-  const { title, subTitle, avater, timeTable, contact } = data;
+  const { title, subTitle } = data;
 
   return (
     <section className="st-about-wrap" id='about'>
@@ -36,14 +35,7 @@ const About = ({ data }) => {
                   </div>
                   <div className="st-height-b25 st-height-lg-b25" />
                   <div className="st-hero-btn-group">
-                    <ScrollLink
-                      to=""
-                      className="st-btn st-style1 st-size-medium st-color1 st-smooth-move"
-                    >
-                      Explore Now !!
-                    </ScrollLink>
-                    
-                  
+                    <Link to='/Hospital' className="st-btn st-style1 st-size-medium st-color1 st-smooth-move">Explore Now !!</Link>
                   </div>
                 </div>
               </div>
@@ -69,24 +61,17 @@ const About = ({ data }) => {
                   <h2 className="st-text-block-title">Start Tracking Your Health
                   </h2>
                   <div className="st-height-b20 st-height-lg-b20" />
-                  <div className="st-text-block-text"  style={{ listStylePosition: "inside", paddingLeft: "140px", textAlign: "left", fontSize: "18px" }}>
-                <li>Track Weight</li>
-                <li>Track Headaches</li>
-                <li>Track Your Hormones</li>
-                <li>Track Period Flow</li>
-                <li>Track Stress Levels</li>
+                  <div className="st-text-block-text"  style={{ listStylePosition: "inside", textAlign: "left", fontSize: "18px" }}>
+                <li>Weight</li>
+                <li>Headache</li>
+                <li>Hormones</li>
+                <li>Period Flow</li>
+                <li>Stress Levels</li>
                 <li>Cramps & Stomach Ache</li>
             </div>
                   <div className="st-height-b25 st-height-lg-b25" />
                   <div className="st-hero-btn-group">
-                    <ScrollLink
-                      to=""
-                      className="st-btn st-style1 st-size-medium st-color1 st-smooth-move"
-                    >
-                      Track Now !!
-                    </ScrollLink>
-                    
-                  
+                    <Link to='/MedicalCare' className="st-btn st-style1 st-size-medium st-color1 st-smooth-move">Track Now !!</Link>
                   </div>
                 </div>
               </div>
@@ -120,14 +105,7 @@ const About = ({ data }) => {
                   </div>
                   <div className="st-height-b25 st-height-lg-b25" />
                   <div className="st-hero-btn-group">
-                    <ScrollLink
-                      to=""
-                      className="st-btn st-style1 st-size-medium st-color1 st-smooth-move"
-                    >
-                      Order Now !!
-                    </ScrollLink>
-                    
-                  
+                    <Link to='/Medicines' className="st-btn st-style1 st-size-medium st-color1 st-smooth-move">Order Now !!</Link>
                   </div>
                 </div>
               </div>
