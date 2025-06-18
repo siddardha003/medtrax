@@ -28,6 +28,7 @@ import Signin from './user/components/Signin';
 import Signup from './user/components/Signup';
 
 import MedReminder from './user/pages/Medreminder';
+import SymptomChecker from './user/pages/SymptomChecker';
 
 
 
@@ -57,7 +58,8 @@ function App() {
       <Route path="/Baby" element={<BabyDevelopmentTracker />}/> 
       <Route path="/BabyVaccine" element={<BabyVaccination />} />
       <Route path="/PeriodCalci" element={<PeriodCalculator />}/> 
-      <Route path="/Medreminder" element={<MedReminder />}/> 
+      <Route path="/Medreminder" element={<MedReminder />}/>
+      <Route path="/SymptomChecker" element={<SymptomChecker />}/> 
 
       
       <Route path="/EssentialTest" element={<EssentialTest />}/>

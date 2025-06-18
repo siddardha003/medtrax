@@ -4,6 +4,27 @@ const EssentialTest = () => {
     const [selectedImage, setSelectedImage] = useState(null);
 
     const stages = [
+        {
+            image: "https://pregonline.com/wp-content/uploads/2025/04/male-fertility-factor-and-sperm-health.jpg", 
+            label: "Hormonal & Reproductive Health (Teens to 40s)",
+            tests: [
+                "https://www.newmi.in/s/6123687a0e3882eabaee1e6e/6620afcc347bb190414e5601/adolescence-teens-to-early-20s-.png"
+            ]
+        },
+        {
+            image: "https://www.pulsetoday.co.uk/wp-content/uploads/2023/05/cardiovascular-heart-examination.jpg", 
+            label: "Cardiovascular & Metabolic Screening (30s onwards)",
+            tests: [
+                "https://www.newmi.in/s/6123687a0e3882eabaee1e6e/6620afcc347bb190414e5601/adolescence-teens-to-early-20s-.png"
+            ]
+        },
+        {
+            image: "https://psu-gatsby-files-prod.s3.amazonaws.com/s3fs-public/styles/4_3_1500w/public/2025/06/prostate-cancer-screening_1200x900.jpg?h=6eb229a4&itok=WtXzCGBf", 
+            label: "Prostate & Cancer Screening (40s and up)",
+            tests: [
+                "https://www.newmi.in/s/6123687a0e3882eabaee1e6e/6620afcc347bb190414e5601/adolescence-teens-to-early-20s-.png"
+            ]
+        },
         { 
             image: "https://www.newmi.in/s/6123687a0e3882eabaee1e6e/661e6749dc742345959cf608/rectangle-1145.png", 
             label: "Adolescence (Teens To Early 20s)",
