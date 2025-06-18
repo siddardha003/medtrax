@@ -1,10 +1,8 @@
-import React, { useState } from 'react'
+import React, { useState } from 'react';
 import SectionHeading from './SectionHeading';
-
-
+import emailjs from '@emailjs/browser'; 
 
 const Contact = () => {
-
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -14,8 +12,9 @@ const Contact = () => {
     msg: ''
   });
 
-  // Handler for input field changes
-  const handleInputChange = event => {
+  emailjs.init("siddarthakarumuri003@gmail.com");
+
+  const handleInputChange = (event) => {
     const { name, value } = event.target;
     setFormData(prevFormData => ({
       ...prevFormData,
@@ -26,33 +25,39 @@ const Contact = () => {
   const onSubmit = async (event) => {
     event.preventDefault();
     setLoading(true);
-    const formData = new FormData(event.target);
-    formData.append("access_key", "fcc74231-656a-425b-a54f-aff38354fadb");
 
-    const object = Object.fromEntries(formData);
-    const json = JSON.stringify(object);
+    try {
+      const response = await emailjs.send(
+        "service_qj2q7qk",  
+        "template_0jd6k6l", 
+        {
+        from_name: formData.name,
+        from_email: formData.email, // User's email (for reply-to)
+        phone: formData.phone,
+        subject: formData.subject,
+        message: formData.msg,
+        reply_to: formData.email, // Optional: Set reply-to dynamically
+        to_email: "siddarthakarumuri003@gmail.com", // Hardcoded recipient (you)
+      }
+      );
 
-    const res = await fetch("https://api.web3forms.com/submit", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json"
-      },
-      body: json
-    }).then((res) => res.json());
-
-    if (res.success) {
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        subject: '',
-        msg: ''
-      });
-      setLoading(false)
+      if (response.status === 200) {
+        alert("Message sent successfully!");
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          subject: '',
+          msg: ''
+        });
+      }
+    } catch (error) {
+      console.error("Failed to send email:", error);
+      alert("Failed to send message. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
-
 
   return (
     <section className="st-shape-wrap" id="contact">
@@ -63,8 +68,10 @@ const Contact = () => {
         <img src="shape/contact-shape2.svg" alt="shape2" />
       </div>
       <div className="st-height-b120 st-height-lg-b80" />
-      <SectionHeading title="Stay connect with us"
-        subTitle=" Lorem Ipsum is simply dummy text of the printing and typesetting industry. <br /> Lorem Ipsum the industry's standard dummy text." />
+      <SectionHeading
+        title="Stay connect with us"
+        subTitle="Lorem Ipsum is simply dummy text of the printing and typesetting industry. <br /> Lorem Ipsum the industry's standard dummy text."
+      />
       <div className="container">
         <div className="row">
           <div className="col-lg-10 offset-lg-1">
@@ -75,8 +82,6 @@ const Contact = () => {
               method="post"
               id="contact-form"
             >
-              <input type="hidden" name="from_name" value="Nischinto Medical" />
-              <input type="hidden" name="replyto" value="custom@gmail.com" />
               <div className="col-lg-6">
                 <div className="st-form-field st-style1">
                   <label>Full Name</label>
@@ -91,7 +96,6 @@ const Contact = () => {
                   />
                 </div>
               </div>
-              {/* .col */}
               <div className="col-lg-6">
                 <div className="st-form-field st-style1">
                   <label>Email Address</label>
@@ -106,7 +110,6 @@ const Contact = () => {
                   />
                 </div>
               </div>
-              {/* .col */}
               <div className="col-lg-6">
                 <div className="st-form-field st-style1">
                   <label>Subject</label>
@@ -121,7 +124,6 @@ const Contact = () => {
                   />
                 </div>
               </div>
-              {/* .col */}
               <div className="col-lg-6">
                 <div className="st-form-field st-style1">
                   <label>Phone</label>
@@ -136,7 +138,6 @@ const Contact = () => {
                   />
                 </div>
               </div>
-              {/* .col */}
               <div className="col-lg-12">
                 <div className="st-form-field st-style1">
                   <label>Your Message</label>
@@ -152,7 +153,6 @@ const Contact = () => {
                   />
                 </div>
               </div>
-              {/* .col */}
               <div className="col-lg-12">
                 <div className="text-center">
                   <div className="st-height-b10 st-height-lg-b10" />
@@ -161,20 +161,19 @@ const Contact = () => {
                     type="submit"
                     id="submit"
                     name="submit"
+                    disabled={loading}
                   >
                     {loading ? "Sending..." : "Send Message"}
                   </button>
                 </div>
               </div>
-              {/* .col */}
             </form>
           </div>
-          {/* .col */}
         </div>
       </div>
       <div className="st-height-b120 st-height-lg-b80" />
     </section>
-  )
-}
+  );
+};
 
-export default Contact
+export default Contact;
