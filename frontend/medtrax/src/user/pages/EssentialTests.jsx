@@ -8,84 +8,56 @@ const EssentialTest = () => {
             image: "https://pregonline.com/wp-content/uploads/2025/04/male-fertility-factor-and-sperm-health.jpg", 
             label: "Hormonal & Reproductive Health (Teens to 40s)",
             tests: [
-                "https://www.newmi.in/s/6123687a0e3882eabaee1e6e/6620afcc347bb190414e5601/adolescence-teens-to-early-20s-.png"
+                "images/5.png"
             ]
         },
         {
             image: "https://www.pulsetoday.co.uk/wp-content/uploads/2023/05/cardiovascular-heart-examination.jpg", 
             label: "Cardiovascular & Metabolic Screening (30s onwards)",
             tests: [
-                "https://www.newmi.in/s/6123687a0e3882eabaee1e6e/6620afcc347bb190414e5601/adolescence-teens-to-early-20s-.png"
+                "images/6.png"
             ]
         },
         {
             image: "https://psu-gatsby-files-prod.s3.amazonaws.com/s3fs-public/styles/4_3_1500w/public/2025/06/prostate-cancer-screening_1200x900.jpg?h=6eb229a4&itok=WtXzCGBf", 
             label: "Prostate & Cancer Screening (40s and up)",
             tests: [
-                "https://www.newmi.in/s/6123687a0e3882eabaee1e6e/6620afcc347bb190414e5601/adolescence-teens-to-early-20s-.png"
+                "images/7.png"
             ]
         },
         { 
             image: "https://www.newmi.in/s/6123687a0e3882eabaee1e6e/661e6749dc742345959cf608/rectangle-1145.png", 
             label: "Adolescence (Teens To Early 20s)",
             tests: [
-                "https://www.newmi.in/s/6123687a0e3882eabaee1e6e/6620afcc347bb190414e5601/adolescence-teens-to-early-20s-.png"
+                "images/1.png"
             ]
         },
         { 
             image: "https://www.newmi.in/s/6123687a0e3882eabaee1e6e/661e676e0d4aca450388cef9/rectangle-1148.png", 
             label: "Reproductive Years (20s to 30s)",
             tests: [
-                "https://via.placeholder.com/800x600?text=Reproductive+Tests"
+                "images/2.png"
             ]
         },
         { 
             image: "https://www.newmi.in/s/6123687a0e3882eabaee1e6e/661e678f452deb459c5b3cf8/rectangle-1150.png", 
             label: "30s to 40s",
             tests: [
-                "https://via.placeholder.com/800x600?text=30s+to+40s+Tests"
+                "images/3.png"
             ]
         },
         { 
             image: "https://www.newmi.in/s/6123687a0e3882eabaee1e6e/661e6802452deb459c5b4957/rectangle-1154.png", 
             label: "Post 40s",
             tests: [
-                "https://via.placeholder.com/800x600?text=Post+40s+Tests"
-            ]
-        },
-        { 
-            image: "https://www.newmi.in/s/6123687a0e3882eabaee1e6e/661e6834dc742345959d0ccb/rectangle-1155.png", 
-            label: "First Trimester",
-            tests: [
-                "https://via.placeholder.com/800x600?text=First+Trimester+Tests"
-            ]
-        },
-        { 
-            image: "https://www.newmi.in/s/6123687a0e3882eabaee1e6e/661e686cdc742345959d137f/rectangle-1156.png", 
-            label: "Second Trimester",
-            tests: [
-                "https://via.placeholder.com/800x600?text=Second+Trimester+Tests"
-            ]
-        },
-        { 
-            image: "https://www.newmi.in/s/6123687a0e3882eabaee1e6e/661e689bbc539044fc0f0da9/rectangle-1160.png", 
-            label: "Third Trimester",
-            tests: [
-                "https://via.placeholder.com/800x600?text=Third+Trimester+Tests"
-            ]
-        },
-        { 
-            image: "https://www.newmi.in/s/6123687a0e3882eabaee1e6e/661e68bddc742345959d1bcf/rectangle-1161.png", 
-            label: "Fourth Trimester",
-            tests: [
-                "https://via.placeholder.com/800x600?text=Fourth+Trimester+Tests"
+                "images/4.png"
             ]
         },
         { 
             image: "https://www.newmi.in/s/6123687a0e3882eabaee1e6e/661e692b0d4aca450388facb/rectangle-1162.png", 
             label: "Baby Vaccination",
             tests: [
-                "https://via.placeholder.com/800x600?text=Baby+Vaccination+Tests"
+                "images/8.png"
             ]
         }
     ];

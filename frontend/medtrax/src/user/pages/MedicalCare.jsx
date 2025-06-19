@@ -21,7 +21,7 @@ const MedicalCarePage = () => {
     navigate('/BabyVaccine');
   };
   const handleTrackNow6 = () => {
-    navigate('/track');
+    navigate('/SymptomChecker');
   };
   const handleTrackNow7 = () => {
     navigate('/Medreminder');

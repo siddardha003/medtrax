@@ -12,7 +12,7 @@ const SectionHeading = ({ title, subTitle }) => {
           subTitle ? <div className="st-seperator">
             <div className="st-seperator-left wow fadeInLeft" data-wow-duration="1s" data-wow-delay="0.2s" />
             <div className="st-seperator-center">
-              <img src="/icons/4.png" alt="icon" />
+              <img src="/images/Medtrax-logo.png" alt="icon" />
             </div>
             <div className="st-seperator-right wow fadeInRight" data-wow-duration="1s" data-wow-delay="0.2s" />
           </div> : ""
