@@ -60,56 +60,35 @@ const SearchIcon = styled(Search)`
   z-index: 1;
 `;
 
-const LocationSelectorContainer = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 10px;
-  margin: 2rem auto;
-  max-width: 800px;
-`;
 
-const LocationButton = styled.button`
-  background: ${props => props.active ? 'linear-gradient(90deg, #008b95 0%, #86c2c6 100%)' : 'white'};
-  color: ${props => props.active ? 'white' : '#666'};
-  border: none;
-  padding: 10px 20px;
-  border-radius: 20px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  border: ${props => !props.active ? '1px solid #efefef' : 'none'};
-  
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  }
-`;
 
 const MedicalShopCard = styled.div`
   background: white;
+  padding: 10px;
   border-radius: 20px;
   overflow: hidden;
-  box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
   transition: all 0.3s ease;
   cursor: pointer;
   border: 1px solid #efefef;
-  width: 350px;
+  padding: 8px; /* This creates the gap around the image */
   
   &:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.12);
   }
 `;
 
 const ShopImage = styled.div`
-  width: 100%;
+  width: calc(100% - 20px); /* Adjust for the padding */
   height: 200px;
+  margin: 0 auto; /* Center the image */
   background: ${props => props.image ? `url(${props.image})` : 'linear-gradient(90deg, #008b95 0%, #86c2c6 100%)'};
   background-size: cover;
   background-position: center;
   position: relative;
+  border-radius: 12px; /* Slightly less than card radius for inner border effect */
+  overflow: hidden;
   
   &::after {
     content: '';
@@ -118,7 +97,7 @@ const ShopImage = styled.div`
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.2) 100%);
+    background: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.1) 100%);
   }
 `;
 
@@ -257,13 +236,9 @@ const medicalShopData = {
 };
 
 const Medicines = () => {
-  const [selectedLocation, setSelectedLocation] = useState('Gurgaon');
+  const [selectedLocation] = useState('Gurgaon');
   const [searchTerm, setSearchTerm] = useState('');
   
-  const handleLocationChange = (location) => {
-    setSelectedLocation(location);
-  };
-
   const handleSearch = (e) => {
     setSearchTerm(e.target.value.toLowerCase());
   };
@@ -294,18 +269,6 @@ const Medicines = () => {
           />
         </SearchWrapper>
       </SearchContainer>
-
-      <LocationSelectorContainer>
-        {Object.keys(medicalShopData).map(location => (
-          <LocationButton
-            key={location}
-            active={selectedLocation === location}
-            onClick={() => handleLocationChange(location)}
-          >
-            {location}
-          </LocationButton>
-        ))}
-      </LocationSelectorContainer>
 
       <ShopsGrid>
         {shops.length > 0 ? (

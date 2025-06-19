@@ -84,12 +84,14 @@ const HospitalsGrid = styled.div`
 
 const HospitalCard = styled.div`
   background: white;
+  padding: 10px;
   border-radius: 20px;
   overflow: hidden;
   box-shadow: 0 10px 25px rgba(0,0,0,0.08);
   transition: all 0.3s ease;
   cursor: pointer;
   border: 1px solid #efefef;
+  padding: 8px; /* This creates the gap around the image */
   
   &:hover {
     transform: translateY(-5px);
@@ -98,12 +100,15 @@ const HospitalCard = styled.div`
 `;
 
 const HospitalImage = styled.div`
-  width: 100%;
+  width: calc(100% - 20px); /* Adjust for the padding */
   height: 200px;
+  margin: 0 auto; /* Center the image */
   background: ${props => props.image ? `url(${props.image})` : 'linear-gradient(90deg, #008b95 0%, #86c2c6 100%)'};
   background-size: cover;
   background-position: center;
   position: relative;
+  border-radius: 12px; /* Slightly less than card radius for inner border effect */
+  overflow: hidden;
   
   &::after {
     content: '';

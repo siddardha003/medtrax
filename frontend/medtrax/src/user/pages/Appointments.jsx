@@ -62,26 +62,31 @@ const SearchIcon = styled(Search)`
 
 const ClinicCard = styled.div`
   background: white;
+  padding: 10px;
   border-radius: 20px;
   overflow: hidden;
-  box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
   transition: all 0.3s ease;
   cursor: pointer;
   border: 1px solid #efefef;
+  padding: 8px; /* This creates the gap around the image */
   
   &:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.12);
   }
 `;
 
 const ClinicImage = styled.div`
-  width: 100%;
+  width: calc(100% - 20px); /* Adjust for the padding */
   height: 200px;
+  margin: 0 auto; /* Center the image */
   background: ${props => props.image ? `url(${props.image})` : 'linear-gradient(90deg, #008b95 0%, #86c2c6 100%)'};
   background-size: cover;
   background-position: center;
   position: relative;
+  border-radius: 12px; /* Slightly less than card radius for inner border effect */
+  overflow: hidden;
   
   &::after {
     content: '';
@@ -90,7 +95,7 @@ const ClinicImage = styled.div`
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.2) 100%);
+    background: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.1) 100%);
   }
 `;
 
