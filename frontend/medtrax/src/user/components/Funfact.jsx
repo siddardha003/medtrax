@@ -238,7 +238,7 @@ const Funfact = () => {
                     </svg>
                   </div>
                   <h2 className="st-funfact-number st-counter">99</h2>
-                  <div className="st-funfact-title">Qualified Doctors</div>
+                  <div className="st-funfact-title">Pharmacies</div>
                 </div>
                 <div className="st-height-b30 st-height-lg-b30" />
               </div>
@@ -258,7 +258,7 @@ const Funfact = () => {
                     </svg>
                   </div>
                   <h2 className="st-funfact-number st-counter">125</h2>
-                  <div className="st-funfact-title">Hospital Rooms</div>
+                  <div className="st-funfact-title">Hospitals</div>
                 </div>
                 <div className="st-height-b30 st-height-lg-b30" />
               </div>
