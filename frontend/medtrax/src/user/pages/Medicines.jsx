@@ -2,16 +2,14 @@ import styled from 'styled-components';
 import { MapPin, Star, Phone, ArrowRight, Search } from 'lucide-react';
 import React, { useState } from 'react';
 
-// Using the exact same background as previous designs
 const AppContainer = styled.div`
-  background: linear-gradient(135deg, #9cf7cd 0%, rgb(154, 250, 218) 100%);
+  background: #f8f9fa;
   min-height: 100vh;
   padding: 24vh 20px 20px;
 `;
 
-// Same header styling as previous
 const Header = styled.h1`
-  color: #1a3b32;
+  color: #008b95;
   font-size: 3rem;
   font-weight: 700;
   text-align: center;
@@ -19,13 +17,12 @@ const Header = styled.h1`
 `;
 
 const Subtitle = styled.p`
-  color: #2a5a4a;
+  color: #4a6b60;
   font-size: 1.2rem;
   text-align: center;
   margin-bottom: 2rem;
 `;
 
-// Search bar styled to match the theme
 const SearchContainer = styled.div`
   max-width: 600px;
   margin: 0 auto 3rem;
@@ -38,7 +35,7 @@ const SearchWrapper = styled.div`
   border-radius: 50px;
   box-shadow: 0 5px 15px rgba(0,0,0,0.1);
   overflow: hidden;
-  border: 2px solid #6ad4b0;
+  border: 2px solid #86c2c6;
 `;
 
 const SearchInput = styled.input`
@@ -59,61 +56,39 @@ const SearchIcon = styled(Search)`
   left: 1.2rem;
   top: 50%;
   transform: translateY(-50%);
-  color: #3a9b7a;
+  color: #008b95;
   z-index: 1;
 `;
 
-// Location selector styled to match the theme
-const LocationSelectorContainer = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 10px;
-  margin: 2rem auto;
-  max-width: 800px;
-`;
 
-const LocationButton = styled.button`
-  background: ${props => props.active ? 'linear-gradient(135deg, #6ad4b0 0%, #3a9b7a 100%)' : 'white'};
-  color: ${props => props.active ? 'white' : '#4a6b60'};
-  border: none;
-  padding: 10px 20px;
-  border-radius: 20px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  }
-`;
 
-// Same card styling as previous designs
 const MedicalShopCard = styled.div`
   background: white;
+  padding: 10px;
   border-radius: 20px;
   overflow: hidden;
-  box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
   transition: all 0.3s ease;
   cursor: pointer;
-  border: 1px solid #aaf0d1;
-  width: 350px;
+  border: 1px solid #efefef;
+  padding: 8px; /* This creates the gap around the image */
   
   &:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.12);
   }
 `;
 
 const ShopImage = styled.div`
-  width: 100%;
+  width: calc(100% - 20px); /* Adjust for the padding */
   height: 200px;
-  background: ${props => props.image ? `url(${props.image})` : 'linear-gradient(135deg, #98FB98 0%, #3EB489 100%)'};
+  margin: 0 auto; /* Center the image */
+  background: ${props => props.image ? `url(${props.image})` : 'linear-gradient(90deg, #008b95 0%, #86c2c6 100%)'};
   background-size: cover;
   background-position: center;
   position: relative;
+  border-radius: 12px; /* Slightly less than card radius for inner border effect */
+  overflow: hidden;
   
   &::after {
     content: '';
@@ -122,7 +97,7 @@ const ShopImage = styled.div`
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.2) 100%);
+    background: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.1) 100%);
   }
 `;
 
@@ -133,7 +108,7 @@ const ShopInfo = styled.div`
 const ShopName = styled.h3`
   font-size: 1.3rem;
   font-weight: 700;
-  color: #1a3b32;
+  color: #333;
   margin-bottom: 1rem;
 `;
 
@@ -143,7 +118,7 @@ const ShopDetails = styled.div`
   justify-content: space-between;
   margin-top: 1rem;
   padding-top: 1rem;
-  border-top: 1px solid #e0f7ed;
+  border-top: 1px solid #efefef;
 `;
 
 const Rating = styled.div`
@@ -157,7 +132,7 @@ const Location = styled.div`
   display: flex;
   align-items: center;
   gap: 0.3rem;
-  color: #4a6b60;
+  color: #666;
   font-size: 0.9rem;
 `;
 
@@ -165,13 +140,13 @@ const Contact = styled.div`
   display: flex;
   align-items: center;
   gap: 0.3rem;
-  color: #4a6b60;
+  color: #666;
   font-size: 0.9rem;
   margin-top: 0.5rem;
 `;
 
 const ViewButton = styled.button`
-  background: linear-gradient(135deg, #6ad4b0 0%, #3a9b7a 100%);
+  background: linear-gradient(90deg, #008b95 0%, #86c2c6 100%);
   color: white;
   border: none;
   padding: 0.8rem 1.5rem;
@@ -185,11 +160,11 @@ const ViewButton = styled.button`
   
   &:hover {
     transform: scale(1.05);
-    box-shadow: 0 5px 15px rgba(58, 155, 122, 0.3);
+    box-shadow: 0 5px 15px rgba(0, 139, 149, 0.3);
+    background: linear-gradient(90deg, #007a82 0%, #76b2b6 100%);
   }
 `;
 
-// Same grid layout as previous
 const ShopsGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
@@ -200,16 +175,15 @@ const ShopsGrid = styled.div`
 
 const NoShopsMessage = styled.div`
   text-align: center;
-  color: #1a3b32;
+  color: #008b95;
   font-size: 1.2rem;
   padding: 3rem;
   background: rgba(255,255,255,0.7);
   border-radius: 20px;
-  border: 1px solid #c5f3e2;
+  border: 1px solid #efefef;
   grid-column: 1 / -1;
 `;
 
-// Sample medical shop data
 const medicalShopData = {
   Gurgaon: [
     {
@@ -262,13 +236,9 @@ const medicalShopData = {
 };
 
 const Medicines = () => {
-  const [selectedLocation, setSelectedLocation] = useState('Gurgaon');
+  const [selectedLocation] = useState('Gurgaon');
   const [searchTerm, setSearchTerm] = useState('');
   
-  const handleLocationChange = (location) => {
-    setSelectedLocation(location);
-  };
-
   const handleSearch = (e) => {
     setSearchTerm(e.target.value.toLowerCase());
   };
@@ -277,7 +247,6 @@ const Medicines = () => {
     window.location.href = `/medicalshop/${shopId}`;
   };
 
-  // Filter shops based on selected location and search term
   const shops = (medicalShopData[selectedLocation] || [])
     .filter(shop => 
       shop.name.toLowerCase().includes(searchTerm) ||
@@ -300,7 +269,6 @@ const Medicines = () => {
           />
         </SearchWrapper>
       </SearchContainer>
-
 
       <ShopsGrid>
         {shops.length > 0 ? (
@@ -337,7 +305,7 @@ const Medicines = () => {
           ))
         ) : (
           <NoShopsMessage>
-            <MapPin size={48} color="#3a9b7a" style={{ marginBottom: '1rem' }} />
+            <MapPin size={48} color="#008b95" style={{ marginBottom: '1rem' }} />
             <p>No medical shops found in {selectedLocation} matching your search.</p>
             <p>Please try a different location or search term.</p>
           </NoShopsMessage>
@@ -348,3 +316,4 @@ const Medicines = () => {
 };
 
 export default Medicines;
+// Sample medical shop data

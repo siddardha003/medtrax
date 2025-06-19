@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { Search, MapPin, Star, Phone, ArrowRight } from 'lucide-react';
 
 const AppContainer = styled.div`
-  background: #9cf7cd;
+  background: #f8f9fa;
   min-height: 100vh;
   padding: 24vh 20px 20px;
 `;
@@ -14,14 +14,14 @@ const Header = styled.div`
 `;
 
 const Title = styled.h1`
-  color: #1a3b32;
+  color: #008b95;
   font-size: 3rem;
   font-weight: 700;
   margin-bottom: 0.5rem;
 `;
 
 const Subtitle = styled.p`
-  color: #2a5a4a;
+  color: #4a6b60;
   font-size: 1.2rem;
   margin-bottom: 2rem;
 `;
@@ -38,7 +38,7 @@ const SearchWrapper = styled.div`
   border-radius: 50px;
   box-shadow: 0 5px 15px rgba(0,0,0,0.08);
   overflow: hidden;
-  border: 2px solid #6ad4b0;
+  border: 2px solid #86c2c6;
 `;
 
 const SearchInput = styled.input`
@@ -59,7 +59,7 @@ const SearchIcon = styled(Search)`
   left: 1.2rem;
   top: 50%;
   transform: translateY(-50%);
-  color: #3a9b7a;
+  color: #008b95;
   z-index: 1;
 `;
 
@@ -69,7 +69,7 @@ const RecommendedSection = styled.div`
 `;
 
 const SectionTitle = styled.h2`
-  color: #1a3b32;
+  color: #008b95;
   font-size: 2rem;
   font-weight: 600;
   text-align: center;
@@ -84,12 +84,14 @@ const HospitalsGrid = styled.div`
 
 const HospitalCard = styled.div`
   background: white;
+  padding: 10px;
   border-radius: 20px;
   overflow: hidden;
   box-shadow: 0 10px 25px rgba(0,0,0,0.08);
   transition: all 0.3s ease;
   cursor: pointer;
-  border: 1px solid #c5f3e2;
+  border: 1px solid #efefef;
+  padding: 8px; /* This creates the gap around the image */
   
   &:hover {
     transform: translateY(-5px);
@@ -98,12 +100,15 @@ const HospitalCard = styled.div`
 `;
 
 const HospitalImage = styled.div`
-  width: 100%;
+  width: calc(100% - 20px); /* Adjust for the padding */
   height: 200px;
-  background: ${props => props.image ? `url(${props.image})` : 'linear-gradient(135deg, #9cf7cd 0%, #6ad4b0 100%)'};
+  margin: 0 auto; /* Center the image */
+  background: ${props => props.image ? `url(${props.image})` : 'linear-gradient(90deg, #008b95 0%, #86c2c6 100%)'};
   background-size: cover;
   background-position: center;
   position: relative;
+  border-radius: 12px; /* Slightly less than card radius for inner border effect */
+  overflow: hidden;
   
   &::after {
     content: '';
@@ -123,7 +128,7 @@ const HospitalInfo = styled.div`
 const HospitalName = styled.h3`
   font-size: 1.3rem;
   font-weight: 700;
-  color: #1a3b32;
+  color: #333;
   margin-bottom: 1rem;
 `;
 
@@ -133,7 +138,7 @@ const HospitalDetails = styled.div`
   justify-content: space-between;
   margin-top: 1rem;
   padding-top: 1rem;
-  border-top: 1px solid #e0f7ed;
+  border-top: 1px solid #efefef;
 `;
 
 const Rating = styled.div`
@@ -147,7 +152,7 @@ const Location = styled.div`
   display: flex;
   align-items: center;
   gap: 0.3rem;
-  color: #4a6b60;
+  color: #666;
   font-size: 0.9rem;
 `;
 
@@ -155,13 +160,13 @@ const Contact = styled.div`
   display: flex;
   align-items: center;
   gap: 0.3rem;
-  color: #4a6b60;
+  color: #666;
   font-size: 0.9rem;
   margin-top: 0.5rem;
 `;
 
 const ViewButton = styled.button`
-  background: linear-gradient(135deg, #6ad4b0 0%, #3a9b7a 100%);
+  background: linear-gradient(90deg, #008b95 0%, #86c2c6 100%);
   color: white;
   border: none;
   padding: 0.8rem 1.5rem;
@@ -175,20 +180,20 @@ const ViewButton = styled.button`
   
   &:hover {
     transform: scale(1.05);
-    box-shadow: 0 5px 15px rgba(58, 155, 122, 0.3);
+    box-shadow: 0 5px 15px rgba(0, 139, 149, 0.3);
+    background: linear-gradient(90deg, #007a82 0%, #76b2b6 100%);
   }
 `;
 
 const NoResults = styled.div`
   text-align: center;
-  color: #1a3b32;
+  color: #008b95;
   font-size: 1.2rem;
   padding: 3rem;
   background: rgba(255,255,255,0.7);
   border-radius: 20px;
-  border: 1px solid #c5f3e2;
+  border: 1px solid #efefef;
 `;
-
 const hospitalData = [
   {
     id: 1,
@@ -258,7 +263,6 @@ const HospitalFinder = () => {
   };
 
   const handleHospitalClick = (hospitalId) => {
-    // Navigate to hospital details page
     window.location.href = `/hospital-details/${hospitalId}`;
   };
 
@@ -266,7 +270,7 @@ const HospitalFinder = () => {
     <AppContainer>
       <Header>
         <Title>Find Your Hospital</Title>
-        <Subtitle>Discover healing in our serene healthcare network</Subtitle>
+        <Subtitle>Discover healing in our healthcare network</Subtitle>
       </Header>
 
       <SearchContainer>
@@ -322,7 +326,7 @@ const HospitalFinder = () => {
           </HospitalsGrid>
         ) : (
           <NoResults>
-            <Search size={48} style={{ marginBottom: '1rem', color: '#3a9b7a' }} />
+            <Search size={48} style={{ marginBottom: '1rem', color: '#008b95' }} />
             <p>No hospitals found matching your search.</p>
             <p>Try different keywords or check your spelling.</p>
           </NoResults>

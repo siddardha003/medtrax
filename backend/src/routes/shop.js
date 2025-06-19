@@ -1,0 +1,224 @@
+const express = require('express');
+const {
+    getInventory,
+    getInventoryItem,
+    addInventoryItem,
+    updateInventoryItem,
+    deleteInventoryItem,
+    updateStock,
+    getLowStockItems,
+    getExpiringItems,
+    createOrder,
+    getOrders,
+    getOrder,
+    updateOrderStatus,
+    getShopStats
+} = require('../controllers/shopController');
+
+const { protect, authorize, validateUserRole } = require('../middleware/auth');
+const {
+    validateInventoryItem,
+    validateOrderCreation,
+    validateObjectId,
+    validatePagination,
+    validateDateRange,
+    handleValidationErrors
+} = require('../middleware/validation');
+const { body, query } = require('express-validator');
+
+const router = express.Router();
+
+// Protect all routes - only shop admins can access
+router.use(protect);
+router.use(authorize('shop_admin'));
+router.use(validateUserRole);
+
+// Inventory Management Routes
+
+// @route   GET /api/shop/inventory
+// @desc    Get all inventory items for the shop
+// @access  Private (Shop Admin only)
+router.get('/inventory', [
+    validatePagination,
+    query('category')
+        .optional()
+        .isIn([
+            'prescription_drug', 'otc_drug', 'medical_device', 'surgical_instrument',
+            'health_supplement', 'baby_care', 'elderly_care', 'first_aid',
+            'diagnostic_kit', 'medical_consumables', 'ayurvedic', 'homeopathic'
+        ])
+        .withMessage('Invalid category'),
+    query('status')
+        .optional()
+        .isIn(['active', 'inactive', 'discontinued', 'out_of_stock'])
+        .withMessage('Invalid status'),
+    query('search')
+        .optional()
+        .isLength({ min: 2 })
+        .withMessage('Search query must be at least 2 characters'),
+    query('lowStock')
+        .optional()
+        .isBoolean()
+        .withMessage('lowStock must be a boolean'),
+    query('expiring')
+        .optional()
+        .isBoolean()
+        .withMessage('expiring must be a boolean'),
+    handleValidationErrors
+], getInventory);
+
+// @route   GET /api/shop/inventory/alerts/low-stock
+// @desc    Get low stock items
+// @access  Private (Shop Admin only)
+router.get('/inventory/alerts/low-stock', getLowStockItems);
+
+// @route   GET /api/shop/inventory/alerts/expiring
+// @desc    Get expiring items
+// @access  Private (Shop Admin only)
+router.get('/inventory/alerts/expiring', [
+    query('days')
+        .optional()
+        .isInt({ min: 1, max: 365 })
+        .withMessage('Days must be between 1 and 365'),
+    handleValidationErrors
+], getExpiringItems);
+
+// @route   GET /api/shop/inventory/:id
+// @desc    Get single inventory item by ID
+// @access  Private (Shop Admin only)
+router.get('/inventory/:id', validateObjectId('id'), getInventoryItem);
+
+// @route   POST /api/shop/inventory
+// @desc    Add new inventory item
+// @access  Private (Shop Admin only)
+router.post('/inventory', validateInventoryItem, addInventoryItem);
+
+// @route   PUT /api/shop/inventory/:id
+// @desc    Update inventory item details
+// @access  Private (Shop Admin only)
+router.put('/inventory/:id', [
+    validateObjectId('id'),
+    body('name')
+        .optional()
+        .isLength({ min: 2, max: 200 })
+        .trim()
+        .withMessage('Product name must be between 2 and 200 characters'),
+    body('manufacturer')
+        .optional()
+        .notEmpty()
+        .trim()
+        .withMessage('Manufacturer is required'),
+    body('category')
+        .optional()
+        .isIn([
+            'prescription_drug', 'otc_drug', 'medical_device', 'surgical_instrument',
+            'health_supplement', 'baby_care', 'elderly_care', 'first_aid',
+            'diagnostic_kit', 'medical_consumables', 'ayurvedic', 'homeopathic'
+        ])
+        .withMessage('Invalid category'),
+    body('status')
+        .optional()
+        .isIn(['active', 'inactive', 'discontinued', 'out_of_stock'])
+        .withMessage('Invalid status'),
+    body('pricing.costPrice')
+        .optional()
+        .isFloat({ min: 0 })
+        .withMessage('Cost price must be a non-negative number'),
+    body('pricing.sellingPrice')
+        .optional()
+        .isFloat({ min: 0 })
+        .withMessage('Selling price must be a non-negative number'),
+    body('pricing.mrp')
+        .optional()
+        .isFloat({ min: 0 })
+        .withMessage('MRP must be a non-negative number'),
+    body('quantity.minimum')
+        .optional()
+        .isInt({ min: 0 })
+        .withMessage('Minimum quantity must be a non-negative integer'),
+    handleValidationErrors
+], updateInventoryItem);
+
+// @route   PUT /api/shop/inventory/:id/stock
+// @desc    Update stock quantity
+// @access  Private (Shop Admin only)
+router.put('/inventory/:id/stock', [
+    validateObjectId('id'),
+    body('quantity')
+        .isInt({ min: 0 })
+        .withMessage('Quantity must be a non-negative integer'),
+    body('operation')
+        .optional()
+        .isIn(['set', 'add', 'subtract'])
+        .withMessage('Operation must be set, add, or subtract'),
+    handleValidationErrors
+], updateStock);
+
+// @route   DELETE /api/shop/inventory/:id
+// @desc    Delete inventory item
+// @access  Private (Shop Admin only)
+router.delete('/inventory/:id', validateObjectId('id'), deleteInventoryItem);
+
+// Order Management Routes
+
+// @route   GET /api/shop/orders
+// @desc    Get all orders for the shop
+// @access  Private (Shop Admin only)
+router.get('/orders', [
+    validatePagination,
+    validateDateRange,
+    query('status')
+        .optional()
+        .isIn(['pending', 'processing', 'ready', 'delivered', 'cancelled', 'returned'])
+        .withMessage('Invalid status'),
+    query('paymentStatus')
+        .optional()
+        .isIn(['pending', 'partial', 'paid', 'failed', 'refunded'])
+        .withMessage('Invalid payment status'),
+    query('search')
+        .optional()
+        .isLength({ min: 2 })
+        .withMessage('Search query must be at least 2 characters'),
+    handleValidationErrors
+], getOrders);
+
+// @route   GET /api/shop/orders/:id
+// @desc    Get single order by ID
+// @access  Private (Shop Admin only)
+router.get('/orders/:id', validateObjectId('id'), getOrder);
+
+// @route   POST /api/shop/orders
+// @desc    Create new order
+// @access  Private (Shop Admin only)
+router.post('/orders', validateOrderCreation, createOrder);
+
+// @route   PUT /api/shop/orders/:id/status
+// @desc    Update order status
+// @access  Private (Shop Admin only)
+router.put('/orders/:id/status', [
+    validateObjectId('id'),
+    body('status')
+        .isIn(['pending', 'processing', 'ready', 'delivered', 'cancelled', 'returned'])
+        .withMessage('Invalid status'),
+    body('notes')
+        .optional()
+        .isLength({ max: 500 })
+        .trim()
+        .withMessage('Notes cannot exceed 500 characters'),
+    handleValidationErrors
+], updateOrderStatus);
+
+// Statistics Routes
+
+// @route   GET /api/shop/stats
+// @desc    Get shop statistics
+// @access  Private (Shop Admin only)
+router.get('/stats', [
+    query('period')
+        .optional()
+        .isIn(['today', 'week', 'month', 'year'])
+        .withMessage('Invalid period'),
+    handleValidationErrors
+], getShopStats);
+
+module.exports = router;
