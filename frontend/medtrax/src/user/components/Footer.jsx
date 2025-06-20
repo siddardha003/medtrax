@@ -169,8 +169,8 @@ const Footer = ({ data, variant }) => {
                   </li>
                   <li className="mb-3 flex items-center">
                     <Icon icon="mdi:phone" className="mr-2" style={{ color: '#000000' }} />
-                    <a href="tel:+18005551234" className="hover:text-gray-300 transition" style={{ color: '#000000' }}>
-                      +1 (800) 555-1234
+                    <a href="tel:+91 9876543210" className="hover:text-gray-300 transition" style={{ color: '#000000' }}>
+                      +91 9876543210
                     </a>
                   </li>
                   <li className="mb-3 flex items-center">

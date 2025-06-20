@@ -234,9 +234,7 @@ The MedTrax Team
             </body>
             </html>
         `
-    }),
-
-    // Password reset email
+    }),    // Password reset email
     passwordReset: (user, resetToken) => ({
         subject: 'Password Reset Request - MedTrax',
         html: `
@@ -277,6 +275,78 @@ The MedTrax Team
                 </div>
             </body>
             </html>
+        `
+    }),
+
+    // OTP verification email
+    otpVerification: (user, otp) => ({
+        subject: 'Email Verification - MedTrax OTP',
+        html: `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="utf-8">
+                <style>
+                    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                    .header { background-color: #007bff; color: white; padding: 20px; text-align: center; }
+                    .content { padding: 20px; background-color: #f8f9fa; }
+                    .otp-code { font-size: 32px; font-weight: bold; text-align: center; background-color: #007bff; color: white; padding: 20px; border-radius: 10px; margin: 20px 0; letter-spacing: 8px; }
+                    .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+                    .warning { background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; margin: 20px 0; }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h1>Email Verification</h1>
+                        <p>MedTrax Account Security</p>
+                    </div>
+                    <div class="content">
+                        <h2>Hello ${user.firstName},</h2>
+                        <p>To complete your sign-in process, please use the verification code below:</p>
+                        
+                        <div class="otp-code">
+                            ${otp}
+                        </div>
+                        
+                        <div class="warning">
+                            <h3>⚠️ Important Security Information:</h3>
+                            <ul>
+                                <li>This code will expire in <strong>5 minutes</strong></li>
+                                <li>Do not share this code with anyone</li>
+                                <li>If you didn't request this code, please ignore this email</li>
+                                <li>For your security, never provide this code over phone or email</li>
+                            </ul>
+                        </div>
+                        
+                        <p>If you're having trouble with verification, you can request a new code from the sign-in page.</p>
+                        
+                        <p>Thank you for keeping your MedTrax account secure!</p>
+                        
+                        <p>Best regards,<br>The MedTrax Security Team</p>
+                    </div>
+                    <div class="footer">
+                        <p>This email was sent from MedTrax System. Please do not reply to this email.</p>
+                        <p>&copy; ${new Date().getFullYear()} MedTrax. All rights reserved.</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+        `,
+        text: `
+MedTrax Email Verification
+
+Hello ${user.firstName},
+
+Your verification code is: ${otp}
+
+This code will expire in 5 minutes. Do not share this code with anyone.
+
+If you didn't request this code, please ignore this email.
+
+Best regards,
+The MedTrax Team
         `
     })
 };
@@ -324,6 +394,17 @@ const sendPasswordResetEmail = async (user, resetToken) => {
     });
 };
 
+// Send OTP verification email
+const sendOTPEmail = async (user, otp) => {
+    const template = emailTemplates.otpVerification(user, otp);
+    return await sendEmail({
+        email: user.email,
+        subject: template.subject,
+        html: template.html,
+        text: template.text
+    });
+};
+
 // Test email configuration
 const testEmailConfig = async () => {
     try {
@@ -343,6 +424,7 @@ module.exports = {
     sendAppointmentConfirmation,
     sendOrderConfirmation,
     sendPasswordResetEmail,
+    sendOTPEmail,
     testEmailConfig,
     emailTemplates
 };

@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 
 const userSchema = new mongoose.Schema({
     email: {
@@ -17,10 +18,10 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Password is required'],
         minlength: [6, 'Password must be at least 6 characters']
-    },
-    role: {
+    },    role: {
         type: String,
-        enum: ['super_admin', 'hospital_admin', 'shop_admin'],
+        enum: ['super_admin', 'hospital_admin', 'shop_admin', 'user'],
+        default: 'user',
         required: [true, 'Role is required']
     },
     firstName: {
@@ -28,12 +29,12 @@ const userSchema = new mongoose.Schema({
         required: [true, 'First name is required'],
         trim: true,
         maxlength: [50, 'First name cannot exceed 50 characters']
-    },
-    lastName: {
+    },    lastName: {
         type: String,
-        required: [true, 'Last name is required'],
+        required: false,
         trim: true,
-        maxlength: [50, 'Last name cannot exceed 50 characters']
+        maxlength: [50, 'Last name cannot exceed 50 characters'],
+        default: ''
     },
     phone: {
         type: String,
@@ -62,10 +63,16 @@ const userSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Shop',
         default: null
-    },
-    // For password reset functionality
+    },    // For password reset functionality
     resetPasswordToken: String,
     resetPasswordExpire: Date,
+    // For OTP functionality
+    otp: String,
+    otpExpire: Date,
+    isEmailVerified: {
+        type: Boolean,
+        default: false
+    },
     // Metadata
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
@@ -128,6 +135,28 @@ userSchema.methods.getResetPasswordToken = function() {
     this.resetPasswordExpire = Date.now() + 10 * 60 * 1000; // 10 minutes
 
     return resetToken;
+};
+
+// Instance method to generate OTP
+userSchema.methods.generateOTP = function() {
+    // Generate 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    
+    // Set OTP and expiration time (5 minutes)
+    this.otp = otp;
+    this.otpExpire = Date.now() + 5 * 60 * 1000; // 5 minutes
+    
+    return otp;
+};
+
+// Instance method to verify OTP
+userSchema.methods.verifyOTP = function(enteredOTP) {
+    // Check if OTP exists and hasn't expired
+    if (!this.otp || !this.otpExpire || Date.now() > this.otpExpire) {
+        return false;
+    }
+    
+    return this.otp === enteredOTP;
 };
 
 // Static method to get users by role

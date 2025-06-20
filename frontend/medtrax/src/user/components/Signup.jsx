@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { Link } from 'react-router-dom';
-import { Label } from '@headlessui/react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { createAccount } from '../../Redux/user/actions';
 
 const Container = styled.div`
   display: flex;
@@ -69,37 +70,47 @@ const RadioLabel = styled.label`
   color: #555;
 `;
 
-const EmailWrapper = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 20px;
-`;
-
-const VerifyButton = styled.button`
-  background-color: #28a745;
-  color: white;
-  padding: 10px;
-  border-radius: 5px;
-  border: none;
-  cursor: pointer;
-  margin-top: -3vh;
-  &:hover {
-    background-color: #218838;
-  }
-`;
-
-const SignUp = () => {
+const Signup = () => {
   const [email, setEmail] = useState('');
-  const [isEmailVerified, setIsEmailVerified] = useState(false);
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [gender, setGender] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
-  const handleVerifyEmail = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Add any email validation logic here if needed
-    if (email) {
-      setIsEmailVerified(true);
-    } else {
-      alert('Please enter a valid email');
+    setError("");
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters long");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      await dispatch(createAccount({
+        name,
+        email,
+        phone,
+        gender,
+        password
+      }, navigate));
+    } catch (err) {
+      setError("Registration failed. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -107,47 +118,39 @@ const SignUp = () => {
     <Container>
       <SignUpCard>
         <Title>Sign Up</Title>
-        <form>
-          <InputField type="text" placeholder="Full Name" required />
-          
-          <EmailWrapper>
-            <InputField
-              type="email"
-              placeholder="Email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-            <VerifyButton onClick={handleVerifyEmail}>✓</VerifyButton>
-          </EmailWrapper>
-{/* Show OTP field only after email is verified */}
-{isEmailVerified && (
-            <InputField type="number" placeholder="OTP" required />
-          )}
-
-          <InputField type="number" placeholder="Phone Number" required />
+        <form onSubmit={handleSubmit}>
+          <InputField type="text" placeholder="Full Name" required value={name} onChange={e => setName(e.target.value)} />
+          <InputField type="email" placeholder="Email" required value={email} onChange={e => setEmail(e.target.value)} />
+          <InputField type="tel" placeholder="Phone Number" required value={phone} onChange={e => setPhone(e.target.value)} />
 
           <GenderWrapper>
             <div>
-              <input type="radio" id="male" name="gender" value="male" required />
+              <input type="radio" id="male" name="gender" value="male" required checked={gender === 'male'} onChange={() => setGender('male')} />
               <RadioLabel htmlFor="male">Male</RadioLabel>
             </div>
             <div>
-              <input type="radio" id="female" name="gender" value="female" required />
+              <input type="radio" id="female" name="gender" value="female" required checked={gender === 'female'} onChange={() => setGender('female')} />
               <RadioLabel htmlFor="female">Female</RadioLabel>
+            </div>
+            <div>
+              <input type="radio" id="other" name="gender" value="other" required checked={gender === 'other'} onChange={() => setGender('other')} />
+              <RadioLabel htmlFor="other">Other</RadioLabel>
             </div>
           </GenderWrapper>
 
-          <InputField type="password" placeholder="Password" required />
-          <InputField type="password" placeholder="Confirm Password" required />
+          <InputField type="password" placeholder="Password (min 6 characters)" required value={password} onChange={e => setPassword(e.target.value)} />
+          <InputField type="password" placeholder="Confirm Password" required value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />
 
-          
-          <Button type="submit">Sign Up</Button>
+          <Button type="submit" disabled={loading}>
+            {loading ? "Signing up..." : "Sign Up"}
+          </Button>
+
+          {error && <div style={{ color: 'red', marginTop: 10, fontSize: '14px' }}>{error}</div>}
         </form>
         <Link to="/login">Already have an account? Login</Link>
       </SignUpCard>
     </Container>
   );
-};
+}
 
-export default SignUp;
+export default Signup;

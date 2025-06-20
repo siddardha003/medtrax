@@ -2,6 +2,11 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 require('dotenv').config();
 
+// Import models
+const User = require('../src/models/User');
+const Hospital = require('../src/models/Hospital');
+const Shop = require('../src/models/Shop');
+
 // Connect to MongoDB
 const connectDB = async () => {
     try {
@@ -84,13 +89,9 @@ userSchema.pre('save', async function(next) {
     }
 });
 
-const User = mongoose.model('User', userSchema);
-
 // Seed Super Admin
 const seedSuperAdmin = async () => {
     try {
-        await connectDB();
-
         // Check if super admin already exists
         const existingSuperAdmin = await User.findOne({ role: 'super_admin' });
         
@@ -99,17 +100,15 @@ const seedSuperAdmin = async () => {
             console.log(`   Email: ${existingSuperAdmin.email}`);
             console.log(`   Name: ${existingSuperAdmin.firstName} ${existingSuperAdmin.lastName}`);
             console.log('✅ No need to create a new super admin');
-            return;
-        }
-
-        // Create default super admin
+            return existingSuperAdmin;
+        }        // Create default super admin
         const superAdminData = {
             email: 'admin@medtrax.com',
             password: 'Admin@123', // Change this in production
             role: 'super_admin',
             firstName: 'System',
             lastName: 'Administrator',
-            phone: '+91-9999999999',
+            phone: '919999999999', // Fixed phone format
             isActive: true
         };
 
@@ -119,14 +118,8 @@ const seedSuperAdmin = async () => {
         console.log('📧 Email:', superAdmin.email);
         console.log('🔑 Password:', 'Admin@123');
         console.log('👤 Name:', `${superAdmin.firstName} ${superAdmin.lastName}`);
-        console.log('🆔 User ID:', superAdmin._id);
-        console.log('');
-        console.log('⚠️  IMPORTANT SECURITY NOTICE:');
-        console.log('   1. Please change the default password after first login');
-        console.log('   2. Update the email configuration in .env file');
-        console.log('   3. This is for development purposes only');
-        console.log('');
-        console.log('🚀 You can now start the server and login with these credentials');
+        
+        return superAdmin;
 
     } catch (error) {
         console.error('❌ Error creating super admin:', error.message);
@@ -134,54 +127,418 @@ const seedSuperAdmin = async () => {
         if (error.code === 11000) {
             console.log('📧 Email already exists. Super admin might already be created.');
         }
-    } finally {
-        await mongoose.connection.close();
-        console.log('🔌 Database connection closed');
+        return null;
     }
 };
 
 // Seed sample data (optional)
 const seedSampleData = async () => {
     try {
-        await connectDB();
-
         console.log('🌱 Seeding sample data...');
         
-        // You can add sample hospitals, shops, etc. here if needed
-        // For now, we'll just create the super admin
+        // First create super admin to use as createdBy
+        const superAdmin = await seedSuperAdmin();
+        if (!superAdmin) {
+            const existingAdmin = await User.findOne({ role: 'super_admin' });
+            if (!existingAdmin) {
+                throw new Error('Could not find or create super admin');
+            }
+        }
+        const adminUser = await User.findOne({ role: 'super_admin' });
         
-        console.log('✅ Sample data seeding completed');
+        // Sample Hospitals Data
+        const hospitalsData = [
+            {
+                name: "City General Hospital",
+                registrationNumber: "CGH001",
+                email: "admin@citygeneral.com",
+                phone: "919876543210", // Fixed phone format
+                address: {
+                    street: "123 Main Street",
+                    city: "Mumbai",
+                    state: "Maharashtra",
+                    zipCode: "400001",
+                    country: "India"
+                },
+                type: "multispecialty", // Required field
+                establishedYear: 2010,
+                bedCapacity: 200,
+                departments: ["cardiology", "neurology", "pediatrics", "emergency"],
+                contactPerson: {
+                    name: "Dr. Rajesh Kumar", // Required field
+                    designation: "Chief Medical Officer",
+                    phone: "919876543211",
+                    email: "cmo@citygeneral.com"
+                },
+                operatingHours: {
+                    monday: { start: "08:00", end: "20:00", is24Hours: false },
+                    tuesday: { start: "08:00", end: "20:00", is24Hours: false },
+                    wednesday: { start: "08:00", end: "20:00", is24Hours: false },
+                    thursday: { start: "08:00", end: "20:00", is24Hours: false },
+                    friday: { start: "08:00", end: "20:00", is24Hours: false },
+                    saturday: { start: "09:00", end: "18:00", is24Hours: false },
+                    sunday: { start: "10:00", end: "16:00", is24Hours: false }
+                },
+                website: "https://citygeneral.com",
+                description: "Premier healthcare facility with state-of-the-art equipment and experienced medical professionals.",
+                isActive: true,
+                isVerified: true,
+                createdBy: adminUser._id // Required field
+            },
+            {
+                name: "Apollo Health Center",
+                registrationNumber: "AHC002",
+                email: "info@apollohealth.com",
+                phone: "919876543220",
+                address: {
+                    street: "456 Medical Plaza",
+                    city: "Delhi",
+                    state: "Delhi",
+                    zipCode: "110001",
+                    country: "India"
+                },
+                type: "general",
+                establishedYear: 2005,
+                bedCapacity: 150,
+                departments: ["orthopedics", "gynecology", "dermatology", "general_medicine"],
+                contactPerson: {
+                    name: "Dr. Priya Sharma",
+                    designation: "Medical Director",
+                    phone: "919876543221",
+                    email: "director@apollohealth.com"
+                },
+                operatingHours: {
+                    monday: { start: "07:00", end: "21:00", is24Hours: false },
+                    tuesday: { start: "07:00", end: "21:00", is24Hours: false },
+                    wednesday: { start: "07:00", end: "21:00", is24Hours: false },
+                    thursday: { start: "07:00", end: "21:00", is24Hours: false },
+                    friday: { start: "07:00", end: "21:00", is24Hours: false },
+                    saturday: { start: "08:00", end: "19:00", is24Hours: false },
+                    sunday: { start: "09:00", end: "17:00", is24Hours: false }
+                },
+                website: "https://apollohealth.com",
+                description: "Comprehensive healthcare services with modern technology and compassionate care.",
+                isActive: true,
+                isVerified: true,
+                createdBy: adminUser._id
+            },
+            {
+                name: "Sunshine Medical Center",
+                registrationNumber: "SMC003",
+                email: "contact@sunshine.com",
+                phone: "919876543230",
+                address: {
+                    street: "789 Health Avenue",
+                    city: "Bangalore",
+                    state: "Karnataka",
+                    zipCode: "560001",
+                    country: "India"
+                },
+                type: "specialty",
+                establishedYear: 2015,
+                bedCapacity: 75,
+                departments: ["psychiatry", "dentistry", "ophthalmology", "ent"],
+                contactPerson: {
+                    name: "Dr. Amit Gupta",
+                    designation: "Administrator",
+                    phone: "919876543231",
+                    email: "admin@sunshine.com"
+                },
+                operatingHours: {
+                    monday: { start: "09:00", end: "18:00", is24Hours: false },
+                    tuesday: { start: "09:00", end: "18:00", is24Hours: false },
+                    wednesday: { start: "09:00", end: "18:00", is24Hours: false },
+                    thursday: { start: "09:00", end: "18:00", is24Hours: false },
+                    friday: { start: "09:00", end: "18:00", is24Hours: false },
+                    saturday: { start: "10:00", end: "16:00", is24Hours: false },
+                    sunday: { start: "", end: "", is24Hours: false }
+                },
+                website: "https://sunshine.com",
+                description: "Specialized care for mental health, dental care, and rehabilitation services.",
+                isActive: true,
+                isVerified: true,
+                createdBy: adminUser._id
+            }
+        ];        // Sample Medical Shops Data
+        const shopsData = [
+            {
+                name: "HealthPlus Pharmacy",
+                licenseNumber: "HP001LIC",
+                email: "admin@healthplus.com",
+                phone: "919876543240",
+                address: {
+                    street: "101 Pharmacy Street",
+                    city: "Mumbai",
+                    state: "Maharashtra",
+                    zipCode: "400002",
+                    country: "India"
+                },
+                shopType: "retail",
+                establishedYear: 2018,
+                operatingHours: {
+                    monday: { start: "08:00", end: "22:00", is24Hours: false },
+                    tuesday: { start: "08:00", end: "22:00", is24Hours: false },
+                    wednesday: { start: "08:00", end: "22:00", is24Hours: false },
+                    thursday: { start: "08:00", end: "22:00", is24Hours: false },
+                    friday: { start: "08:00", end: "22:00", is24Hours: false },
+                    saturday: { start: "09:00", end: "21:00", is24Hours: false },
+                    sunday: { start: "10:00", end: "20:00", is24Hours: false }
+                },
+                license: {
+                    number: "DL001HP2024",
+                    type: "drug_license",
+                    issueDate: new Date("2024-01-01"),
+                    expiryDate: new Date("2026-12-31"),
+                    issuingAuthority: "Maharashtra Drug Control Authority"
+                },
+                owner: {
+                    name: "Mr. Ramesh Patel",
+                    qualification: "B.Pharm",
+                    phone: "919876543241",
+                    email: "ramesh@healthplus.com",
+                    pharmacistLicense: "PH001RP"
+                },
+                website: "https://healthplus.com",
+                description: "Your trusted neighborhood pharmacy with 24/7 service and home delivery.",
+                paymentMethods: ["cash", "card", "upi", "digital_wallet"],
+                isActive: true,
+                isVerified: true,
+                createdBy: adminUser._id
+            },
+            {
+                name: "MediCare Pharmacy",
+                licenseNumber: "MP002LIC",
+                email: "info@medicare.com",
+                phone: "919876543250",
+                address: {
+                    street: "202 Medical Complex",
+                    city: "Delhi",
+                    state: "Delhi",
+                    zipCode: "110002",
+                    country: "India"
+                },
+                shopType: "retail",
+                establishedYear: 2015,
+                operatingHours: {
+                    monday: { start: "08:00", end: "22:00", is24Hours: false },
+                    tuesday: { start: "08:00", end: "22:00", is24Hours: false },
+                    wednesday: { start: "08:00", end: "22:00", is24Hours: false },
+                    thursday: { start: "08:00", end: "22:00", is24Hours: false },
+                    friday: { start: "08:00", end: "22:00", is24Hours: false },
+                    saturday: { start: "09:00", end: "21:00", is24Hours: false },
+                    sunday: { start: "10:00", end: "20:00", is24Hours: false }
+                },
+                license: {
+                    number: "DL002MP2024",
+                    type: "pharmacy_license",
+                    issueDate: new Date("2024-01-01"),
+                    expiryDate: new Date("2026-12-31"),
+                    issuingAuthority: "Delhi Drug Control Department"
+                },
+                owner: {
+                    name: "Dr. Priya Sharma",
+                    qualification: "PharmD",
+                    phone: "919876543251",
+                    email: "priya@medicare.com",
+                    pharmacistLicense: "PH002PS"
+                },
+                website: "https://medicare.com",
+                description: "Comprehensive pharmacy services with specialized care products and expert consultation.",
+                paymentMethods: ["cash", "card", "upi", "net_banking"],
+                isActive: true,
+                isVerified: true,
+                createdBy: adminUser._id
+            },
+            {
+                name: "QuickMeds Pharmacy",
+                licenseNumber: "QM003LIC",
+                email: "support@quickmeds.com",
+                phone: "919876543260",
+                address: {
+                    street: "303 Quick Street",
+                    city: "Bangalore",
+                    state: "Karnataka",
+                    zipCode: "560002",
+                    country: "India"
+                },
+                shopType: "retail",
+                establishedYear: 2020,
+                operatingHours: {
+                    monday: { start: "07:00", end: "23:00", is24Hours: false },
+                    tuesday: { start: "07:00", end: "23:00", is24Hours: false },
+                    wednesday: { start: "07:00", end: "23:00", is24Hours: false },
+                    thursday: { start: "07:00", end: "23:00", is24Hours: false },
+                    friday: { start: "07:00", end: "23:00", is24Hours: false },
+                    saturday: { start: "08:00", end: "22:00", is24Hours: false },
+                    sunday: { start: "09:00", end: "21:00", is24Hours: false }
+                },
+                license: {
+                    number: "DL003QM2024",
+                    type: "drug_license",
+                    issueDate: new Date("2024-01-01"),
+                    expiryDate: new Date("2026-12-31"),
+                    issuingAuthority: "Karnataka State Pharmacy Council"
+                },
+                owner: {
+                    name: "Mr. Suresh Kumar",
+                    qualification: "M.Pharm",
+                    phone: "919876543261",
+                    email: "suresh@quickmeds.com",
+                    pharmacistLicense: "PH003SK"
+                },
+                website: "https://quickmeds.com",
+                description: "Fast and reliable pharmacy service with online ordering and quick delivery options.",
+                paymentMethods: ["cash", "card", "upi", "net_banking", "digital_wallet"],
+                isActive: true,
+                isVerified: true,
+                createdBy: adminUser._id
+            }
+        ];
+
+        // Clear existing data (for fresh seeding)
+        await Hospital.deleteMany({});
+        await Shop.deleteMany({});
+        console.log('🗑️  Cleared existing hospitals and shops data');
+
+        // Create hospitals
+        const createdHospitals = await Hospital.insertMany(hospitalsData);
+        console.log(`🏥 Created ${createdHospitals.length} hospitals`);
+
+        // Create shops
+        const createdShops = await Shop.insertMany(shopsData);
+        console.log(`🏪 Created ${createdShops.length} medical shops`);
+
+        // Create admin users for hospitals and shops
+        const hospitalAdmins = [];
+        const shopAdmins = [];        for (let i = 0; i < createdHospitals.length; i++) {
+            const hospital = createdHospitals[i];
+            const adminData = {
+                email: `hospital${i + 1}@medtrax.com`,
+                password: 'Hospital@123',
+                role: 'hospital_admin',
+                firstName: `Hospital${i + 1}`,
+                lastName: 'Admin',
+                phone: `9876543${270 + i}0`, // Fixed phone format
+                hospitalId: hospital._id,
+                isActive: true
+            };
+            
+            try {
+                const admin = await User.create(adminData);
+                hospitalAdmins.push(admin);
+                console.log(`👨‍⚕️ Created hospital admin: ${admin.email}`);
+            } catch (error) {
+                if (error.code !== 11000) { // Skip duplicate email errors
+                    console.error(`Error creating hospital admin: ${error.message}`);
+                }
+            }
+        }
+
+        for (let i = 0; i < createdShops.length; i++) {
+            const shop = createdShops[i];
+            const adminData = {
+                email: `shop${i + 1}@medtrax.com`,
+                password: 'Shop@123',
+                role: 'shop_admin',
+                firstName: `Shop${i + 1}`,
+                lastName: 'Admin',
+                phone: `9876543${280 + i}0`, // Fixed phone format
+                shopId: shop._id,
+                isActive: true
+            };
+            
+            try {
+                const admin = await User.create(adminData);
+                shopAdmins.push(admin);
+                console.log(`💊 Created shop admin: ${admin.email}`);
+            } catch (error) {
+                if (error.code !== 11000) { // Skip duplicate email errors
+                    console.error(`Error creating shop admin: ${error.message}`);
+                }
+            }
+        }
+
+        console.log('');
+        console.log('🎉 Sample data seeding completed successfully!');
+        console.log('');
+        console.log('📋 TEST ACCOUNTS CREATED:');
+        console.log('');
+        console.log('🔐 SUPER ADMIN:');
+        console.log('   Email: admin@medtrax.com');
+        console.log('   Password: Admin@123');
+        console.log('');
+        console.log('🏥 HOSPITAL ADMINS:');
+        hospitalAdmins.forEach((admin, index) => {
+            console.log(`   Hospital ${index + 1}: ${admin.email} / Hospital@123`);
+        });
+        console.log('');
+        console.log('🏪 SHOP ADMINS:');
+        shopAdmins.forEach((admin, index) => {
+            console.log(`   Shop ${index + 1}: ${admin.email} / Shop@123`);
+        });
+        console.log('');
+        console.log('🔗 FRONTEND TESTING:');
+        console.log('   - Visit http://localhost:3000 to see the frontend');
+        console.log('   - Go to /hospitals to see the hospital listings');
+        console.log('   - Go to /medicines to see the pharmacy listings');
+        console.log('   - Use /login to sign in with any of the above accounts');
+        console.log('');
 
     } catch (error) {
         console.error('❌ Error seeding sample data:', error.message);
-    } finally {
-        await mongoose.connection.close();
+        console.error(error.stack);
     }
 };
 
 // Command line interface
 const command = process.argv[2];
 
+const runSeeder = async (seedFunction, name) => {
+    try {
+        await connectDB();
+        await seedFunction();
+        console.log(`✅ ${name} completed successfully`);
+    } catch (error) {
+        console.error(`❌ Error in ${name}:`, error.message);
+    } finally {
+        await mongoose.connection.close();
+        console.log('🔌 Database connection closed');
+    }
+};
+
 switch (command) {
     case 'admin':
-        seedSuperAdmin();
+        runSeeder(seedSuperAdmin, 'Super Admin creation');
         break;
     case 'sample':
-        seedSampleData();
+        runSeeder(seedSampleData, 'Sample data seeding');
         break;
     case 'all':
         (async () => {
-            await seedSuperAdmin();
-            await seedSampleData();
+            try {
+                await connectDB();
+                await seedSuperAdmin();
+                await seedSampleData();
+                console.log('✅ All seeding completed successfully');
+            } catch (error) {
+                console.error('❌ Error in complete seeding:', error.message);
+            } finally {
+                await mongoose.connection.close();
+                console.log('🔌 Database connection closed');
+            }
         })();
         break;
     default:
         console.log('📖 Usage:');
         console.log('   npm run seed admin  - Create super admin user');
-        console.log('   npm run seed sample - Seed sample data');
-        console.log('   npm run seed all    - Do both');
+        console.log('   npm run seed sample - Seed sample data (hospitals, shops, admins)');
+        console.log('   npm run seed all    - Create admin + seed sample data');
         console.log('');
         console.log('🔧 Make sure MongoDB is running and .env file is configured');
+        console.log('');
+        console.log('💡 After seeding, you can test the application with:');
+        console.log('   - Frontend: http://localhost:3000');
+        console.log('   - Backend API: http://localhost:5000/api');
         break;
 }
 

@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { MapPin, Star, Phone, ArrowRight, Search } from 'lucide-react';
+import { getPublicHospitalsApi } from '../../Api';
+import { useNavigate } from 'react-router-dom';
 
 const AppContainer = styled.div`
   background: #f8f9fa;
@@ -213,23 +215,70 @@ const clinicsData = [
 
 const Appointments = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [clinics, setClinics] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);  const navigate = useNavigate();
+  
+  // Fallback data for when API fails
+  const fallbackClinicsData = [
+    {
+      id: 1,
+      name: 'City Hospital',
+      rating: 4.8,
+      phone: '+91-9876543210',
+      address: { city: 'Delhi', state: 'Delhi' },
+      image: 'https://images.unsplash.com/photo-1551190822-a9333d879b1f?w=400&h=200&fit=crop'
+    },
+    {
+      id: 2,
+      name: 'Apollo Hospital',
+      rating: 4.6,
+      phone: '+91-9876543211',
+      address: { city: 'Mumbai', state: 'Maharashtra' },
+      image: 'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=200&fit=crop'
+    }
+  ];
+  
+  useEffect(() => {
+    const fetchClinics = async () => {
+      try {
+        setLoading(true);
+        const response = await getPublicHospitalsApi();
+        const hospitalsData = response.data?.hospitals || response.data || [];
+        // Ensure we always set an array
+        setClinics(Array.isArray(hospitalsData) ? hospitalsData : []);
+      } catch (error) {
+        console.error('Error fetching clinics:', error);
+        setError(error.message);
+        // Fallback to static data if API fails
+        setClinics(fallbackClinicsData);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchClinics();
+  }, []);
   
   const handleClinicClick = (clinicId) => {
-    window.location.href = `/appform/${clinicId}`;
+    navigate(`/appform?hospitalId=${clinicId}`);
   };
 
   const handleSearch = (e) => {
     setSearchTerm(e.target.value.toLowerCase());
   };
-
-  const filteredClinics = clinicsData.filter(clinic => 
-    clinic.name.toLowerCase().includes(searchTerm) ||
-    clinic.doctor.toLowerCase().includes(searchTerm) ||
-    clinic.specialty.toLowerCase().includes(searchTerm) ||
-    clinic.location.toLowerCase().includes(searchTerm) ||
-    clinic.phone.includes(searchTerm)
-  );
-
+  const filteredClinics = Array.isArray(clinics) ? clinics.filter(clinic => {
+    const name = clinic.name || '';
+    const phone = clinic.phone || '';
+    const address = clinic.address || {};
+    const location = `${address.city || ''} ${address.state || ''}`.trim();
+    const specialty = clinic.specialties ? clinic.specialties.join(' ') : '';
+    
+    return name.toLowerCase().includes(searchTerm) ||
+           specialty.toLowerCase().includes(searchTerm) ||
+           location.toLowerCase().includes(searchTerm) ||
+           phone.includes(searchTerm);
+  }) : [];
   return (
     <AppContainer>
       <Header>Book Your Appointment</Header>
@@ -240,53 +289,58 @@ const Appointments = () => {
           <SearchIcon size={20} />
           <SearchInput
             type="text"
-            placeholder="Search clinics by name, doctor, specialty, location or phone..."
+            placeholder="Search hospitals by name, specialty, location or phone..."
             onChange={handleSearch}
           />
         </SearchWrapper>
       </SearchContainer>
 
-      <ClinicsGrid>
-        {filteredClinics.length > 0 ? (
-          filteredClinics.map((clinic) => (
-            <ClinicCard key={clinic.id} onClick={() => handleClinicClick(clinic.id)}>
-              <ClinicImage image={clinic.image} />
-              
-              <ClinicInfo>
-                <ClinicName>{clinic.name}</ClinicName>
+      {loading ? (
+        <NoClinicsMessage>Loading hospitals...</NoClinicsMessage>
+      ) : error ? (
+        <NoClinicsMessage>Error loading hospitals. Showing sample data.</NoClinicsMessage>
+      ) : (
+        <ClinicsGrid>
+          {filteredClinics.length > 0 ? (
+            filteredClinics.map((clinic) => (
+              <ClinicCard key={clinic._id || clinic.id} onClick={() => handleClinicClick(clinic._id || clinic.id)}>
+                <ClinicImage image={clinic.images?.[0] || clinic.image} />
                 
-                <div>
-                  <Rating>
-                    <Star size={16} fill="currentColor" />
-                    <span>{clinic.rating}</span>
-                  </Rating>
-                  <Location>
-                    <MapPin size={14} />
-                    <span>{clinic.location}</span>
-                  </Location>
-                  <Contact>
-                    <Phone size={14} />
-                    <span>{clinic.phone}</span>
-                  </Contact>
-                </div>
-                
-                <ClinicDetails>
-                  <ViewButton>
-                    Book Appointment
-                    <ArrowRight size={16} />
-                  </ViewButton>
-                </ClinicDetails>
-              </ClinicInfo>
-            </ClinicCard>
-          ))
-        ) : (
-          <NoClinicsMessage>
-            <Search size={48} color="#008b95" style={{ marginBottom: '1rem' }} />
-            <p>No clinics found matching your search.</p>
-            <p>Please try different keywords.</p>
-          </NoClinicsMessage>
-        )}
-      </ClinicsGrid>
+                <ClinicInfo>
+                  <ClinicName>{clinic.name}</ClinicName>
+                  
+                  <div>
+                    <Rating>
+                      <Star size={16} fill="currentColor" />
+                      <span>{clinic.rating || '4.5'}</span>
+                    </Rating>
+                    <Location>
+                      <MapPin size={14} />
+                      <span>{clinic.address ? `${clinic.address.city}, ${clinic.address.state}` : clinic.location}</span>
+                    </Location>
+                    <Contact>
+                      <Phone size={14} />
+                      <span>{clinic.phone}</span>
+                    </Contact>
+                  </div>
+                    <ClinicDetails>
+                    <ViewButton>
+                      Book Appointment
+                      <ArrowRight size={16} />
+                    </ViewButton>
+                  </ClinicDetails>
+                </ClinicInfo>
+              </ClinicCard>
+            ))
+          ) : (
+            <NoClinicsMessage>
+              <Search size={48} color="#008b95" style={{ marginBottom: '1rem' }} />
+              <p>No hospitals found matching your search.</p>
+              <p>Please try different keywords.</p>
+            </NoClinicsMessage>
+          )}
+        </ClinicsGrid>
+      )}
     </AppContainer>
   );
 };
