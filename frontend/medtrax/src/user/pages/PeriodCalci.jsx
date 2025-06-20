@@ -45,7 +45,7 @@ const PeriodCalculator = () => {
           <br />
         </h1>
         <img
-          src="https://preggerz.storehippo.com/s/6123687a0e3882eabaee1e6e/ms.files/newtoolnew.png"
+          src="https://cdn.megawecare.com/GHBY/Calculator-Images/period-cycle-calculator-2D-v2.webp"
           alt="Health tracker illustration"
           className="percalcibanner-image"
         />
