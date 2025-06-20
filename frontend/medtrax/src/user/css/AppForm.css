@@ -1,19 +1,18 @@
 /* Heading Styles */
 /* Center the heading container */
-.heading-container2 {
+.appform-heading-container2 {
     display: flex;
     flex-direction: column;
-    align-items: flex-start; /* Aligns headings to the left */
+    align-items:center; /* Aligns headings to the left */
     justify-content: center;
     margin: 0 auto; /* Centers the container horizontally on the page */
     padding: 20px;
-    width: fit-content; /* Adjusts the container width to the content */
     margin-top: -50px;
     margin-bottom: 20px;
 }
 
 /* Heading 1 - Large text */
-.form-heading {
+.appform-form-heading {
     font-size: 50px; /* Larger font size */
     font-weight: 700;
     color: #008b95;
@@ -22,14 +21,14 @@
 }
 
 /* Heading 2 - Smaller text */
-.form-heading2 {
+.appform-form-heading2 {
     font-size: 40px;
     font-weight: 600;
     color: #21272c;
     font-family: 'Arial', sans-serif;
     margin: 0; /* Remove default margin */
 }
-.new-container5 {
+.appform-container5 {
     border: 2px solid #008b95; /* Black border */
     background-color: white; /* White background */
     padding: 20px; /* Optional: Adjust the padding for spacing */
@@ -53,10 +52,9 @@
   
   .form-col-lg-12 {
     width: 100%;
-    margin-bottom: 20px;
   }
   
-  .input-label {
+  .appform-input-label {
     display: block;
     font-size: 14px;
     color: #333;
@@ -64,7 +62,7 @@
     font-weight: 500;
   }
   
-  .form-field {
+  .appform-form-field {
     width: 50%;
     padding: 12px;
     border: 1px solid #d1d5db;
@@ -73,13 +71,13 @@
     color: #333;
     outline: none;
   }
-  .form-field:focus {
+  .appform-form-field:focus {
     box-shadow: 0 0 10px #42b1b9; /* Yellow blur shadow */
 
     outline: none;
   }
   
-  .form-field::placeholder {
+  .appform-form-field::placeholder {
     color: #9ca3af;
   }
   
@@ -93,24 +91,23 @@
   }
   
   /* For the date and time input with icons */      
-  .with-icon-input {
-    position: relative;
+  .appform-date{
     display: flex;
     align-items: center;
+    justify-content: flex-start;
+    margin-right: 100px;
+    }
+
+  .appform-date input {
+    width: 150px;
+    /* Set the width of the input fields */
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
   }
-  
-  /* .with-icon-input i {
-    position: relative;
-    right: 50px;
-    color: #9ca3af;
-    font-size: 18px;
-  } */
   
   /* Datepicker adjustments */
-  .react-datepicker-wrapper {
-    width: 51%;
-    margin-left: 155px;
-  }
+
   
   /* .react-datepicker__input-container input {
     width: 100%;
@@ -145,39 +142,19 @@
   
 /* Submit button styles */
 /* Submit button styles */
-.btn1-style-1 {
-    background-color: #3ab5bd; /* Button background */
-    padding: 5px 30px; /* Increased padding for better visibility */
+.appform-btn {
+    background-color: #02a2ae;
+    color: white;
     border: none;
-    border-radius: 50px; /* Rounded button for a softer look */
+    padding: 10px 20px;
+    border-radius: 25px;
     cursor: pointer;
-    font-size: 16px; /* Slightly larger font */
-    font-weight: 600; /* Bold font */
-    display: inline-flex;
-    align-items: center;
-    transition: all 0.3s ease; /* Smooth transition on hover */
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Soft shadow for a modern look */
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+    margin-top: 20px;
   }
-  
-  .btn1-style-1:hover {
-    background-color: #008b95; /* Slightly darker blue on hover */
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2); /* Increased shadow on hover */
-    transform: translateY(-2px); /* Lifting effect on hover */
-  }
-  
-  .btn1-text {
-    margin-right: 12px; /* Space between text and icon */
-    font-size: inherit; /* Inherit font size from button */
-    font-weight: inherit; /* Inherit font weight */
-    color: #ffcc00; /* Custom text color (yellow in this case) */
-  }
-  
-  .btn1-style-1 i img {
-    margin-left: 10px; /* Space for the icon */
-    transition: transform 0.3s ease; /* Smooth transition for icon */
-  }
-  
-  .btn1-style-1:hover i img {
-    transform: translateX(5px); /* Icon moves slightly on hover */
-  }
+
+  .appform-btn :hover {
+    background-color: #008b95;
+}
   
