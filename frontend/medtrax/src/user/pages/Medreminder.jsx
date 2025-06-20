@@ -152,11 +152,11 @@ const MedReminder = () => {
     <div className="medical-reminder-container">
       <div className="rembanner">
         <h1>
-          Stay on top of your health with our comprehensive health trackers!
+          Medication Made Simple - Set, Forget, and Get Notified!
           <br />
         </h1>
         <img
-          src="https://preggerz.storehippo.com/s/6123687a0e3882eabaee1e6e/ms.files/newtoolnew.png"
+          src="images/med_remainder_bg.png"
           alt="Health tracker illustration"
           className="rembanner-image"
         />
