@@ -1,8 +1,18 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import { useParams, useSearchParams } from "react-router-dom";
+import { getPublicHospitalDetailsApi } from "../../Api";
 import "../css/HospitalDetails.css";
 import HospitalMap from "../components/Hospitalmap";
 
 const HospitalDetails = () => {
+    const { id } = useParams();
+    const [searchParams] = useSearchParams();
+    const hospitalId = id || searchParams.get('id');
+    
+    const [hospitalData, setHospitalData] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    
     // Dummy hospital data
     const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -116,114 +126,6 @@ const HospitalDetails = () => {
             color: "#000",
         },
     };
-    const hospitalData = {
-        name: "City Hospital - Downtown",
-        rating: 4.8,
-        reviewsCount: 259,
-        closingTime: "10:00pm",
-        location: "Downtown, Dubai",
-        directionsLink: "https://maps.google.com",
-        images: [
-            "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Hospital-de-Bellvitge.jpg/640px-Hospital-de-Bellvitge.jpg", // Main image
-            "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Hospital-de-Bellvitge.jpg/640px-Hospital-de-Bellvitge.jpg", // Secondary image 1
-            "https://c8.alamy.com/comp/H1RWH2/hospital-building-and-department-with-doctors-working-office-surgery-H1RWH2.jpg", // Secondary image 2
-            "https://data1.ibtimes.co.in/en/full/761597/jammu-500-bedded-hospital.jpg?h=450&l=50&t=40", // Secondary image 2
-            "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Hospital-de-Bellvitge.jpg/640px-Hospital-de-Bellvitge.jpg", // Main image
-            "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Hospital-de-Bellvitge.jpg/640px-Hospital-de-Bellvitge.jpg", // Secondary image 1
-            "https://c8.alamy.com/comp/H1RWH2/hospital-building-and-department-with-doctors-working-office-surgery-H1RWH2.jpg", // Secondary image 2
-            "https://data1.ibtimes.co.in/en/full/761597/jammu-500-bedded-hospital.jpg?h=450&l=50&t=40", // Secondary image 2
-        ],
-        services: [
-            {
-                category: "General Checkup",
-                image: "https://img.freepik.com/free-vector/charity-logo-hands-supporting-heart-icon-flat-design-vector-illustration_53876-136266.jpg",
-                description: "Regular health checkups",
-                doctors: [
-                    { id: 1, name: "Dr. Alice Smith", degree: "MBBS, MD", image: "https://via.placeholder.com/150" },
-                    { id: 2, name: "Dr. John Doe", degree: "MBBS, MS", image: "https://via.placeholder.com/150" },
-                ],
-            },
-            {
-                category: "Dental Care",
-                image: "https://www.carolinasmilesdentist.com/wp-content/uploads/Tooth1901.jpg",
-                description: "Comprehensive dental care services",
-                doctors: [
-                    { id: 5, name: "Dr. Emily Brown", degree: "BDS, MDS", image: "https://via.placeholder.com/150" },
-                    { id: 6, name: "Dr. David Miller", degree: "BDS", image: "https://via.placeholder.com/150" },
-                ],
-            },
-            {
-                category: "Pediatrics",
-                image: "https://www.eurokidsindia.com/blog/wp-content/uploads/2024/03/observe-children-at-play-870x557.jpg",
-                description: "Best child care services",
-                doctors: [
-                    { id: 7, name: "Dr. Arjun", degree: "BDS, MDS", image: "https://hips.hearstapps.com/hmg-prod/images/portrait-of-a-happy-young-doctor-in-his-clinic-royalty-free-image-1661432441.jpg?crop=0.66698xw:1xh;center,top&resize=1200:*" },
-                    { id: 8, name: "Dr. Smithi", degree: "BDS", image: "https://via.placeholder.com/150" },
-                    { id: 9, name: "Dr. Kranthi", degree: "BDS, MDS", image: "https://via.placeholder.com/150" },
-                    { id: 10, name: "Dr. Viraj", degree: "BDS", image: "https://via.placeholder.com/150" },
-                    { id: 11, name: "Dr. Zara", degree: "BDS, MBBS", image: "https://via.placeholder.com/150" },
-                    { id: 12, name: "Dr. Rakshitha", degree: "BDS", image: "https://via.placeholder.com/150" },
-                    { id: 13, name: "Dr. Laxmi", degree: "BDS, FRCS", image: "https://via.placeholder.com/150" },
-                ],
-            },
-            {
-                category: "Orthopedics",
-                image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTN10PBtPn1zNAxJ5MJZF2hDTw1o6lKXDgm3Q&s",
-                description: "Bone and joint care services",
-                doctors: [
-                    { id: 14, name: "Dr. Henry Adams", degree: "MBBS, MS Ortho", image: "https://desunhospital.com/wp-content/uploads/2023/12/Dr.-Aditya-Varma-2-scaled.jpg" },
-                    { id: 15, name: "Dr. Rachel Green", degree: "MBBS, DNB Ortho", image: "https://www.yourfreecareertest.com/wp-content/uploads/2018/01/how_to_become_a_doctor.jpg" },
-                ],
-            },
-            {
-                category: "Cardiology",
-                image: "https://www.nm.org/-/media/northwestern/healthbeat/images/health%20library/nm-ten-signs-cardiologist_preview.jpg",
-                description: "Heart health and care",
-                doctors: [
-                    { id: 16, name: "Dr. Steve Parker", degree: "MBBS, DM Cardiology", image: "https://via.placeholder.com/150" },
-                    { id: 17, name: "Dr. Mia Clark", degree: "MBBS, MD Cardiology", image: "https://via.placeholder.com/150" },
-                ],
-            },
-            {
-                category: "Dermatology",
-                image: "https://www.renaimedicity.org/wp-content/uploads/2021/03/dermatology-cosmetology-inn.jpg",
-                description: "Skin care and treatments",
-                doctors: [
-                    { id: 18, name: "Dr. Ava Taylor", degree: "MBBS, MD Dermatology", image: "https://via.placeholder.com/150" },
-                    { id: 19, name: "Dr. Noah Williams", degree: "MBBS, DNB Dermatology", image: "https://via.placeholder.com/150" },
-                ],
-            },
-            {
-                category: "Psychiatry",
-                image: "https://tanveernaseer.com/wp-content/uploads/2022/07/Reasons-to-become-psychiatrist.jpg",
-                description: "Mental health and wellness",
-                doctors: [
-                    { id: 20, name: "Dr. Ethan Brown", degree: "MBBS, MD Psychiatry", image: "https://via.placeholder.com/150" },
-                    { id: 21, name: "Dr. Olivia Davis", degree: "MBBS, DM Psychiatry", image: "https://via.placeholder.com/150" },
-                ],
-            },
-            {
-                category: "Physiotherapy",
-                image: "https://www.capitalphysiotherapy.com.au/wp-content/uploads/2017/01/Prevention-Screening-Sports.jpg",
-                description: "Physical therapy and rehabilitation",
-                doctors: [
-                    { id: 22, name: "Dr. Liam Wilson", degree: "BPT, MPT", image: "https://via.placeholder.com/150" },
-                    { id: 23, name: "Dr. Sophia Martinez", degree: "BPT", image: "https://via.placeholder.com/150" },
-                ],
-            },
-            {
-                category: "Gynecology",
-                image: "https://www.khadehospital.com/wp-content/uploads/2021/03/Gynaecology.jpg",
-                description: "Women's health and maternity care",
-                doctors: [
-                    { id: 24, name: "Dr. Emma Moore", degree: "MBBS, MD Gynecology", image: "https://via.placeholder.com/150" },
-                    { id: 25, name: "Dr. Daniel Johnson", degree: "MBBS, DNB Gynecology", image: "https://via.placeholder.com/150" },
-                ],
-            },
-        ],
-    };
-
-
     const [reviews, setReviews] = useState([
         {
             name: "Ciara",
@@ -376,6 +278,107 @@ const HospitalDetails = () => {
     ];
 
     const today = new Date().toLocaleString("en-US", { weekday: "long" });
+
+    // Static fallback data
+    const fallbackHospitalData = {
+        name: "City Hospital - Downtown",
+        rating: 4.8,
+        reviewsCount: 259,
+        closingTime: "10:00pm",
+        location: "Downtown, Dubai",
+        directionsLink: "https://maps.google.com",
+        images: [
+            "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Hospital-de-Bellvitge.jpg/640px-Hospital-de-Bellvitge.jpg",
+            "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Hospital-de-Bellvitge.jpg/640px-Hospital-de-Bellvitge.jpg",
+            "https://c8.alamy.com/comp/H1RWH2/hospital-building-and-department-with-doctors-working-office-surgery-H1RWH2.jpg",
+            "https://data1.ibtimes.co.in/en/full/761597/jammu-500-bedded-hospital.jpg?h=450&l=50&t=40"
+        ],
+        services: [
+            {
+                category: "General Checkup",
+                image: "https://img.freepik.com/free-vector/charity-logo-hands-supporting-heart-icon-flat-design-vector-illustration_53876-136266.jpg",
+                description: "Regular health checkups",
+                doctors: [
+                    { id: 1, name: "Dr. Alice Smith", degree: "MBBS, MD", image: "https://via.placeholder.com/150" },
+                    { id: 2, name: "Dr. John Doe", degree: "MBBS, MS", image: "https://via.placeholder.com/150" }
+                ]
+            },
+            {
+                category: "Dental Care",
+                image: "https://www.carolinasmilesdentist.com/wp-content/uploads/Tooth1901.jpg",
+                description: "Comprehensive dental care services",
+                doctors: [
+                    { id: 5, name: "Dr. Emily Brown", degree: "BDS, MDS", image: "https://via.placeholder.com/150" },
+                    { id: 6, name: "Dr. David Miller", degree: "BDS", image: "https://via.placeholder.com/150" }
+                ]
+            },
+            {
+                category: "Pediatrics",
+                image: "https://www.eurokidsindia.com/blog/wp-content/uploads/2024/03/observe-children-at-play-870x557.jpg",
+                description: "Best child care services",
+                doctors: [
+                    { id: 7, name: "Dr. Arjun", degree: "BDS, MDS", image: "https://hips.hearstapps.com/hmg-prod/images/portrait-of-a-happy-young-doctor-in-his-clinic-royalty-free-image-1661432441.jpg?crop=0.66698xw:1xh;center,top&resize=1200:*" },
+                    { id: 8, name: "Dr. Smithi", degree: "BDS", image: "https://via.placeholder.com/150" }
+                ]
+            }
+        ]
+    };    // Use effect to fetch hospital data
+    useEffect(() => {
+        const fetchHospitalDetails = async () => {
+            if (!hospitalId) {
+                setHospitalData(fallbackHospitalData);
+                setLoading(false);
+                return;
+            }
+
+            setLoading(true);
+            setError(null);
+            try {
+                const response = await getPublicHospitalDetailsApi(hospitalId);
+                console.log('Hospital Details API Response:', response.data); // Debug log
+                
+                if (response.data && response.data.success) {
+                    const hospitalInfo = response.data.data.hospital;
+                    // Transform API data to match component expectations
+                    const transformedData = {
+                        name: hospitalInfo.name,
+                        rating: hospitalInfo.rating || 4.5,
+                        reviewsCount: hospitalInfo.reviewsCount || 259,
+                        closingTime: hospitalInfo.closingTime || "10:00pm",
+                        location: hospitalInfo.address 
+                            ? `${hospitalInfo.address.city || ''}, ${hospitalInfo.address.state || ''}`.trim().replace(/^,|,$/, '')
+                            : 'Location not available',
+                        directionsLink: hospitalInfo.directionsLink || "https://maps.google.com",
+                        phone: hospitalInfo.phone,
+                        images: hospitalInfo.images || [
+                            "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Hospital-de-Bellvitge.jpg/640px-Hospital-de-Bellvitge.jpg",
+                            "https://c8.alamy.com/comp/H1RWH2/hospital-building-and-department-with-doctors-working-office-surgery-H1RWH2.jpg"
+                        ],
+                        services: hospitalInfo.services || fallbackHospitalData.services
+                    };
+                    setHospitalData(transformedData);
+                } else {
+                    throw new Error('Invalid API response structure');
+                }
+            } catch (err) {
+                console.error('Error fetching hospital details:', err);
+                setError(err.message);
+                // Fallback to static data if API fails
+                setHospitalData(fallbackHospitalData);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchHospitalDetails();
+    }, [hospitalId]);
+
+    // Display the current hospital data or fallback
+    const displayData = hospitalData || fallbackHospitalData;
+
+    if (loading) return <div>Loading...</div>;
+    if (error) return <div>Error: {error}</div>;
+    if (!hospitalData) return null;
 
     return (
         <div className="hospital-ui">

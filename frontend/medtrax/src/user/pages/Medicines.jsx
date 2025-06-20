@@ -1,6 +1,8 @@
 import styled from 'styled-components';
 import { MapPin, Star, Phone, ArrowRight, Search } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { getPublicShopsApi } from '../../Api';
+import { useNavigate } from 'react-router-dom';
 
 const AppContainer = styled.div`
   background: #f8f9fa;
@@ -184,75 +186,70 @@ const NoShopsMessage = styled.div`
   grid-column: 1 / -1;
 `;
 
-const medicalShopData = {
-  Gurgaon: [
+const Medicines = () => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [shops, setShops] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);  const navigate = useNavigate();
+  
+  // Fallback data for when API fails
+  const fallbackShopsData = [
     {
       id: 1,
-      name: 'Medtrax Pharmacy',
-      rating: 4.7,
-      location: 'Sector 14',
+      name: 'Apollo Pharmacy',
+      rating: 4.5,
       phone: '+91-9876543210',
-      image: 'https://images.unsplash.com/photo-1587854692152-cbe660dbde88?w=400&h=200&fit=crop'
+      address: { city: 'Delhi', state: 'Delhi' },
+      image: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?w=400&h=200&fit=crop'
     },
     {
       id: 2,
-      name: 'Green Valley Medical Store',
-      rating: 4.5,
-      location: 'Sector 56',
+      name: 'MedPlus',
+      rating: 4.3,
       phone: '+91-9876543211',
-      image: 'https://images.unsplash.com/photo-1607619056574-7b8d3ee536b2?w=400&h=200&fit=crop'
-    },
-    {
-      id: 3,
-      name: '24/7 Medico',
-      rating: 4.8,
-      location: 'Sector 23',
-      phone: '+91-9876543212',
-      image: 'https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=400&h=200&fit=crop'
+      address: { city: 'Mumbai', state: 'Maharashtra' },
+      image: 'https://images.unsplash.com/photo-1631549916768-4119b2e5f926?w=400&h=200&fit=crop'
     }
-  ],
-  Delhi: [
-    {
-      id: 4,
-      name: 'City Med Pharmacy',
-      rating: 4.6,
-      location: 'Connaught Place',
-      phone: '+91-9876543213',
-      image: 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=400&h=200&fit=crop'
-    }
-  ],
-  Ghaziabad: [],
-  Noida: [
-    {
-      id: 5,
-      name: 'MediQuick Store',
-      rating: 4.4,
-      location: 'Sector 62',
-      phone: '+91-9876543214',
-      image: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=400&h=200&fit=crop'
-    }
-  ],
-  Faridabad: []
-};
-
-const Medicines = () => {
-  const [selectedLocation] = useState('Gurgaon');
-  const [searchTerm, setSearchTerm] = useState('');
+  ];
   
+  useEffect(() => {
+    const fetchShops = async () => {
+      try {
+        setLoading(true);
+        const response = await getPublicShopsApi();
+        const shopsData = response.data?.shops || response.data || [];
+        // Ensure we always set an array
+        setShops(Array.isArray(shopsData) ? shopsData : []);
+      } catch (error) {
+        console.error('Error fetching shops:', error);
+        setError(error.message);
+        // Fallback to static data if API fails
+        setShops(fallbackShopsData);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchShops();
+  }, []);
+
   const handleSearch = (e) => {
     setSearchTerm(e.target.value.toLowerCase());
   };
 
   const handleShopClick = (shopId) => {
-    window.location.href = `/medicalshop/${shopId}`;
+    navigate(`/medicalshopdetails?shopId=${shopId}`);
   };
-
-  const shops = (medicalShopData[selectedLocation] || [])
-    .filter(shop => 
-      shop.name.toLowerCase().includes(searchTerm) ||
-      shop.location.toLowerCase().includes(searchTerm) ||
-      shop.phone.includes(searchTerm)
-    );
+  const filteredShops = Array.isArray(shops) ? shops.filter(shop => {
+    const name = shop.name || '';
+    const phone = shop.phone || '';
+    const address = shop.address || {};
+    const location = `${address.city || ''} ${address.state || ''}`.trim();
+    
+    return name.toLowerCase().includes(searchTerm) ||
+           location.toLowerCase().includes(searchTerm) ||
+           phone.includes(searchTerm);
+  }) : [];
 
   return (
     <AppContainer>
@@ -268,49 +265,52 @@ const Medicines = () => {
             onChange={handleSearch}
           />
         </SearchWrapper>
-      </SearchContainer>
-
-      <ShopsGrid>
-        {shops.length > 0 ? (
-          shops.map((shop) => (
-            <MedicalShopCard key={shop.id} onClick={() => handleShopClick(shop.id)}>
-              <ShopImage image={shop.image} />
-              
-              <ShopInfo>
-                <ShopName>{shop.name}</ShopName>
+      </SearchContainer>      {loading ? (
+        <NoShopsMessage>Loading medical shops...</NoShopsMessage>
+      ) : error ? (
+        <NoShopsMessage>Error loading shops. Please try again later.</NoShopsMessage>
+      ) : (
+        <ShopsGrid>
+          {filteredShops.length > 0 ? (
+            filteredShops.map((shop) => (
+              <MedicalShopCard key={shop._id || shop.id} onClick={() => handleShopClick(shop._id || shop.id)}>
+                <ShopImage image={shop.images?.[0] || shop.image} />
                 
-                <div>
-                  <Rating>
-                    <Star size={16} fill="currentColor" />
-                    <span>{shop.rating}</span>
-                  </Rating>
-                  <Location>
-                    <MapPin size={14} />
-                    <span>{shop.location}, {selectedLocation}</span>
-                  </Location>
-                  <Contact>
-                    <Phone size={14} />
-                    <span>{shop.phone}</span>
-                  </Contact>
-                </div>
-                
-                <ShopDetails>
-                  <ViewButton>
-                    View Details
-                    <ArrowRight size={16} />
-                  </ViewButton>
-                </ShopDetails>
-              </ShopInfo>
-            </MedicalShopCard>
-          ))
-        ) : (
-          <NoShopsMessage>
-            <MapPin size={48} color="#008b95" style={{ marginBottom: '1rem' }} />
-            <p>No medical shops found in {selectedLocation} matching your search.</p>
-            <p>Please try a different location or search term.</p>
-          </NoShopsMessage>
-        )}
-      </ShopsGrid>
+                <ShopInfo>
+                  <ShopName>{shop.name}</ShopName>
+                  
+                  <div>
+                    <Rating>
+                      <Star size={16} fill="currentColor" />
+                      <span>{shop.rating || '4.5'}</span>
+                    </Rating>
+                    <Location>
+                      <MapPin size={14} />
+                      <span>{shop.address ? `${shop.address.city}, ${shop.address.state}` : shop.location}</span>
+                    </Location>
+                    <Contact>
+                      <Phone size={14} />
+                      <span>{shop.phone}</span>
+                    </Contact>
+                  </div>
+                  
+                  <ShopDetails>
+                    <ViewButton>
+                      View Details
+                      <ArrowRight size={16} />
+                    </ViewButton>
+                  </ShopDetails>
+                </ShopInfo>
+              </MedicalShopCard>
+            ))
+          ) : (
+            <NoShopsMessage>
+              <Search size={48} color="#008b95" style={{ marginBottom: '1rem' }} />
+              <p>No medical shops found matching your search.</p>              <p>Please try different keywords.</p>
+            </NoShopsMessage>
+          )}
+        </ShopsGrid>
+      )}
     </AppContainer>
   );
 };

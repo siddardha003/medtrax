@@ -1,16 +1,77 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { logOut } from '../../Redux/user/actions';
 
 const Header = ({ data }) => {
   const {logo} = data;
-
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { token, userInfo } = useSelector(state => state.user || {});
+  const isLoggedIn = token && userInfo?.id;
+  
   const [mobileToggle, setMobileToggle] = useState(false);
   const [lastScrollTop, setLastScrollTop] = useState(0);
   const [isSticky, setIsSticky] = useState(false);
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const dropdownRef = useRef(null);
 
   const handleMobileToggle = () => {
     setMobileToggle(!mobileToggle);
   };
+  const handleLogout = () => {
+    // Clear user data
+    dispatch(logOut());
+    // Redirect to home page
+    navigate('/');
+    // Close dropdown
+    setShowProfileDropdown(false);
+    // Add a small delay to ensure state updates
+    setTimeout(() => {
+      console.log('User logged out successfully');
+      // Force a page refresh to ensure clean state
+      window.location.reload();
+    }, 100);
+  };  const navigateToDashboard = () => {
+    console.log('Navigating to dashboard, user role:', userInfo?.role, 'isAdmin:', userInfo?.isAdmin);
+    
+    if (userInfo?.isAdmin) {
+      // Admin users go to their specific dashboard
+      const userRole = userInfo?.role;
+      switch (userRole) {
+        case 'super_admin':
+          navigate('/admin-panel');
+          break;
+        case 'hospital_admin':
+          navigate('/hospital-dashboard');
+          break;
+        case 'shop_admin':
+          navigate('/shop-dashboard');
+          break;
+        default:
+          // Fallback to homepage for unknown admin roles
+          navigate('/');
+          break;
+      }    } else {
+      // For regular users, go to homepage
+      navigate('/');
+    }
+    setShowProfileDropdown(false);
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowProfileDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -50,23 +111,67 @@ const Header = ({ data }) => {
                 </svg>
                 <Link to='/Contact'> medtrax_info@gmail.com </Link>
               </li>
-              {/* <li>
-                <svg
-                  enableBackground="new 0 0 512.021 512.021"
-                  viewBox="0 0 512.021 512.021"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <g>
-                    <path d="m367.988 512.021c-16.528 0-32.916-2.922-48.941-8.744-70.598-25.646-136.128-67.416-189.508-120.795s-95.15-118.91-120.795-189.508c-8.241-22.688-10.673-46.108-7.226-69.612 3.229-22.016 11.757-43.389 24.663-61.809 12.963-18.501 30.245-33.889 49.977-44.5 21.042-11.315 44.009-17.053 68.265-17.053 7.544 0 14.064 5.271 15.645 12.647l25.114 117.199c1.137 5.307-.494 10.829-4.331 14.667l-42.913 42.912c40.482 80.486 106.17 146.174 186.656 186.656l42.912-42.913c3.837-3.837 9.36-5.466 14.667-4.331l117.199 25.114c7.377 1.581 12.647 8.101 12.647 15.645 0 24.256-5.738 47.224-17.054 68.266-10.611 19.732-25.999 37.014-44.5 49.977-18.419 12.906-39.792 21.434-61.809 24.663-6.899 1.013-13.797 1.518-20.668 1.519zm-236.349-479.321c-31.995 3.532-60.393 20.302-79.251 47.217-21.206 30.265-26.151 67.49-13.567 102.132 49.304 135.726 155.425 241.847 291.151 291.151 34.641 12.584 71.867 7.64 102.132-13.567 26.915-18.858 43.685-47.256 47.217-79.251l-95.341-20.43-44.816 44.816c-4.769 4.769-12.015 6.036-18.117 3.168-95.19-44.72-172.242-121.772-216.962-216.962-2.867-6.103-1.601-13.349 3.168-18.117l44.816-44.816z" />
-                    <path d="m496.02 272c-8.836 0-16-7.164-16-16 0-123.514-100.486-224-224-224-8.836 0-16-7.164-16-16s7.164-16 16-16c68.381 0 132.668 26.628 181.02 74.98s74.98 112.639 74.98 181.02c0 8.836-7.163 16-16 16z" />
-                    <path d="m432.02 272c-8.836 0-16-7.164-16-16 0-88.224-71.776-160-160-160-8.836 0-16-7.164-16-16s7.164-16 16-16c105.869 0 192 86.131 192 192 0 8.836-7.163 16-16 16z" />
-                    <path d="m368.02 272c-8.836 0-16-7.164-16-16 0-52.935-43.065-96-96-96-8.836 0-16-7.164-16-16s7.164-16 16-16c70.58 0 128 57.42 128 128 0 8.836-7.163 16-16 16z" />
-                  </g>
-                </svg>
-                <ScrollLink to='contact'> +91 9876543210 </ScrollLink>
-              </li> */}
             </ul>
-            <Link className="st-top-header-btn st-smooth-move" to="/login" spy={true} duration={500}>Login</Link>
+            {isLoggedIn ? (
+              <div className="relative flex items-center" ref={dropdownRef}>
+                <button 
+                  className="st-top-header-btn st-smooth-move flex items-center gap-2 mr-2" 
+                  onClick={() => setShowProfileDropdown(!showProfileDropdown)}
+                >
+                  <span className="w-8 h-8 rounded-full bg-teal-600 flex items-center justify-center text-white font-medium">
+                    {userInfo.name.charAt(0)}
+                  </span>
+                </button>
+                
+                <button 
+                  onClick={handleLogout}
+                  className="bg-red-600 text-white py-1 px-3 rounded text-sm hover:bg-red-700 transition-colors"
+                >
+                  Logout
+                </button>
+                  {showProfileDropdown && (
+                  <div className="absolute right-0 top-10 mt-2 w-64 bg-white rounded-md shadow-lg py-1 z-50">
+                    <div className="px-4 py-2 border-b border-gray-100">
+                      <p className="text-sm font-medium text-gray-900">{userInfo.name}</p>
+                      <p className="text-xs text-gray-500">{userInfo.email}</p>
+                    </div>
+                    
+                    <button 
+                      onClick={navigateToDashboard} 
+                      className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      {userInfo?.isAdmin ? (
+                        <>
+                          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                          </svg>
+                          Admin Dashboard
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                          </svg>
+                          My Account
+                        </>
+                      )}
+                    </button>
+                    
+                    <button 
+                      onClick={handleLogout} 
+                      className="flex items-center w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                    >
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                      </svg>
+                      Sign out
+                    </button>
+                  </div>
+                )}</div>            ) : (
+              <div className="flex items-center space-x-3">
+                <Link className="st-top-header-btn st-smooth-move" to="/login">Login</Link>
+              </div>
+            )}
           </div>
         </div>
       </div>

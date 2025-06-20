@@ -1,6 +1,6 @@
 const User = require('../models/User');
 const { generateToken, sanitizeUser } = require('../utils/helpers');
-const { sendPasswordResetEmail } = require('../utils/email');
+const { sendPasswordResetEmail, sendOTPEmail } = require('../utils/email');
 const crypto = require('crypto');
 
 // @desc    Login user
@@ -66,7 +66,68 @@ const login = async (req, res, next) => {
     }
 };
 
-// @desc    Get current logged in user
+// @desc    Direct login without OTP (for admin or emergency access)
+// @route   POST /api/auth/direct-login
+// @access  Public
+const directLogin = async (req, res, next) => {
+    try {
+        const { email, password } = req.body;
+
+        // Check for user
+        const user = await User.findOne({ email }).select('+password');
+
+        if (!user) {
+            return res.status(401).json({
+                success: false,
+                error: 'Invalid credentials'
+            });
+        }
+
+        // Check if user is active
+        if (!user.isActive) {
+            return res.status(401).json({
+                success: false,
+                error: 'Account is deactivated. Please contact administrator.'
+            });
+        }
+
+        // Check if password matches
+        const isMatch = await user.matchPassword(password);
+
+        if (!isMatch) {
+            return res.status(401).json({
+                success: false,
+                error: 'Invalid credentials'
+            });
+        }
+
+        // Update last login
+        user.lastLogin = new Date();
+        await user.save();
+
+        // Create token
+        const token = generateToken({ 
+            id: user._id,
+            role: user.role,
+            email: user.email
+        });
+
+        // Remove password from output
+        const sanitizedUser = sanitizeUser(user);
+
+        res.status(200).json({
+            success: true,
+            message: 'Login successful',
+            data: {
+                token,
+                user: sanitizedUser
+            }
+        });
+
+    } catch (error) {
+        next(error);
+    }
+};
 // @route   GET /api/auth/me
 // @access  Private
 const getMe = async (req, res, next) => {
@@ -368,8 +429,266 @@ const refreshToken = async (req, res, next) => {
     }
 };
 
+// @desc    Register user
+// @route   POST /api/auth/register
+// @access  Public
+const register = async (req, res, next) => {
+    try {
+        const { name, email, phone, gender, password } = req.body;
+        
+        console.log('Registration request body:', req.body);
+        
+        // Validate required fields
+        if (!name || !email || !password) {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'Name, email, and password are required' 
+            });
+        }
+        
+        // Split name into first and last (simple split)
+        const nameParts = name.trim().split(' ');
+        const firstName = nameParts[0];
+        const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : firstName;
+        
+        // Check if user exists
+        const existing = await User.findOne({ email });
+        if (existing) {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'Email already registered' 
+            });
+        }
+          const user = await User.create({
+            email,
+            password,
+            firstName,
+            lastName,
+            phone: phone || '',
+            gender: gender || '',
+            role: 'user', // Set default role as regular user
+            isEmailVerified: true // Set to true for now since we're not using OTP
+        });
+        
+        res.status(201).json({ 
+            success: true, 
+            message: 'Registration successful! You can now login.',
+            data: { 
+                email: user.email, 
+                id: user._id            } 
+        });
+    } catch (error) {
+        console.error('Registration error:', error);
+        
+        // Handle validation errors
+        if (error.name === 'ValidationError') {
+            const messages = Object.values(error.errors).map(err => err.message);
+            return res.status(400).json({
+                success: false,
+                error: messages.join(', ')
+            });
+        }
+        
+        // Handle duplicate key error
+        if (error.code === 11000) {
+            return res.status(400).json({
+                success: false,
+                error: 'Email already registered'
+            });
+        }
+        
+        next(error);
+    }
+};
+
+// @desc    Send OTP for email verification
+// @route   POST /api/auth/send-otp
+// @access  Public
+const sendOTP = async (req, res, next) => {
+    try {
+        const { email } = req.body;
+
+        if (!email) {
+            return res.status(400).json({
+                success: false,
+                error: 'Email is required'
+            });
+        }
+
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                error: 'No user found with that email address'
+            });
+        }
+
+        if (!user.isActive) {
+            return res.status(400).json({
+                success: false,
+                error: 'Account is deactivated. Please contact administrator.'
+            });
+        }
+
+        // Generate OTP
+        const otp = user.generateOTP();
+        await user.save();
+
+        try {
+            await sendOTPEmail(user, otp);
+
+            res.status(200).json({
+                success: true,
+                message: 'OTP sent successfully to your email'
+            });
+        } catch (error) {
+            console.error('OTP email send error:', error);
+            user.otp = undefined;
+            user.otpExpire = undefined;
+            await user.save();
+
+            return res.status(500).json({
+                success: false,
+                error: 'OTP email could not be sent'
+            });
+        }
+    } catch (error) {
+        next(error);
+    }
+};
+
+// @desc    Verify OTP and complete login
+// @route   POST /api/auth/verify-otp
+// @access  Public
+const verifyOTP = async (req, res, next) => {
+    try {
+        const { email, otp } = req.body;
+
+        if (!email || !otp) {
+            return res.status(400).json({
+                success: false,
+                error: 'Email and OTP are required'
+            });
+        }
+
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                error: 'User not found'
+            });
+        }
+
+        if (!user.isActive) {
+            return res.status(401).json({
+                success: false,
+                error: 'Account is deactivated. Please contact administrator.'
+            });
+        }
+
+        // Verify OTP
+        const isValidOTP = user.verifyOTP(otp);
+
+        if (!isValidOTP) {
+            return res.status(400).json({
+                success: false,
+                error: 'Invalid or expired OTP'
+            });
+        }
+
+        // Clear OTP after successful verification
+        user.otp = undefined;
+        user.otpExpire = undefined;
+        user.isEmailVerified = true;
+        user.lastLogin = new Date();
+        await user.save();
+
+        // Create token
+        const token = generateToken({ 
+            id: user._id,
+            role: user.role,
+            email: user.email
+        });
+
+        // Remove password from output
+        const sanitizedUser = sanitizeUser(user);
+
+        res.status(200).json({
+            success: true,
+            message: 'OTP verified successfully. Login completed.',
+            data: {
+                token,
+                user: sanitizedUser
+            }
+        });
+
+    } catch (error) {
+        next(error);
+    }
+};
+
+// @desc    Resend OTP
+// @route   POST /api/auth/resend-otp
+// @access  Public
+const resendOTP = async (req, res, next) => {
+    try {
+        const { email } = req.body;
+
+        if (!email) {
+            return res.status(400).json({
+                success: false,
+                error: 'Email is required'
+            });
+        }
+
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                error: 'No user found with that email address'
+            });
+        }
+
+        if (!user.isActive) {
+            return res.status(400).json({
+                success: false,
+                error: 'Account is deactivated. Please contact administrator.'
+            });
+        }
+
+        // Generate new OTP
+        const otp = user.generateOTP();
+        await user.save();
+
+        try {
+            await sendOTPEmail(user, otp);
+
+            res.status(200).json({
+                success: true,
+                message: 'New OTP sent successfully to your email'
+            });
+        } catch (error) {
+            console.error('OTP resend error:', error);
+            user.otp = undefined;
+            user.otpExpire = undefined;
+            await user.save();
+
+            return res.status(500).json({
+                success: false,
+                error: 'OTP email could not be sent'
+            });
+        }
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
     login,
+    directLogin,
     getMe,
     updateProfile,
     changePassword,
@@ -377,5 +696,7 @@ module.exports = {
     resetPassword,
     logout,
     verifyToken,
-    refreshToken
+    refreshToken,
+    register
+    // sendOTP, verifyOTP, resendOTP - commented out for now
 };

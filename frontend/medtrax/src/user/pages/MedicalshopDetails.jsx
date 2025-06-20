@@ -1,8 +1,18 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import { useParams, useSearchParams } from "react-router-dom";
+import { getPublicShopDetailsApi } from "../../Api";
 import "../css/MedicalshopDetails.css";
 import MedicalshopMap from "../components/Medicalshopmap";
 
 const MedicalshopDetails = () => {
+    const { id } = useParams();
+    const [searchParams] = useSearchParams();
+    const shopId = id || searchParams.get('shopId');
+    
+    const [shopData, setShopData] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    
     const [isModalOpen1, setIsModalOpen1] = useState(false);
 
     const openModal1 = () => {
@@ -353,20 +363,88 @@ const MedicalshopDetails = () => {
         setShowPhoneNumber(true);
     };
 
+    // Static fallback data
+    const fallbackShopData = {
+        name: "Apollo Pharmacy",
+        rating: 4.4,
+        reviewsCount: 259,
+        closingTime: "10:00pm",
+        location: "Bhimavaram, Westgodavari",
+        phone: "080 4628 6939",
+        directionsLink: "https://maps.google.com",
+        images: [
+            "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Hospital-de-Bellvitge.jpg/640px-Hospital-de-Bellvitge.jpg",
+            "https://c8.alamy.com/comp/H1RWH2/hospital-building-and-department-with-doctors-working-office-surgery-H1RWH2.jpg"
+        ],
+        categories: [
+            {
+                name: "Prescription Medicines",
+                items: [
+                    { name: "Paracetamol", price: 25, availability: "In Stock" },
+                    { name: "Aspirin", price: 30, availability: "In Stock" }
+                ]
+            },
+            {
+                name: "OTC Medicines", 
+                items: [
+                    { name: "Vitamin C", price: 150, availability: "In Stock" },
+                    { name: "Calcium Tablets", price: 200, availability: "Limited Stock" }
+                ]
+            }
+        ]
+    };
+
+    // Use effect to fetch shop data
+    useEffect(() => {
+        const fetchShopDetails = async () => {
+            if (!shopId) {
+                setShopData(fallbackShopData);
+                setLoading(false);
+                return;
+            }
+
+            setLoading(true);
+            try {
+                const response = await getPublicShopDetailsApi(shopId);
+                setShopData(response.data);
+            } catch (err) {
+                console.error('Error fetching shop details:', err);
+                setError(err.message);
+                // Fallback to static data if API fails
+                setShopData(fallbackShopData);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchShopDetails();
+    }, [shopId]);
+
+    // Display the current shop data or fallback
+    const displayData = shopData || fallbackShopData;
+
+    if (loading) {
+        return <div>Loading...</div>;
+    }
+
+    if (error) {
+        return <div>Error: {error}</div>;
+    }
+
     return (
         <div className="medicalshop-ui">
             {/* Header */}
             <div className="medicalshop-header">
-                <h1>{medicalshopData.name}</h1>
+                <h1>{shopData.name}</h1>
                 <div className="medicalshoprating">
-                    ⭐⭐⭐⭐⭐ {medicalshopData.rating} ({medicalshopData.reviewsCount})
+                    ⭐⭐⭐⭐⭐ {shopData.rating} ({shopData.reviewsCount})
                 </div>
                 <p className="medicalshop-timing">
-                    🕒 Open until {medicalshopData.closingTime}
+                    🕒 Open until {shopData.closingTime}
                 </p>
                 <p className="medicalshop-location">
-                    📍 {medicalshopData.location}{" "}
-                    <a href={medicalshopData.directionsLink} target="_blank" rel="noreferrer">
+                    📍 {shopData.location}{" "}
+                    <a href={shopData.directionsLink} target="_blank" rel="noreferrer">
                         Get directions
                     </a>
                 </p>
@@ -375,13 +453,13 @@ const MedicalshopDetails = () => {
             {/* Images Section */}
             <div className="medicalshop-images">
                 {/* Main Image */}
-                <img src={medicalshopData.images[0]} alt="Main" className="main-image" />
+                <img src={shopData.images[0]} alt="Main" className="main-image" />
 
                 {/* Image Grid */}
                 <div className="image-grid">
-                    <img src={medicalshopData.images[1]} alt="Secondary 1" className="thumbnail" />
+                    <img src={shopData.images[1]} alt="Secondary 1" className="thumbnail" />
                     <div className="thumbnail-container">
-                        <img src={medicalshopData.images[2]} alt="Secondary 2" className="thumbnail" />
+                        <img src={shopData.images[2]} alt="Secondary 2" className="thumbnail" />
                         <button className="see-all-btn" onClick={openModal1}>
                             See All
                         </button>
@@ -393,7 +471,7 @@ const MedicalshopDetails = () => {
                             <button className="close-btn" onClick={closeModal1}>
                                 &times;
                             </button>
-                            {medicalshopData.images.map((image, index) => (
+                            {shopData.images.map((image, index) => (
                                 <img key={index} src={image} alt={`Image ${index}`} className="modal-image" />
                             ))}
                         </div>
@@ -411,7 +489,7 @@ const MedicalshopDetails = () => {
                             &#9664;
                         </button>
                         <div className="med-service-tabs" ref={serviceContainerRef}>
-                            {medicalshopData.services.map((serviceType, index) => (
+                            {shopData.services.map((serviceType, index) => (
                                 <button
                                     key={index}
                                     className={`medtab ${selectedService === index ? "active" : ""}`}
@@ -429,7 +507,7 @@ const MedicalshopDetails = () => {
                         </button>
                     </div>
                     <div className="med-service-list">
-                        {medicalshopData.services[selectedService]?.items.map((service, idx) => (
+                        {shopData.services[selectedService]?.items.map((service, idx) => (
                             <div key={idx} className="med-service-item">
                                 <div>
                                     <h4>{service.name}</h4>
@@ -546,19 +624,19 @@ const MedicalshopDetails = () => {
                 </div>
                 <div className="med-booking-card">
                     <div className="med-booking-medical-header">
-                        <h1>{medicalshopData.name}</h1>
+                        <h1>{shopData.name}</h1>
                         <div className="med-booking-rating">
-                            ⭐ {medicalshopData.rating} ({medicalshopData.reviewsCount})
+                            ⭐ {shopData.rating} ({shopData.reviewsCount})
                         </div>
                         <button className="med-book-now-btn" onClick={handleContactNowClick}>
                             Contact now
                         </button>
-                        {showPhoneNumber && <p>📞 Phone - {medicalshopData.phone}</p>}
+                        {showPhoneNumber && <p>📞 Phone - {shopData.phone}</p>}
                         <p>🏬 Store pick-up</p>
-                        <p>🕒 Open until {medicalshopData.closingTime}</p>
+                        <p>🕒 Open until {shopData.closingTime}</p>
                         <p>
-                            📍 {medicalshopData.location}{" "}
-                            <a href={medicalshopData.directionsLink} target="_blank" rel="noreferrer">
+                            📍 {shopData.location}{" "}
+                            <a href={shopData.directionsLink} target="_blank" rel="noreferrer">
                                 Get directions
                             </a>
                         </p>

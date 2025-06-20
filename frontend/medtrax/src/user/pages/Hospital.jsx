@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { Search, MapPin, Star, Phone, ArrowRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { getPublicHospitalsApi } from '../../Api';
 
 const AppContainer = styled.div`
   background: #f8f9fa;
@@ -194,76 +196,90 @@ const NoResults = styled.div`
   border-radius: 20px;
   border: 1px solid #efefef;
 `;
-const hospitalData = [
-  {
-    id: 1,
-    name: 'Harmony Health Center',
-    rating: 4.8,
-    location: 'Gurgaon',
-    image: 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=400&h=200&fit=crop',
-    phone: '+91-9876543210'
-  },
-  {
-    id: 2,
-    name: 'Tranquil Care Hospital',
-    rating: 4.6,
-    location: 'Delhi',
-    image: 'https://images.unsplash.com/photo-1551190822-a9333d879b1f?w=400&h=200&fit=crop',
-    phone: '+91-9876543211'
-  },
-  {
-    id: 3,
-    name: 'Serenity Medical Center',
-    rating: 4.9,
-    location: 'Noida',
-    image: 'https://images.unsplash.com/photo-1586773860418-d37222d8fce3?w=400&h=200&fit=crop',
-    phone: '+91-9876543212'
-  },
-  {
-    id: 4,
-    name: 'Verdant Wellness Hospital',
-    rating: 4.7,
-    location: 'Faridabad',
-    image: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?w=400&h=200&fit=crop',
-    phone: '+91-9876543213'
-  },
-  {
-    id: 5,
-    name: 'Pure Life Medical',
-    rating: 4.5,
-    location: 'Ghaziabad',
-    image: 'https://images.unsplash.com/photo-1538108149393-fbbd81895907?w=400&h=200&fit=crop',
-    phone: '+91-9876543214'
-  },
-  {
-    id: 6,
-    name: 'Fresh Start Healthcare',
-    rating: 4.4,
-    location: 'Delhi',
-    image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=200&fit=crop',
-    phone: '+91-9876543215'
-  }
-];
 
 const HospitalFinder = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [filteredHospitals, setFilteredHospitals] = useState(hospitalData);
+  const [filteredHospitals, setFilteredHospitals] = useState([]);
+  const [hospitals, setHospitals] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
+
+  // Fallback data in case API fails
+  const fallbackHospitals = [
+    {
+      _id: 'fallback1',
+      name: 'City General Hospital',
+      phone: '919876543210',
+      address: { city: 'Mumbai', state: 'Maharashtra' },
+      rating: 4.5,
+      image: 'https://images.unsplash.com/photo-1551190822-a9333d879b1f?w=500'
+    },
+    {
+      _id: 'fallback2',
+      name: 'Apollo Health Center',
+      phone: '919876543220',
+      address: { city: 'Delhi', state: 'Delhi' },
+      rating: 4.7,
+      image: 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=500'
+    },
+    {
+      _id: 'fallback3',
+      name: 'Sunshine Medical Center',
+      phone: '919876543230',
+      address: { city: 'Bangalore', state: 'Karnataka' },
+      rating: 4.3,
+      image: 'https://images.unsplash.com/photo-1538108149393-fbbd81895907?w=500'
+    }
+  ];
+
+  useEffect(() => {
+    fetchHospitals();
+  }, []);
+
+  const fetchHospitals = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await getPublicHospitalsApi();
+      console.log('API Response:', response.data); // Debug log
+      
+      if (response.data && response.data.success) {
+        const hospitalList = response.data.data.hospitals || [];
+        setHospitals(hospitalList);
+        setFilteredHospitals(hospitalList);
+        console.log('Hospitals loaded:', hospitalList.length); // Debug log
+      } else {
+        throw new Error('Invalid API response structure');
+      }
+    } catch (error) {
+      console.error('Error fetching hospitals:', error);
+      setError(error.message);
+      // Fallback to static data if API fails
+      setHospitals(fallbackHospitals);
+      setFilteredHospitals(fallbackHospitals);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSearch = (term) => {
     setSearchTerm(term);
     if (term.trim() === '') {
-      setFilteredHospitals(hospitalData);
+      setFilteredHospitals(hospitals);
     } else {
-      const filtered = hospitalData.filter(hospital =>
+      const filtered = hospitals.filter(hospital =>
         hospital.name.toLowerCase().includes(term.toLowerCase()) ||
-        hospital.location.toLowerCase().includes(term.toLowerCase())
+        (hospital.address && 
+         (hospital.address.city.toLowerCase().includes(term.toLowerCase()) ||
+          hospital.address.state.toLowerCase().includes(term.toLowerCase())))
       );
       setFilteredHospitals(filtered);
     }
   };
 
   const handleHospitalClick = (hospitalId) => {
-    window.location.href = `/hospital-details/${hospitalId}`;
+    navigate(`/HospitalDetails?id=${hospitalId}`);
   };
 
   return (
@@ -283,17 +299,23 @@ const HospitalFinder = () => {
             onChange={(e) => handleSearch(e.target.value)}
           />
         </SearchWrapper>
-      </SearchContainer>
-
-      <RecommendedSection>
+      </SearchContainer>      <RecommendedSection>
         <SectionTitle>
           {searchTerm ? `Search Results (${filteredHospitals.length})` : 'Recommended Hospitals'}
         </SectionTitle>
         
-        {filteredHospitals.length > 0 ? (
+        {loading ? (
+          <NoResults>
+            <div style={{ marginBottom: '1rem', color: '#008b95' }}>Loading hospitals...</div>
+          </NoResults>
+        ) : error ? (
+          <NoResults>
+            <div style={{ marginBottom: '1rem', color: '#dc3545' }}>Error: {error}</div>
+          </NoResults>
+        ) : filteredHospitals.length > 0 ? (
           <HospitalsGrid>
             {filteredHospitals.map((hospital) => (
-              <HospitalCard key={hospital.id} onClick={() => handleHospitalClick(hospital.id)}>
+              <HospitalCard key={hospital._id} onClick={() => handleHospitalClick(hospital._id)}>
                 <HospitalImage image={hospital.image} />
                 
                 <HospitalInfo>
@@ -302,15 +324,20 @@ const HospitalFinder = () => {
                   <div>
                     <Rating>
                       <Star size={16} fill="currentColor" />
-                      <span>{hospital.rating}</span>
+                      <span>{hospital.rating || 'N/A'}</span>
                     </Rating>
                     <Location>
                       <MapPin size={14} />
-                      <span>{hospital.location}</span>
+                      <span>
+                        {hospital.address 
+                          ? `${hospital.address.city || ''}, ${hospital.address.state || ''}`.trim().replace(/^,|,$/, '')
+                          : hospital.location || 'Location not available'
+                        }
+                      </span>
                     </Location>
                     <Contact>
                       <Phone size={14} />
-                      <span>{hospital.phone}</span>
+                      <span>{hospital.phone || 'N/A'}</span>
                     </Contact>
                   </div>
                   

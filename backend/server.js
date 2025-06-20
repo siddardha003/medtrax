@@ -11,6 +11,7 @@ const authRoutes = require('./src/routes/auth');
 const adminRoutes = require('./src/routes/admin');
 const hospitalRoutes = require('./src/routes/hospital');
 const shopRoutes = require('./src/routes/shop');
+const publicRoutes = require('./src/routes/public');
 
 // Import middleware
 const errorHandler = require('./src/middleware/errorHandler');
@@ -38,7 +39,11 @@ app.use('/api/', limiter);
 
 // CORS configuration
 app.use(cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    origin: [
+        'http://localhost:3000',
+        'http://localhost:3001',
+        process.env.FRONTEND_URL
+    ].filter(Boolean),
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
@@ -71,6 +76,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/hospital', hospitalRoutes);
 app.use('/api/shop', shopRoutes);
+app.use('/api/public', publicRoutes);
 
 // Welcome route
 app.get('/', (req, res) => {
