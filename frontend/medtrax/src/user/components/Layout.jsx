@@ -5,7 +5,7 @@ import Header from './Header'
 import Preloader from './PreLoader'
 
 const headerData = {
-  "logo": "/images/logo.png"
+  "logo": "/images/MED-removebg-preview.png"
 }
 
 const footerData = {

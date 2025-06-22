@@ -192,24 +192,40 @@ const Medicines = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);  const navigate = useNavigate();
   
-  // Fallback data for when API fails
+  // Enhanced fallback data for when API fails
   const fallbackShopsData = [
     {
-      id: 1,
-      name: 'Apollo Pharmacy',
-      rating: 4.5,
-      phone: '+91-9876543210',
-      address: { city: 'Delhi', state: 'Delhi' },
-      image: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?w=400&h=200&fit=crop'
+      _id: 'shop-fallback1',
+      name: 'MediCare Pharmacy',
+      rating: 4.6,
+      address: {
+        city: 'Mumbai',
+        state: 'Maharashtra'
+      },
+      contactPhone: '+91-9876543220',
+      images: ['https://images.unsplash.com/photo-1631549916768-4119b2e5f926?w=400&h=200&fit=crop']
     },
     {
-      id: 2,
-      name: 'MedPlus',
-      rating: 4.3,
-      phone: '+91-9876543211',
-      address: { city: 'Mumbai', state: 'Maharashtra' },
-      image: 'https://images.unsplash.com/photo-1631549916768-4119b2e5f926?w=400&h=200&fit=crop'
-    }
+      _id: 'shop-fallback2',
+      name: 'HealthPlus Medical Store',
+      rating: 4.4,
+      address: {
+        city: 'Delhi',
+        state: 'Delhi'
+      },
+      contactPhone: '+91-9876543221',
+      images: ['https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?w=400&h=200&fit=crop']
+    },
+    {
+      _id: 'shop-fallback3',
+      name: 'City Pharmacy',
+      rating: 4.2,
+      address: {
+        city: 'Bangalore',
+        state: 'Karnataka'
+      },
+      contactPhone: '+91-9876543222',
+      images: ['https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&h=200&fit=crop']    }
   ];
   
   useEffect(() => {
@@ -217,9 +233,16 @@ const Medicines = () => {
       try {
         setLoading(true);
         const response = await getPublicShopsApi();
-        const shopsData = response.data?.shops || response.data || [];
-        // Ensure we always set an array
-        setShops(Array.isArray(shopsData) ? shopsData : []);
+        console.log('Medicines API Response:', response.data); // Debug log
+        
+        if (response.data && response.data.success) {
+          const shopsData = response.data.data.shops || [];
+          // Ensure we always set an array
+          setShops(Array.isArray(shopsData) ? shopsData : []);
+          console.log('Shops loaded for medicines:', shopsData.length); // Debug log
+        } else {
+          throw new Error('Invalid API response structure');
+        }
       } catch (error) {
         console.error('Error fetching shops:', error);
         setError(error.message);
@@ -236,15 +259,13 @@ const Medicines = () => {
   const handleSearch = (e) => {
     setSearchTerm(e.target.value.toLowerCase());
   };
-
   const handleShopClick = (shopId) => {
-    navigate(`/medicalshopdetails?shopId=${shopId}`);
-  };
-  const filteredShops = Array.isArray(shops) ? shops.filter(shop => {
+    navigate(`/MedicalshopDetails?shopId=${shopId}`);
+  };const filteredShops = Array.isArray(shops) ? shops.filter(shop => {
     const name = shop.name || '';
-    const phone = shop.phone || '';
+    const phone = shop.phone || shop.contactPhone || '';
     const address = shop.address || {};
-    const location = `${address.city || ''} ${address.state || ''}`.trim();
+    const location = `${address.city || shop.city || ''} ${address.state || shop.state || ''}`.trim();
     
     return name.toLowerCase().includes(searchTerm) ||
            location.toLowerCase().includes(searchTerm) ||
@@ -283,14 +304,13 @@ const Medicines = () => {
                     <Rating>
                       <Star size={16} fill="currentColor" />
                       <span>{shop.rating || '4.5'}</span>
-                    </Rating>
-                    <Location>
+                    </Rating>                    <Location>
                       <MapPin size={14} />
-                      <span>{shop.address ? `${shop.address.city}, ${shop.address.state}` : shop.location}</span>
+                      <span>{shop.address ? `${shop.address.city}, ${shop.address.state}` : shop.city ? `${shop.city}, ${shop.state}` : shop.location}</span>
                     </Location>
                     <Contact>
                       <Phone size={14} />
-                      <span>{shop.phone}</span>
+                      <span>{shop.phone || shop.contactPhone}</span>
                     </Contact>
                   </div>
                   

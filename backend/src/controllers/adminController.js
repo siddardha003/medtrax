@@ -72,10 +72,17 @@ const createUser = async (req, res, next) => {
                     error: 'Shop already has an assigned admin'
                 });
             }
+        }        // Use provided password or generate a random one
+        let password = req.body.password;
+        console.log(`🔍 Request body password received: "${req.body.password}"`);
+        console.log(`🔍 Password length: ${req.body.password ? req.body.password.length : 0}`);
+        if (!password) {
+            password = generateRandomPassword();
+            console.log(`🎲 Generated random password: "${password}"`);
+        } else {
+            console.log(`✅ Using provided password: "${password}"`);
         }
-
-        // Generate random password
-        const password = generateRandomPassword();
+        console.log(`🔑 Final password for ${email}: "${password}"`);
 
         // Create user data
         const userData = {
@@ -95,8 +102,24 @@ const createUser = async (req, res, next) => {
             userData.shopId = shopId;
         }
 
+        console.log(`👤 Creating user with data:`, {
+            email: userData.email,
+            role: userData.role,
+            firstName: userData.firstName,
+            lastName: userData.lastName,
+            phone: userData.phone,
+            hospitalId: userData.hospitalId,
+            shopId: userData.shopId,
+            hasPassword: !!userData.password,
+            passwordLength: userData.password ? userData.password.length : 0
+        });
+
         // Create user
         const user = await User.create(userData);
+        console.log(`✅ User created successfully with ID: ${user._id}`);
+        console.log(`🔐 Password was hashed: ${user.password ? 'YES' : 'NO'}`);
+        console.log(`🔐 Hash length: ${user.password ? user.password.length : 0}`);
+        console.log(`🔐 Hash starts with $2: ${user.password ? user.password.startsWith('$2') : 'NO'}`);
 
         // Update hospital/shop with admin reference
         if (role === 'hospital_admin') {
@@ -104,18 +127,51 @@ const createUser = async (req, res, next) => {
                 adminId: user._id,
                 updatedBy: req.user.id
             });
+            console.log(`🏥 Updated hospital ${hospitalId} with admin reference`);
         } else if (role === 'shop_admin') {
             await Shop.findByIdAndUpdate(shopId, { 
                 adminId: user._id,
                 updatedBy: req.user.id
             });
+            console.log(`🏪 Updated shop ${shopId} with admin reference`);
+        }
+
+        // Double-check and fix shopId/adminId relationship for shop_admin
+        if (role === 'shop_admin') {
+            // Fetch the shop after update
+            const updatedShop = await Shop.findById(shopId);
+            if (updatedShop && (!user.shopId || user.shopId.toString() !== updatedShop._id.toString())) {
+                // Update user with correct shopId if missing or mismatched
+                await User.findByIdAndUpdate(user._id, { shopId: updatedShop._id });
+                user.shopId = updatedShop._id;
+                console.log(`🔄 Synced user.shopId with shop._id: ${updatedShop._id}`);
+            }
+            // Double-check shop.adminId
+            if (!updatedShop.adminId || updatedShop.adminId.toString() !== user._id.toString()) {
+                await Shop.findByIdAndUpdate(updatedShop._id, { adminId: user._id });
+                console.log(`🔄 Synced shop.adminId with user._id: ${user._id}`);
+            }
+        }
+        // Double-check and fix hospitalId/adminId relationship for hospital_admin
+        if (role === 'hospital_admin') {
+            const updatedHospital = await Hospital.findById(hospitalId);
+            if (updatedHospital && (!user.hospitalId || user.hospitalId.toString() !== updatedHospital._id.toString())) {
+                await User.findByIdAndUpdate(user._id, { hospitalId: updatedHospital._id });
+                user.hospitalId = updatedHospital._id;
+                console.log(`🔄 Synced user.hospitalId with hospital._id: ${updatedHospital._id}`);
+            }
+            if (!updatedHospital.adminId || updatedHospital.adminId.toString() !== user._id.toString()) {
+                await Hospital.findByIdAndUpdate(updatedHospital._id, { adminId: user._id });
+                console.log(`🔄 Synced hospital.adminId with user._id: ${user._id}`);
+            }
         }
 
         // Send welcome email with credentials
         try {
             await sendWelcomeEmail(user, password);
+            console.log(`📧 Welcome email sent to ${email} with credentials`);
         } catch (emailError) {
-            console.error('Email sending failed:', emailError);
+            console.error('❌ Email sending failed:', emailError);
             // Don't fail the user creation if email fails
         }
 

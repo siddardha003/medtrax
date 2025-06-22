@@ -12,7 +12,8 @@ const {
     getOrders,
     getOrder,
     updateOrderStatus,
-    getShopStats
+    getShopStats,
+    debugShopAccess
 } = require('../controllers/shopController');
 
 const { protect, authorize, validateUserRole } = require('../middleware/auth');
@@ -27,6 +28,9 @@ const {
 const { body, query } = require('express-validator');
 
 const router = express.Router();
+
+// Debug route (place before middleware to avoid role restrictions)
+router.get('/debug/access', protect, debugShopAccess);
 
 // Protect all routes - only shop admins can access
 router.use(protect);

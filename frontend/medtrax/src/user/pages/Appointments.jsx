@@ -185,31 +185,43 @@ const NoClinicsMessage = styled.div`
 `;
 
 
-// Sample clinic data (similar structure to hospital data)
-const clinicsData = [
+// Sample clinic data (fallback if API fails)
+const fallbackClinicsData = [
   {
-    id: 1,
-    name: 'Disha Clinic',
+    _id: 'fallback1',
+    name: 'City General Hospital',
     rating: 4.8,
-    location: 'Gurgaon',
-    image: 'https://images.unsplash.com/photo-1551190822-a9333d879b1f?w=400&h=200&fit=crop',
-    phone: '+91-9876543210'
+    address: {
+      city: 'Mumbai',
+      state: 'Maharashtra'
+    },
+    images: ['https://images.unsplash.com/photo-1551190822-a9333d879b1f?w=400&h=200&fit=crop'],
+    phone: '+91-9876543210',
+    contactPhone: '+91-9876543210'
   },
   {
-    id: 2,
-    name: "Newmi Care Clinic",
+    _id: 'fallback2',
+    name: "Apollo Medical Center",
+    rating: 4.7,
+    address: {
+      city: 'Delhi',
+      state: 'Delhi'
+    },
+    images: ['https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?w=400&h=200&fit=crop'],
+    phone: '+91-9876543211',
+    contactPhone: '+91-9876543211'
+  },
+  {
+    _id: 'fallback3',
+    name: "Max Healthcare",
     rating: 4.6,
-    location: 'Delhi',
-    image: 'https://images.unsplash.com/photo-1586773860418-d37222d8fce3?w=400&h=200&fit=crop',
-    phone: '+91-9876543211'
-  },
-  {
-    id: 3,
-    name: 'Blossom Women Clinic',
-    rating: 4.9,
-    location: 'Ghaziabad',
-    image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=200&fit=crop',
-    phone: '+91-9876543212'
+    address: {
+      city: 'Bangalore',
+      state: 'Karnataka'
+    },
+    images: ['https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=400&h=200&fit=crop'],
+    phone: '+91-9876543212',
+    contactPhone: '+91-9876543212'
   }
 ];
 
@@ -217,36 +229,24 @@ const Appointments = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [clinics, setClinics] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);  const navigate = useNavigate();
-  
-  // Fallback data for when API fails
-  const fallbackClinicsData = [
-    {
-      id: 1,
-      name: 'City Hospital',
-      rating: 4.8,
-      phone: '+91-9876543210',
-      address: { city: 'Delhi', state: 'Delhi' },
-      image: 'https://images.unsplash.com/photo-1551190822-a9333d879b1f?w=400&h=200&fit=crop'
-    },
-    {
-      id: 2,
-      name: 'Apollo Hospital',
-      rating: 4.6,
-      phone: '+91-9876543211',
-      address: { city: 'Mumbai', state: 'Maharashtra' },
-      image: 'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=200&fit=crop'
-    }
-  ];
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
   
   useEffect(() => {
     const fetchClinics = async () => {
       try {
         setLoading(true);
         const response = await getPublicHospitalsApi();
-        const hospitalsData = response.data?.hospitals || response.data || [];
-        // Ensure we always set an array
-        setClinics(Array.isArray(hospitalsData) ? hospitalsData : []);
+        console.log('Appointments API Response:', response.data); // Debug log
+        
+        if (response.data && response.data.success) {
+          const hospitalsData = response.data.data.hospitals || [];
+          // Ensure we always set an array
+          setClinics(Array.isArray(hospitalsData) ? hospitalsData : []);
+          console.log('Hospitals loaded for appointments:', hospitalsData.length); // Debug log
+        } else {
+          throw new Error('Invalid API response structure');
+        }
       } catch (error) {
         console.error('Error fetching clinics:', error);
         setError(error.message);
@@ -259,9 +259,11 @@ const Appointments = () => {
 
     fetchClinics();
   }, []);
-  
-  const handleClinicClick = (clinicId) => {
-    navigate(`/appform?hospitalId=${clinicId}`);
+    const handleClinicClick = (clinicId) => {
+    const selectedClinic = clinics.find(clinic => clinic._id === clinicId || clinic.id === clinicId);
+    navigate(`/appform?hospitalId=${clinicId}`, { 
+      state: { hospital: selectedClinic } 
+    });
   };
 
   const handleSearch = (e) => {

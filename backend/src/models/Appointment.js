@@ -287,13 +287,12 @@ appointmentSchema.virtual('appointmentDateTime').get(function() {
     return null;
 });
 
-// Indexes for better performance
+// Indexes for better performance (confirmationCode already has unique index)
 appointmentSchema.index({ hospitalId: 1 });
 appointmentSchema.index({ appointmentDate: 1 });
 appointmentSchema.index({ status: 1 });
 appointmentSchema.index({ 'patient.email': 1 });
 appointmentSchema.index({ 'patient.phone': 1 });
-appointmentSchema.index({ confirmationCode: 1 });
 appointmentSchema.index({ department: 1 });
 appointmentSchema.index({ visitType: 1 });
 appointmentSchema.index({ createdAt: 1 });

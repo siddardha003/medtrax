@@ -12,16 +12,13 @@ const MedicalshopDetails = () => {
     const [shopData, setShopData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    
     const [isModalOpen1, setIsModalOpen1] = useState(false);
 
-    const openModal1 = () => {
-        setIsModalOpen1(true);
-    };
+    // Modal functions
+    const openModal1 = () => setIsModalOpen1(true);
+    const closeModal1 = () => setIsModalOpen1(false);
 
-    const closeModal1 = () => {
-        setIsModalOpen1(false);
-    };
+    // Styles
     const styles1 = {
         container: {
             maxWidth: "500px",
@@ -32,61 +29,13 @@ const MedicalshopDetails = () => {
             backgroundColor: "#f9f9f9",
             boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
         },
-        header: {
-            textAlign: "center",
-            color: "#333",
-        },
-        form: {
-            display: "flex",
-            flexDirection: "column",
-            gap: "15px",
-        },
-        starContainer: {
-            display: "flex",
-            alignItems: "center",
-            gap: "10px",
-        },
-        star: {
-            fontSize: "24px",
-        },
-        inputContainer: {
-            display: "flex",
-            flexDirection: "column",
-        },
-        label: {
-            fontSize: "16px",
-            marginBottom: "5px",
-            color: "#333",
-        },
-        textarea: {
-            width: "100%",
-            height: "100px",
-            borderRadius: "4px",
-            padding: "10px",
-            border: "1px solid #ccc",
-            resize: "none",
-            backgroundColor: "#fff",
-            color: "#333",
-        },
-        button: {
-            padding: "10px 20px",
-            borderRadius: "4px",
-            backgroundColor: "#007BFF",
-            color: "#fff",
-            border: "none",
-            cursor: "pointer",
-            fontSize: "16px",
-        },
-        result: {
-            textAlign: "center",
-        },
         containernew: {
             fontFamily: "Arial, sans-serif",
             padding: "20px",
             maxWidth: "400px",
         },
         title: {
-            fontSize: "3 rem ",
+            fontSize: "1.5rem",
             fontWeight: "bold",
             marginBottom: "10px",
         },
@@ -123,140 +72,97 @@ const MedicalshopDetails = () => {
             color: "#000",
         },
     };
-    const medicalshopData = {
-        name: "Apollo",
+
+    // Fallback data for medical shop
+    const fallbackShopData = {
+        name: "Apollo Pharmacy",
         rating: 4.4,
         reviewsCount: 259,
-        closingTime: "10:00pm",
-        location: "Bhimavaram, Westgodavari",
+        closingTime: "10:00 PM",
+        location: "Bhimavaram, West Godavari",
         phone: "080 4628 6939",
         directionsLink: "https://maps.google.com",
         images: [
-            "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Hospital-de-Bellvitge.jpg/640px-Hospital-de-Bellvitge.jpg", // Main image
-            "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Hospital-de-Bellvitge.jpg/640px-Hospital-de-Bellvitge.jpg", // Secondary image 1
-            "https://c8.alamy.com/comp/H1RWH2/hospital-building-and-department-with-doctors-working-office-surgery-H1RWH2.jpg", // Secondary image 2
-            "https://data1.ibtimes.co.in/en/full/761597/jammu-500-bedded-hospital.jpg?h=450&l=50&t=40", // Secondary image 2
-            "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Hospital-de-Bellvitge.jpg/640px-Hospital-de-Bellvitge.jpg", // Main image
-            "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Hospital-de-Bellvitge.jpg/640px-Hospital-de-Bellvitge.jpg", // Secondary image 1
-            "https://c8.alamy.com/comp/H1RWH2/hospital-building-and-department-with-doctors-working-office-surgery-H1RWH2.jpg", // Secondary image 2
-            "https://data1.ibtimes.co.in/en/full/761597/jammu-500-bedded-hospital.jpg?h=450&l=50&t=40", // Secondary image 2
+            "https://www.apollopharmacy.in/cdn/shop/files/Store_1200x.jpg?v=1614323335",
+            "https://www.apollopharmacy.in/cdn/shop/files/Store_2_1200x.jpg?v=1614323335",
+            "https://www.apollopharmacy.in/cdn/shop/files/Store_3_1200x.jpg?v=1614323335",
+            "https://www.apollopharmacy.in/cdn/shop/files/Store_4_1200x.jpg?v=1614323335"
         ],
         services: [
             {
-                category: "General Checkup",
+                category: "Prescription Medicines",
                 items: [
-                    { name: "Consultation", duration: "30 mins", price: 100 },
-                    { name: "Full Body Checkup", duration: "1 hr", price: 500 },
-                ],
+                    { name: "Paracetamol 500mg (10 tablets)", price: 25, availability: "In Stock" },
+                    { name: "Azithromycin 500mg (5 tablets)", price: 150, availability: "In Stock" },
+                    { name: "Amoxicillin 500mg (10 capsules)", price: 120, availability: "In Stock" },
+                    { name: "Cetirizine 10mg (10 tablets)", price: 35, availability: "In Stock" }
+                ]
             },
             {
-                category: "Special Treatments",
+                category: "OTC Medicines", 
                 items: [
-                    { name: "Physiotherapy", duration: "45 mins", price: 200 },
-                    { name: "Dermatology Consultation", duration: "1 hr", price: 400 },
-                ],
+                    { name: "Vitamin C 500mg (30 tablets)", price: 150, availability: "In Stock" },
+                    { name: "Calcium + Vitamin D3 (60 tablets)", price: 200, availability: "Limited Stock" },
+                    { name: "Multivitamins (30 capsules)", price: 250, availability: "In Stock" },
+                    { name: "Digene Antacid (10 tablets)", price: 45, availability: "In Stock" }
+                ]
             },
             {
-                category: "Dental Care",
+                category: "Ointments & Creams",
                 items: [
-                    { name: "Teeth Cleaning", duration: "45 mins", price: 150 },
-                    { name: "Cavity Filling", duration: "1 hr", price: 300 },
-                ],
+                    { name: "Moov Pain Relief Cream 30g", price: 85, availability: "In Stock" },
+                    { name: "Boroline Antiseptic Cream 20g", price: 45, availability: "In Stock" },
+                    { name: "Betadine Ointment 20g", price: 95, availability: "In Stock" },
+                    { name: "Volini Gel 30g", price: 110, availability: "In Stock" }
+                ]
             },
             {
-                category: "General Checkup",
+                category: "Baby Care",
                 items: [
-                    { name: "Consultation", duration: "30 mins", price: 100 },
-                    { name: "Full Body Checkup", duration: "1 hr", price: 500 },
-                ],
+                    { name: "Himalaya Baby Powder 100g", price: 120, availability: "In Stock" },
+                    { name: "Johnson's Baby Oil 100ml", price: 150, availability: "In Stock" },
+                    { name: "Pampers Diapers (M, 10 pcs)", price: 350, availability: "In Stock" },
+                    { name: "Dexolac Baby Formula 400g", price: 450, availability: "In Stock" }
+                ]
             },
             {
-                category: "Special Treatments",
+                category: "Medical Devices",
                 items: [
-                    { name: "Physiotherapy", duration: "45 mins", price: 200 },
-                    { name: "Dermatology Consultation", duration: "1 hr", price: 400 },
-                ],
-            },
-            {
-                category: "Dental Care",
-                items: [
-                    { name: "Teeth Cleaning", duration: "45 mins", price: 150 },
-                    { name: "Cavity Filling", duration: "1 hr", price: 300 },
-                    { name: "Teeth Cleaning", duration: "45 mins", price: 150 },
-                    { name: "Cavity Filling", duration: "1 hr", price: 300 },
-                    { name: "Teeth Cleaning", duration: "45 mins", price: 150 },
-                    { name: "Cavity Filling", duration: "1 hr", price: 300 },
-                    { name: "Teeth Cleaning", duration: "45 mins", price: 150 },
-                    { name: "Cavity Filling", duration: "1 hr", price: 300 },
-                ],
-            },
-            {
-                category: "Special Treatments",
-                items: [
-                    { name: "Physiotherapy", duration: "45 mins", price: 200 },
-                    { name: "Dermatology Consultation", duration: "1 hr", price: 400 },
-                ],
-            },
-            {
-                category: "Special Treatments",
-                items: [
-                    { name: "Physiotherapy", duration: "45 mins", price: 200 },
-                    { name: "Dermatology Consultation", duration: "1 hr", price: 400 },
-                ],
-            },
-
-        ],
+                    { name: "Digital Thermometer", price: 250, availability: "In Stock" },
+                    { name: "Blood Pressure Monitor", price: 1200, availability: "In Stock" },
+                    { name: "Oximeter", price: 800, availability: "Limited Stock" },
+                    { name: "Nebulizer", price: 1800, availability: "In Stock" }
+                ]
+            }
+        ]
     };
+
     const [selectedService, setSelectedService] = useState(0);
     const [reviews, setReviews] = useState([
         {
-            name: "Ciara",
-            location: "Los Angeles, USA",
-            text: "Great way to discover new salons. Recently moved to a new city and didn't know any salons. Fresha gave me a whole new list to choose from!",
+            name: "Rahul Sharma",
+            location: "Hyderabad, India",
+            text: "Great pharmacy with all medicines available. Staff is very helpful and knowledgeable.",
             stars: 5,
         },
         {
-            name: "Jonny",
-            location: "Melbourne, Australia",
-            text: "Such a sleek and powerful app. I highly recommend booking your appointments on Fresha.",
-            stars: 3,
-        },
-        {
-            name: "Anton",
-            location: "Los Angeles, USA",
-            text: "My clients love booking appointments online with Fresha. The consultation forms and free SMS reminders are so convenient.",
+            name: "Priya Patel",
+            location: "Mumbai, India",
+            text: "Always find what I need here. Good prices and genuine medicines.",
             stars: 4,
         },
         {
-            name: "Susan",
-            location: "Brisbane, Australia",
-            text: "Love this beauty booking app. There are so many great features to explore. The consultation forms and client reminder texts are great – best of all, it's free.",
+            name: "Anil Kumar",
+            location: "Delhi, India",
+            text: "Late night availability is a lifesaver. Delivered medicines when my child was sick at midnight.",
             stars: 5,
         },
         {
-            name: "Ciara",
-            location: "Los Angeles, USA",
-            text: "Great way to discover new salons. Recently moved to a new city and didn't know any salons. Fresha gave me a whole new list to choose from!",
-            stars: 5,
-        },
-        {
-            name: "Jonny",
-            location: "Melbourne, Australia",
-            text: "Such a sleek and powerful app. I highly recommend booking your appointments on Fresha.",
-            stars: 5,
-        },
-        {
-            name: "Anton",
-            location: "Los Angeles, USA",
-            text: "My clients love booking appointments online with Fresha. The consultation forms and free SMS reminders are so convenient.",
-            stars: 5,
-        },
-        {
-            name: "Susan",
-            location: "Brisbane, Australia",
-            text: "Love this beauty booking app. There are so many great features to explore. The consultation forms and client reminder texts are great – best of all, it's free.",
-            stars: 5,
-        },
+            name: "Sunita Reddy",
+            location: "Bangalore, India",
+            text: "Professional service and quick delivery. Their online ordering system works perfectly.",
+            stars: 4,
+        }
     ]);
 
     const [user, setUser] = useState({
@@ -264,7 +170,6 @@ const MedicalshopDetails = () => {
         name: "John Doe",
         location: "New York, USA",
     });
-
 
     const [newReview, setNewReview] = useState({
         stars: 0,
@@ -274,7 +179,7 @@ const MedicalshopDetails = () => {
     const handleStarClick = (index) => {
         setNewReview((prev) => ({
             ...prev,
-            stars: index + 1, // Set stars based on the clicked star index
+            stars: index + 1,
         }));
     };
 
@@ -304,16 +209,11 @@ const MedicalshopDetails = () => {
         alert("Review submitted successfully!");
     };
 
-
     const reviewContainerRef = useRef(null);
-
     const scrollreview = (direction) => {
-        const scrollAmo = 300; // Adjust scroll amount
-
+        const scrollAmo = 300;
         if (reviewContainerRef.current) {
             const revcontainer = reviewContainerRef.current;
-
-            // Adjust for smooth scrolling in horizontal direction
             if (direction === "left") {
                 revcontainer.scrollLeft -= scrollAmo;
             } else {
@@ -323,14 +223,10 @@ const MedicalshopDetails = () => {
     };
 
     const serviceContainerRef = useRef(null);
-
     const scrollreview1 = (direction) => {
-        const scrollAmou = 150; // Adjust scroll amount
-
+        const scrollAmou = 150;
         if (serviceContainerRef.current) {
             const servicecontainer = serviceContainerRef.current;
-
-            // Adjust for smooth scrolling in horizontal direction
             if (direction === "left") {
                 servicecontainer.scrollLeft -= scrollAmou;
             } else {
@@ -340,58 +236,112 @@ const MedicalshopDetails = () => {
     };
 
     const [selectedMedicalshop, setSelectedMedicalshop] = useState({
-        name: 'Apollo',
+        name: 'Apollo Pharmacy',
         latitude: 17.4065,
         longitude: 78.4772,
     });
 
     const openingTimes = [
-        { day: "Monday", time: "12:00 pm - 11:00 pm" },
-        { day: "Tuesday", time: "12:00 pm - 11:00 pm" },
-        { day: "Wednesday", time: "12:00 pm - 11:00 pm" },
-        { day: "Thursday", time: "12:00 pm - 11:00 pm" },
-        { day: "Friday", time: "12:00 pm - 11:00 pm" },
-        { day: "Saturday", time: "12:00 pm - 11:00 pm" },
-        { day: "Sunday", time: "12:00 pm - 11:00 pm" },
+        { day: "Monday", time: "8:00 AM - 10:00 PM" },
+        { day: "Tuesday", time: "8:00 AM - 10:00 PM" },
+        { day: "Wednesday", time: "8:00 AM - 10:00 PM" },
+        { day: "Thursday", time: "8:00 AM - 10:00 PM" },
+        { day: "Friday", time: "8:00 AM - 10:00 PM" },
+        { day: "Saturday", time: "8:00 AM - 10:00 PM" },
+        { day: "Sunday", time: "9:00 AM - 9:00 PM" },
     ];
 
     const today = new Date().toLocaleString("en-US", { weekday: "long" });
-
     const [showPhoneNumber, setShowPhoneNumber] = useState(false);
+    const handleContactNowClick = () => setShowPhoneNumber(true);
 
-    const handleContactNowClick = () => {
-        setShowPhoneNumber(true);
-    };
-
-    // Static fallback data
-    const fallbackShopData = {
-        name: "Apollo Pharmacy",
-        rating: 4.4,
-        reviewsCount: 259,
-        closingTime: "10:00pm",
-        location: "Bhimavaram, Westgodavari",
-        phone: "080 4628 6939",
-        directionsLink: "https://maps.google.com",
-        images: [
-            "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Hospital-de-Bellvitge.jpg/640px-Hospital-de-Bellvitge.jpg",
-            "https://c8.alamy.com/comp/H1RWH2/hospital-building-and-department-with-doctors-working-office-surgery-H1RWH2.jpg"
-        ],
-        categories: [
-            {
-                name: "Prescription Medicines",
+    // Function to transform backend services data to frontend format
+    const transformServices = (backendServices) => {
+        if (!backendServices || !Array.isArray(backendServices)) return fallbackShopData.services;
+        
+        const serviceMapping = {
+            'prescription_dispensing': {
+                category: "Prescription Medicines",
                 items: [
-                    { name: "Paracetamol", price: 25, availability: "In Stock" },
-                    { name: "Aspirin", price: 30, availability: "In Stock" }
+                    { name: "Paracetamol 500mg (10 tablets)", price: 25, availability: "In Stock" },
+                    { name: "Azithromycin 500mg (5 tablets)", price: 150, availability: "In Stock" },
+                    { name: "Amoxicillin 500mg (10 capsules)", price: 120, availability: "In Stock" },
+                    { name: "Cetirizine 10mg (10 tablets)", price: 35, availability: "In Stock" }
                 ]
             },
-            {
-                name: "OTC Medicines", 
+            'otc_medicines': {
+                category: "OTC Medicines",
                 items: [
-                    { name: "Vitamin C", price: 150, availability: "In Stock" },
-                    { name: "Calcium Tablets", price: 200, availability: "Limited Stock" }
+                    { name: "Vitamin C 500mg (30 tablets)", price: 150, availability: "In Stock" },
+                    { name: "Calcium + Vitamin D3 (60 tablets)", price: 200, availability: "Limited Stock" },
+                    { name: "Multivitamins (30 capsules)", price: 250, availability: "In Stock" },
+                    { name: "Digene Antacid (10 tablets)", price: 45, availability: "In Stock" }
+                ]
+            },
+            'health_supplements': {
+                category: "Health Supplements",
+                items: [
+                    { name: "Protein Powder 1kg", price: 2500, availability: "In Stock" },
+                    { name: "Omega-3 Fish Oil (60 capsules)", price: 800, availability: "In Stock" },
+                    { name: "Whey Protein 2kg", price: 3500, availability: "In Stock" },
+                    { name: "BCAA Powder 300g", price: 1200, availability: "In Stock" }
+                ]
+            },
+            'medical_devices': {
+                category: "Medical Devices",
+                items: [
+                    { name: "Digital Thermometer", price: 250, availability: "In Stock" },
+                    { name: "Blood Pressure Monitor", price: 1200, availability: "In Stock" },
+                    { name: "Oximeter", price: 800, availability: "Limited Stock" },
+                    { name: "Nebulizer", price: 1800, availability: "In Stock" }
+                ]
+            },
+            'baby_care': {
+                category: "Baby Care",
+                items: [
+                    { name: "Himalaya Baby Powder 100g", price: 120, availability: "In Stock" },
+                    { name: "Johnson's Baby Oil 100ml", price: 150, availability: "In Stock" },
+                    { name: "Pampers Diapers (M, 10 pcs)", price: 350, availability: "In Stock" },
+                    { name: "Dexolac Baby Formula 400g", price: 450, availability: "In Stock" }
+                ]
+            },
+            'elderly_care': {
+                category: "Elderly Care",
+                items: [
+                    { name: "Adult Diapers (L, 10 pcs)", price: 400, availability: "In Stock" },
+                    { name: "Walking Stick", price: 600, availability: "In Stock" },
+                    { name: "Blood Sugar Monitor", price: 1500, availability: "In Stock" },
+                    { name: "Compression Stockings", price: 800, availability: "In Stock" }
+                ]
+            },
+            'home_delivery': {
+                category: "Home Delivery",
+                items: [
+                    { name: "Standard Delivery (Same Day)", price: 50, availability: "Available" },
+                    { name: "Express Delivery (2 Hours)", price: 100, availability: "Available" },
+                    { name: "Prescription Refill Service", price: 30, availability: "Available" },
+                    { name: "Emergency Medicine Delivery", price: 150, availability: "24/7 Available" }
+                ]
+            },
+            'online_consultation': {
+                category: "Online Consultation",
+                items: [
+                    { name: "General Physician Consultation", price: 500, availability: "Available" },
+                    { name: "Specialist Doctor Consultation", price: 1000, availability: "Available" },
+                    { name: "Pharmacist Consultation", price: 200, availability: "Available" },
+                    { name: "Health Checkup Package", price: 2000, availability: "Available" }
                 ]
             }
-        ]
+        };
+
+        const transformedServices = [];
+        backendServices.forEach(serviceKey => {
+            if (serviceMapping[serviceKey]) {
+                transformedServices.push(serviceMapping[serviceKey]);
+            }
+        });
+
+        return transformedServices.length > 0 ? transformedServices : fallbackShopData.services;
     };
 
     // Use effect to fetch shop data
@@ -401,16 +351,32 @@ const MedicalshopDetails = () => {
                 setShopData(fallbackShopData);
                 setLoading(false);
                 return;
-            }
-
+            }            
             setLoading(true);
             try {
                 const response = await getPublicShopDetailsApi(shopId);
-                setShopData(response.data);
+                const shopData = response.data;
+                
+                // Transform the services data to match frontend expectations
+                const transformedShopData = {
+                    ...shopData,
+                    services: transformServices(shopData.services),
+                    // Add other fallback properties if missing
+                    rating: shopData.rating || 4.4,
+                    reviewsCount: shopData.reviewsCount || 0,
+                    closingTime: shopData.closingTime || '10:00 PM',
+                    location: shopData.fullAddress || shopData.address ? 
+                        `${shopData.address.street}, ${shopData.address.city}, ${shopData.address.state}` : 
+                        'Location not available',
+                    phone: shopData.phone || 'Phone not available',
+                    directionsLink: shopData.directionsLink || 'https://maps.google.com',
+                    images: shopData.images || fallbackShopData.images
+                };
+                
+                setShopData(transformedShopData);
             } catch (err) {
                 console.error('Error fetching shop details:', err);
                 setError(err.message);
-                // Fallback to static data if API fails
                 setShopData(fallbackShopData);
             } finally {
                 setLoading(false);
@@ -420,46 +386,54 @@ const MedicalshopDetails = () => {
         fetchShopDetails();
     }, [shopId]);
 
-    // Display the current shop data or fallback
     const displayData = shopData || fallbackShopData;
 
     if (loading) {
-        return <div>Loading...</div>;
+        return <div className="loading-spinner">Loading...</div>;
     }
 
     if (error) {
-        return <div>Error: {error}</div>;
+        return <div className="error-message">Error: {error}</div>;
     }
 
     return (
         <div className="medicalshop-ui">
             {/* Header */}
             <div className="medicalshop-header">
-                <h1>{shopData.name}</h1>
+                <h1>{displayData.name}</h1>                
                 <div className="medicalshoprating">
-                    ⭐⭐⭐⭐⭐ {shopData.rating} ({shopData.reviewsCount})
-                </div>
+                    ⭐ {displayData.rating ? displayData.rating.toFixed(1) : '4.4'} ({displayData.reviewsCount || 0} reviews)
+                </div>                
                 <p className="medicalshop-timing">
-                    🕒 Open until {shopData.closingTime}
+                    🕒 Open until {displayData.closingTime || '10:00 PM'}
                 </p>
                 <p className="medicalshop-location">
-                    📍 {shopData.location}{" "}
-                    <a href={shopData.directionsLink} target="_blank" rel="noreferrer">
+                    📍 {displayData.location || 'Location not available'}{" "}
+                    <a href={displayData.directionsLink || '#'} target="_blank" rel="noreferrer">
                         Get directions
                     </a>
                 </p>
             </div>
-
+            
             {/* Images Section */}
             <div className="medicalshop-images">
-                {/* Main Image */}
-                <img src={shopData.images[0]} alt="Main" className="main-image" />
-
-                {/* Image Grid */}
+                <img 
+                    src={displayData.images && displayData.images[0] ? displayData.images[0] : 'https://via.placeholder.com/400x300?text=No+Image'} 
+                    alt="Main" 
+                    className="main-image" 
+                />
                 <div className="image-grid">
-                    <img src={shopData.images[1]} alt="Secondary 1" className="thumbnail" />
+                    <img 
+                        src={displayData.images && displayData.images[1] ? displayData.images[1] : 'https://via.placeholder.com/400x300?text=No+Image'} 
+                        alt="Secondary 1" 
+                        className="thumbnail" 
+                    />
                     <div className="thumbnail-container">
-                        <img src={shopData.images[2]} alt="Secondary 2" className="thumbnail" />
+                        <img 
+                            src={displayData.images && displayData.images[2] ? displayData.images[2] : 'https://via.placeholder.com/400x300?text=No+Image'} 
+                            alt="Secondary 2" 
+                            className="thumbnail" 
+                        />
                         <button className="see-all-btn" onClick={openModal1}>
                             See All
                         </button>
@@ -470,61 +444,106 @@ const MedicalshopDetails = () => {
                         <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                             <button className="close-btn" onClick={closeModal1}>
                                 &times;
-                            </button>
-                            {shopData.images.map((image, index) => (
+                            </button>                            
+                            {(displayData.images || []).map((image, index) => (
                                 <img key={index} src={image} alt={`Image ${index}`} className="modal-image" />
                             ))}
                         </div>
                     </div>
                 )}
             </div>
+            
+            {/* Main Content */}
             <div className="med-services-booking">
                 <div className="med-services-section">
-                    <h2>Categories</h2>
-                    <div className="scroll-container">
-                        <button
-                            className="scroll-button left-button"
-                            onClick={() => scrollreview1("left")}
-                        >
-                            &#9664;
-                        </button>
-                        <div className="med-service-tabs" ref={serviceContainerRef}>
-                            {shopData.services.map((serviceType, index) => (
-                                <button
-                                    key={index}
-                                    className={`medtab ${selectedService === index ? "active" : ""}`}
-                                    onClick={() => setSelectedService(index)}
-                                >
-                                    {serviceType.category}
-                                </button>
-                            ))}
+                    {/* Enhanced Products & Services Section */}
+                    <div className="products-services-section">
+                        <h2 className="section-title">Pharmacy Products & Services</h2>
+                        
+                        {/* Categories Navigation */}
+                        <div className="categories-nav-container">
+                            <button
+                                className="scroll-button left-button"
+                                onClick={() => scrollreview1("left")}
+                            >
+                                &#9664;
+                            </button>
+                            <div className="categories-nav" ref={serviceContainerRef}>
+                                {(displayData.services || []).map((serviceType, index) => (
+                                    <button
+                                        key={index}
+                                        className={`category-tab ${selectedService === index ? "active" : ""}`}
+                                        onClick={() => setSelectedService(index)}
+                                    >
+                                        <span className="category-icon">
+                                            {serviceType.category === "Prescription Medicines" && "💊"}
+                                            {serviceType.category === "OTC Medicines" && "🩹"}
+                                            {serviceType.category === "Ointments & Creams" && "🧴"}
+                                            {serviceType.category === "Baby Care" && "🍼"}
+                                            {serviceType.category === "Medical Devices" && "🩺"}
+                                            {serviceType.category === "Health Supplements" && "💪"}
+                                            {serviceType.category === "Elderly Care" && "🧓"}
+                                            {serviceType.category === "Home Delivery" && "🚚"}
+                                            {serviceType.category === "Online Consultation" && "💻"}
+                                        </span>
+                                        {serviceType.category}
+                                    </button>
+                                ))}
+                            </div>
+                            <button
+                                className="scroll-button right-button"
+                                onClick={() => scrollreview1("right")}
+                            >
+                                &#9654;
+                            </button>
                         </div>
-                        <button
-                            className="scroll-button right-button"
-                            onClick={() => scrollreview1("right")}
-                        >
-                            &#9654;
-                        </button>
-                    </div>
-                    <div className="med-service-list">
-                        {shopData.services[selectedService]?.items.map((service, idx) => (
-                            <div key={idx} className="med-service-item">
-                                <div>
-                                    <h4>{service.name}</h4>
-                                    <p>{service.duration}</p>
-                                </div>
-                                <div className="med-service-book">
-                                    <span>AED {service.price}</span>
-                                    <button className="book-btn">Book</button>
+                        
+                        {/* Products List */}
+                        <div className="products-container">
+                            <div className="products-header">
+                                <h3 className="products-category-title">
+                                    {(displayData.services && displayData.services[selectedService]?.category) || "Products"}
+                                </h3>
+                                <div className="products-count">
+                                    {(displayData.services && displayData.services[selectedService]?.items?.length) || 0} items available
                                 </div>
                             </div>
-                        ))}
+                            
+                            <div className="products-grid">
+                                {(displayData.services && displayData.services[selectedService]?.items || []).map((item, idx) => (
+                                    <div key={idx} className="product-card">
+                                        <div className="product-image-placeholder">
+                                            {item.name.includes("Tablet") && "💊"}
+                                            {item.name.includes("Cream") && "🧴"}
+                                            {item.name.includes("Oil") && "🛢️"}
+                                            {item.name.includes("Device") && "🩺"}
+                                            {item.name.includes("Delivery") && "🚚"}
+                                            {item.name.includes("Consultation") && "👨‍⚕️"}
+                                        </div>
+                                        <div className="product-details">
+                                            <h4 className="product-name">{item.name}</h4>
+                                            <div className="product-meta">
+                                                <span className={`product-availability ${item.availability === "In Stock" ? "in-stock" : "limited-stock"}`}>
+                                                    {item.availability}
+                                                </span>
+                                                <span className="product-price">₹{item.price}</span>
+                                            </div>
+                                        </div>
+                                        <div className="product-actions">
+                                            <button className="add-to-cart-btn">
+                                                <span className="cart-icon">🛒</span> Add to Cart
+                                            </button>
+                                            <button className="quick-view-btn">Quick View</button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                     </div>
 
-                    {/* Reviews Section - Moved Below Services */}
+                    {/* Reviews Section */}
                     <div className="reviews-section">
-                        <h2>Reviews</h2>
-                        {/* Display Reviews */}
+                        <h2>Customer Reviews</h2>
                         <div className="scroll-container">
                             <button
                                 className="scroll-button left-button"
@@ -536,10 +555,13 @@ const MedicalshopDetails = () => {
                                 <div className="review-tabs" ref={reviewContainerRef}>
                                     {reviews.map((review, index) => (
                                         <div key={index} className="review-card">
-                                            <div className="review-stars">{"⭐".repeat(review.stars)}</div>
+                                            <div className="review-stars">
+                                                {"⭐".repeat(review.stars)}
+                                                {review.stars < 5 && "☆".repeat(5 - review.stars)}
+                                            </div>
                                             <h4>{review.text}</h4>
-                                            <p>{review.name}</p>
-                                            <p>{review.location}</p>
+                                            <p className="review-author">{review.name}</p>
+                                            <p className="review-location">{review.location}</p>
                                         </div>
                                     ))}
                                 </div>
@@ -553,13 +575,10 @@ const MedicalshopDetails = () => {
                         </div>
 
                         {/* Add Review Section */}
-                        <h2>Submit Your Review</h2>
+                        <h2>Share Your Experience</h2>
                         {user.isLoggedIn ? (
                             <form className="review-form" onSubmit={handleReviewSubmit}>
-                                <label>
-                                    Rating:
-                                </label>
-
+                                <label>Rating:</label>
                                 <div className="star-rating">
                                     {[0, 1, 2, 3, 4].map((index) => (
                                         <span
@@ -571,14 +590,12 @@ const MedicalshopDetails = () => {
                                         </span>
                                     ))}
                                 </div>
-                                <label>
-                                    Review:
-                                </label>
+                                <label>Review:</label>
                                 <textarea
                                     name="text"
                                     value={newReview.text}
                                     onChange={handleReviewChange}
-                                    placeholder="Write your review here..."
+                                    placeholder="How was your experience with this pharmacy?"
                                     required
                                 ></textarea>
                                 <button type="submit">Submit Review</button>
@@ -587,16 +604,20 @@ const MedicalshopDetails = () => {
                             <p>Please log in to submit a review.</p>
                         )}
                     </div>
-                    <div style={{ margin: '10px' }}>
-                        <h2>{selectedMedicalshop.name}</h2>
+                    
+                    {/* Location Map */}
+                    <div className="map-section">
+                        <h2>Our Location</h2>
                         <MedicalshopMap
                             latitude={selectedMedicalshop.latitude}
                             longitude={selectedMedicalshop.longitude}
                             medicalshopName={selectedMedicalshop.name}
                         />
                     </div>
+                    
+                    {/* Opening Hours */}
                     <div style={styles1.containernew}>
-                        <h2 style={styles1.title}>Opening times</h2>
+                        <h2 style={styles1.title}>Opening Hours</h2>
                         <ul style={styles1.list}>
                             {openingTimes.map(({ day, time }) => (
                                 <li
@@ -620,23 +641,32 @@ const MedicalshopDetails = () => {
                             ))}
                         </ul>
                     </div>
-
                 </div>
+                
+                {/* Booking Card */}
                 <div className="med-booking-card">
                     <div className="med-booking-medical-header">
-                        <h1>{shopData.name}</h1>
+                        <h2>{displayData.name || 'Medical Shop'}</h2>                        
                         <div className="med-booking-rating">
-                            ⭐ {shopData.rating} ({shopData.reviewsCount})
+                            ⭐ {displayData.rating ? displayData.rating.toFixed(1) : '4.4'} ({displayData.reviewsCount || 0} reviews)
                         </div>
                         <button className="med-book-now-btn" onClick={handleContactNowClick}>
                             Contact now
-                        </button>
-                        {showPhoneNumber && <p>📞 Phone - {shopData.phone}</p>}
-                        <p>🏬 Store pick-up</p>
-                        <p>🕒 Open until {shopData.closingTime}</p>
-                        <p>
-                            📍 {shopData.location}{" "}
-                            <a href={shopData.directionsLink} target="_blank" rel="noreferrer">
+                        </button>                        
+                        {showPhoneNumber && (
+                            <div className="phone-number-display">
+                                <p>📞 {displayData.phone || 'Phone not available'}</p>
+                                <p className="timing-note">Available 9AM-9PM</p>
+                            </div>
+                        )}
+                        <div className="store-info">
+                            <p>🏬 Store pick-up available</p>
+                            <p>🚚 Home delivery option</p>
+                            <p>🕒 Open until {displayData.closingTime || '10:00 PM'}</p>
+                        </div>
+                        <p className="location-info">
+                            📍 {displayData.location || 'Location not available'}{" "}
+                            <a href={displayData.directionsLink || '#'} target="_blank" rel="noreferrer">
                                 Get directions
                             </a>
                         </p>

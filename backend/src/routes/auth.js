@@ -10,7 +10,11 @@ const {
     logout,
     refreshToken,
     verifyToken,
-    register
+    register,
+    preventDuplicateRequests,
+    trackLoginSession,
+    debugRoutes,
+    testAdminCredentials
 } = require('../controllers/authController');
 
 const { protect } = require('../middleware/auth');
@@ -22,15 +26,29 @@ const { body } = require('express-validator');
 
 const router = express.Router();
 
+// Debug routes (remove in production)
+router.get('/debug/routes', debugRoutes);
+router.post('/debug/test-credentials', testAdminCredentials);
+
 // @route   POST /api/auth/login
-// @desc    Login user with OTP
+// @desc    Login user with enhanced duplicate protection
 // @access  Public
-router.post('/login', validateUserLogin, login);
+router.post('/login', 
+    preventDuplicateRequests(2000),
+    trackLoginSession,
+    validateUserLogin, 
+    login
+);
 
 // @route   POST /api/auth/direct-login
-// @desc    Direct login without OTP (for admin access)
+// @desc    Direct login (alias to login with same protections)
 // @access  Public
-router.post('/direct-login', validateUserLogin, directLogin);
+router.post('/direct-login', 
+    preventDuplicateRequests(2000),
+    trackLoginSession,
+    validateUserLogin, 
+    directLogin
+);
 
 // @route   POST /api/auth/logout
 // @desc    Logout user

@@ -263,13 +263,11 @@ const validateInventoryItem = [
         ])
         .withMessage('Invalid product category'),
     body('batchNumber')
-        .notEmpty()
-        .trim()
-        .withMessage('Batch number is required'),
+        .optional()
+        .trim(),
     body('sku')
-        .notEmpty()
-        .trim()
-        .withMessage('SKU is required'),
+        .optional()
+        .trim(),
     body('quantity.current')
         .isInt({ min: 0 })
         .withMessage('Current quantity must be a non-negative integer'),
@@ -277,26 +275,25 @@ const validateInventoryItem = [
         .isInt({ min: 0 })
         .withMessage('Minimum quantity must be a non-negative integer'),
     body('pricing.costPrice')
+        .optional()
         .isFloat({ min: 0 })
         .withMessage('Cost price must be a non-negative number'),
     body('pricing.sellingPrice')
         .isFloat({ min: 0 })
         .withMessage('Selling price must be a non-negative number'),
     body('pricing.mrp')
+        .optional()
         .isFloat({ min: 0 })
         .withMessage('MRP must be a non-negative number'),
     body('manufacturingDate')
-        .isISO8601()
-        .isBefore()
-        .withMessage('Manufacturing date must be in the past'),
+        .optional()
+        .isISO8601(),
     body('expiryDate')
         .isISO8601()
-        .isAfter()
-        .withMessage('Expiry date must be in the future'),
+        .withMessage('Expiry date must be a valid date'),
     body('supplier.name')
-        .notEmpty()
-        .trim()
-        .withMessage('Supplier name is required'),
+        .optional()
+        .trim(),
     handleValidationErrors
 ];
 
@@ -341,11 +338,10 @@ const validatePagination = [
     query('page')
         .optional()
         .isInt({ min: 1 })
-        .withMessage('Page must be a positive integer'),
-    query('limit')
+        .withMessage('Page must be a positive integer'),    query('limit')
         .optional()
-        .isInt({ min: 1, max: 100 })
-        .withMessage('Limit must be between 1 and 100'),
+        .isInt({ min: 1, max: 1000 })
+        .withMessage('Limit must be between 1 and 1000'),
     query('sort')
         .optional()
         .isIn(['createdAt', '-createdAt', 'name', '-name', 'updatedAt', '-updatedAt'])

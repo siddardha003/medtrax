@@ -9,8 +9,23 @@ const { sendOrderInvoice } = require('../utils/email');
 // @access  Private (Shop Admin)
 const getInventory = async (req, res) => {
     try {
+        console.log('🔍 Get inventory request received');
+        console.log('👤 User ID:', req.user._id);
+        console.log('🏪 User Shop ID:', req.user.shopId);
+        console.log('📋 Query params:', req.query);
+        
         const { page = 1, limit = 10, category, status, search, lowStock, expiring } = req.query;
         const shopId = req.user.shopId;
+
+        if (!shopId) {
+            console.log('❌ No shopId found for user');
+            return res.status(400).json({
+                success: false,
+                error: 'User is not associated with any shop'
+            });
+        }
+
+        console.log('🔍 Building query for shopId:', shopId);
 
         // Build query
         const query = { shopId };
@@ -106,20 +121,39 @@ const getInventoryItem = async (req, res) => {
 // @access  Private (Shop Admin)
 const addInventoryItem = async (req, res) => {
     try {
+        console.log('🏪 Add inventory item request received');
+        console.log('👤 User ID:', req.user._id);
+        console.log('🏪 User Shop ID:', req.user.shopId);
+        console.log('📦 Request body:', JSON.stringify(req.body, null, 2));
+        
         const shopId = req.user.shopId;
+        
+        if (!shopId) {
+            console.log('❌ No shopId found for user');
+            return res.status(400).json({
+                success: false,
+                error: 'User is not associated with any shop'
+            });
+        }
+        
         const itemData = {
             ...req.body,
             shopId,
             createdBy: req.user._id
         };
 
+        console.log('📦 Final item data:', JSON.stringify(itemData, null, 2));
+
         // Generate SKU if not provided
         if (!itemData.sku) {
             itemData.sku = generateUniqueId('SKU', 6);
+            console.log('🏷️ Generated SKU:', itemData.sku);
         }
 
         // Create inventory item
+        console.log('💾 Creating inventory item...');
         const item = await Inventory.create(itemData);
+        console.log('✅ Inventory item created:', item._id);
 
         res.status(201).json({
             success: true,
@@ -128,14 +162,26 @@ const addInventoryItem = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Add inventory item error:', error);
+        console.error('❌ Add inventory item error:', error);
+        console.error('❌ Error stack:', error.stack);
         
         // Handle duplicate key error
         if (error.code === 11000) {
             const field = Object.keys(error.keyValue)[0];
+            console.log('❌ Duplicate key error for field:', field);
             return res.status(400).json({
                 success: false,
                 error: `${field} already exists`
+            });
+        }
+
+        // Handle validation errors
+        if (error.name === 'ValidationError') {
+            const validationErrors = Object.values(error.errors).map(err => err.message);
+            console.log('❌ Validation errors:', validationErrors);
+            return res.status(400).json({
+                success: false,
+                error: `Validation failed: ${validationErrors.join(', ')}`
             });
         }
 
@@ -678,6 +724,56 @@ const getShopStats = async (req, res) => {
     }
 };
 
+// Debug route to check shop admin access (remove in production)
+const debugShopAccess = async (req, res) => {
+    try {
+        const user = req.user;
+        const Shop = require('../models/Shop');
+        
+        const debugInfo = {
+            authentication: {
+                userFound: !!user,
+                userId: user?._id,
+                email: user?.email,
+                role: user?.role,
+                isActive: user?.isActive,
+                shopId: user?.shopId,
+                hospitalId: user?.hospitalId
+            },
+            authorization: {
+                hasShopAdminRole: user?.role === 'shop_admin',
+                hasShopId: !!user?.shopId
+            },
+            shopValidation: null
+        };
+        
+        if (user?.shopId) {
+            const shop = await Shop.findById(user.shopId);
+            debugInfo.shopValidation = {
+                shopExists: !!shop,
+                shopId: user.shopId,
+                shopName: shop?.name,
+                shopActive: shop?.isActive,
+                shopType: shop?.shopType,
+                shopEmail: shop?.email
+            };
+        }
+        
+        res.status(200).json({
+            success: true,
+            message: 'Shop access debug information',
+            data: debugInfo
+        });
+        
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: 'Debug endpoint error',
+            details: error.message
+        });
+    }
+};
+
 module.exports = {
     getInventory,
     getInventoryItem,
@@ -691,5 +787,6 @@ module.exports = {
     getOrders,
     getOrder,
     updateOrderStatus,
-    getShopStats
+    getShopStats,
+    debugShopAccess
 };

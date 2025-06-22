@@ -215,4 +215,7 @@ export const logOut = () => async (dispatch) => {
       },
     },
   });
+  
+  // Force navigation to home page
+  window.location.href = '/';
 };

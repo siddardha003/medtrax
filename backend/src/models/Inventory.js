@@ -293,8 +293,7 @@ inventorySchema.virtual('stockValue').get(function() {
 // Indexes for better performance
 inventorySchema.index({ shopId: 1 });
 inventorySchema.index({ name: 1 });
-inventorySchema.index({ sku: 1 });
-inventorySchema.index({ barcode: 1 });
+// sku and barcode already have unique indexes from schema definition
 inventorySchema.index({ category: 1 });
 inventorySchema.index({ status: 1 });
 inventorySchema.index({ expiryDate: 1 });
