@@ -149,17 +149,20 @@ export default function AppForm() {
     };
 
     return (
+
         <form action="#" className="form-row" onSubmit={handleSubmit}>
-            <div className='heading-container2'>
-             <h2 className="form-heading2"> Book an</h2>
-             <h2 className="form-heading"> Appointment</h2></div>
+            <div className='appform-heading-container2'>
+             <h2 className="appform-form-heading2"> Book an</h2>
+             <h2 className="appform-form-heading"> Appointment</h2></div>
+
             {/* Name Field */}
-            <div className='new-container5'>
+            <div className='appform-container5'>
             <div className="form-col-lg-12">
-                <label className="input-label heading-color">Name</label>
+
+                <label className="appform-input-label">Name</label>
                 <input
                     type="text"
-                    className="form-field"
+                    className="appform-form-field"
                     placeholder="David John"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -170,29 +173,33 @@ export default function AppForm() {
 
             {/* Phone Number Field */}
             <div className="form-col-lg-12">
-                <label className="input-label heading-color">Phone Number</label>
+
+                <label className="appform-input-label">Phone Number</label>
                 <input
                     type="text"
-                    className="form-field"
+                    className="appform-form-field"
                     placeholder="(123) 456 - 789"
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                     required
                 />
+
                 <div className="height-42 height-xl-25" />
             </div>
 
             {/* Email Field */}
             <div className="form-col-lg-12">
-                <label className="input-label heading-color">E-Mail</label>
+
+                <label className="appform-input-label">E-Mail</label>
                 <input
                     type="email"
-                    className="form-field"
+                    className="appform-form-field"
                     placeholder="example@gmail.com"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     required
                 />
+
                 <div className="height-42 height-xl-25" />
             </div>
 
@@ -215,9 +222,10 @@ export default function AppForm() {
 
             {/* Preferred Date Field */}
             <div className="form-col-lg-12">
-                <label className="input-label heading-color">Preferred Date</label>
-                <div className="with-icon-input">
-                    <DatePicker
+                <label className="appform-input-label ">Preferred Date</label>
+                <div className="appform-date">
+                    <input
+                        type="date"
                         selected={selectedDate}
                         onChange={(date) => setSelectedDate(date)}
                         dateFormat="dd/MM/yyyy"
@@ -226,9 +234,6 @@ export default function AppForm() {
                         placeholderText="dd/mm/yyyy"
                         required
                     />
-                    <i>
-                        <Icon icon="fa6-solid:calendar-days" />
-                    </i>
                 </div>
                 <div className="height-42 height-xl-25" />
             </div>            {/* Display Hospital Name */}
@@ -251,9 +256,9 @@ export default function AppForm() {
 
             {/* Department Dropdown */}
             <div className="form-col-lg-12">
-                <label className="input-label heading-color">Department</label>
+                <label className="appform-input-label ">Department</label>
                 <select
-                    className="form-field"
+                    className="appform-form-field"
                     name="department"
                     id="department"
                     value={department}
@@ -276,9 +281,9 @@ export default function AppForm() {
             </div>            {/* Conditionally Render Doctor Dropdown */}
             {department && (
                 <div className="form-col-lg-12">
-                    <label className="input-label heading-color">Choose a Doctor</label>
+                    <label className="appform-input-label ">Choose a Doctor</label>
                     <select
-                        className="form-field"
+                        className="appform-form-field"
                         name="doctor"
                         id="doctor"
                         value={selectedDoctor}
@@ -299,9 +304,10 @@ export default function AppForm() {
             {/* Conditionally Render Time Slots Dropdown */}
             {selectedDoctor && (
                 <div className="form-col-lg-12">
-                    <label className="input-label heading-color">Available Time Slots</label>
+
+                    <label className="appform-input-label">Available Time Slots</label>
                     <select
-                        className="form-field"
+                        className="appform-form-field"
                         name="time"
                         id="time"
                         value={formData.time}
@@ -309,6 +315,7 @@ export default function AppForm() {
                         required
                     >
                         <option value="" disabled>Select Time Slot</option>
+
                         {timeSlots.map((timeSlot, index) => (
                             <option key={index} value={timeSlot}>
                                 {timeSlot}
@@ -333,8 +340,10 @@ export default function AppForm() {
 
             {/* Submit Button */}
             <div className="form-col-lg-12">
-                <button className="btn1-style-1" type="submit" disabled={loading}>
+
+                <button className="appform-btn" type="submit" disabled={loading}>
                     <span>{loading ? 'Booking...' : 'Submit'}</span>
+
                 </button>
             </div>
             {error && (
