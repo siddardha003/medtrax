@@ -1,13 +1,39 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import VideoBlock from './VideoBlock';
+import { getPublicStatsApi } from '../../Api';
 
 const videoBlockData = {
   "videoThumb": '/images/video-block-img.jpg',
-  "videoSrc": 'https://www.youtube.com/embed/SqcY0GlETPk',
+  "videoSrc": 'https://www.youtube.com/watch?v=Ord3vFzvRW8',
   "myVideoKey": "funfactVideo"
 }
 
 const Funfact = () => {
+  const [stats, setStats] = useState({
+    yearsOfExperience: 20,
+    totalPatients: 2354,
+    totalShops: 99,
+    totalHospitals: 125
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  const fetchStats = async () => {
+    try {
+      const { data } = await getPublicStatsApi();
+      if (data.success) {
+        setStats(data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+      // Keep default values if API fails
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <section className="st-gray-bg st-shape-wrap">
       <div className="st-shape4">
@@ -34,8 +60,7 @@ const Funfact = () => {
                         <path d="m472 116c-22.056 0-40 17.944-40 40v80c-10.681 0-20.725 4.162-28.281 11.719l-27.377 27.377c-15.96 15.949-41.848 18.608-56.951 21.262-29.939 3.22-53.391 30.639-53.391 62.422v127.22c0 5.523 4.478 10 10 10h106c5.522 0 10-4.477 10-10v-53.819l32.73-16.362c4.939-2.47 6.942-8.476 4.473-13.417-2.469-4.939-8.474-6.942-13.416-4.473l-38.259 19.125c-3.387 1.695-5.528 5.158-5.528 8.946v50h-86v-117.22c0-21.71 15.606-40.395 35.529-42.538.038-.004.076-.008.113-.013 23.361-3.155 50.206-8.368 68.839-26.988l27.38-27.38c5.724-5.724 13.913-7.166 20.797-4.726h.001c.003.001.006.003.009.004 7.975 2.817 13.332 10.397 13.332 18.861 0 5.338-2.082 10.359-5.861 14.14l-51.21 51.22c-3.905 3.906-3.904 10.237.001 14.142 3.904 3.904 10.237 3.905 14.142-.001l51.21-51.22c7.556-7.558 11.718-17.601 11.718-28.281 0-14.439-7.804-27.587-20-34.639v-85.361c0-11.028 8.972-20 20-20s20 8.972 20 20v135.84c0 18.296-4.617 36.46-13.353 52.528-2.639 4.852-.844 10.924 4.009 13.562 4.851 2.637 10.924.843 13.562-4.009 10.325-18.99 15.782-40.458 15.782-62.081v-135.84c0-22.056-17.944-40-40-40z" />
                       </g>
                     </svg>
-                  </div>
-                  <h2 className="st-funfact-number st-counter">20</h2>
+                  </div>                  <h2 className="st-funfact-number st-counter">{loading ? '...' : stats.yearsOfExperience}</h2>
                   <div className="st-funfact-title">Years of experience</div>
                 </div>
                 <div className="st-height-b30 st-height-lg-b30" />
@@ -142,8 +167,7 @@ const Funfact = () => {
                         />
                       </g>
                     </svg>
-                  </div>
-                  <h2 className="st-funfact-number st-counter">2354</h2>
+                  </div>                  <h2 className="st-funfact-number st-counter">{loading ? '...' : stats.totalPatients.toLocaleString()}</h2>
                   <div className="st-funfact-title">Happy Patients</div>
                 </div>
                 <div className="st-height-b30 st-height-lg-b30" />
@@ -236,8 +260,7 @@ const Funfact = () => {
                         />
                       </g>
                     </svg>
-                  </div>
-                  <h2 className="st-funfact-number st-counter">99</h2>
+                  </div>                  <h2 className="st-funfact-number st-counter">{loading ? '...' : stats.totalShops}</h2>
                   <div className="st-funfact-title">Pharmacies</div>
                 </div>
                 <div className="st-height-b30 st-height-lg-b30" />
@@ -256,8 +279,7 @@ const Funfact = () => {
                         <path d="m207.012 200.158h.018l25.008-.029.029 25.008c.009 7.715 6.289 13.985 14 13.985h.018l19.004-.022c3.74-.004 7.255-1.464 9.896-4.112 2.642-2.647 4.094-6.166 4.089-9.906l-.029-25.008 25.007-.029c7.72-.008 13.994-6.296 13.986-14.018l-.022-19.005c-.004-3.74-1.465-7.254-4.113-9.896-2.644-2.638-6.154-4.089-9.888-4.089-.005 0-.012 0-.018 0l-25.008.029-.029-25.007c-.004-3.74-1.464-7.254-4.112-9.896-2.644-2.638-6.155-4.09-9.888-4.09-.005 0-.012 0-.018 0l-19.005.022c-3.74.004-7.254 1.465-9.896 4.113-2.641 2.647-4.093 6.166-4.089 9.905l.029 25.008-25.007.029c-3.74.004-7.255 1.464-9.896 4.112-2.642 2.648-4.094 6.166-4.089 9.906l.022 19.004c.004 3.74 1.464 7.255 4.112 9.896 2.645 2.639 6.156 4.09 9.889 4.09zm32.489-32.045c4.142-.005 7.496-3.367 7.491-7.509l-.037-31.509 17.007-.02.037 31.51c0 .259.014.514.04.766.388 3.779 3.58 6.725 7.46 6.725h.009l31.509-.037.02 17.007-31.51.037c-4.142.005-7.496 3.367-7.491 7.509l.037 31.509-17.008.02-.037-31.51c-.005-4.139-3.361-7.491-7.5-7.491-.002 0-.006 0-.009 0l-31.509.037-.02-17.007z" />
                       </g>
                     </svg>
-                  </div>
-                  <h2 className="st-funfact-number st-counter">125</h2>
+                  </div>                  <h2 className="st-funfact-number st-counter">{loading ? '...' : stats.totalHospitals}</h2>
                   <div className="st-funfact-title">Hospitals</div>
                 </div>
                 <div className="st-height-b30 st-height-lg-b30" />

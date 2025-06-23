@@ -78,6 +78,7 @@ export const getPublicHospitalsApi = (params) => API.get('/api/public/hospitals'
 export const getPublicShopsApi = (params) => API.get('/api/public/shops', { params })
 export const getPublicHospitalDetailsApi = (id) => API.get(`/api/public/hospitals/${id}`)
 export const getPublicShopDetailsApi = (id) => API.get(`/api/public/shops/${id}`)
+export const getPublicStatsApi = () => API.get('/api/public/stats')
 
 // Auth APIs (updating existing)
 export const signUpUserApi = formData => API.post(`/api/auth/register`, formData)
