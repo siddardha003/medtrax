@@ -229,6 +229,7 @@ export default function AppForm() {
                         </div>
                     </div>
 
+
                     {/* Department Dropdown */}
                     <div className="form-group">
                         <label className="form-label">Department</label>
