@@ -1,6 +1,6 @@
 import { Icon } from '@iconify/react';
 import React, { useState, useEffect } from 'react';
-import { useSearchParams, useParams } from 'react-router-dom';
+import { useSearchParams, useParams, useLocation } from 'react-router-dom';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { getPublicHospitalDetailsApi, createAppointmentApi } from '../../Api';
@@ -10,10 +10,12 @@ import '../css/AppForm.css';
 export default function AppForm() {
     const [searchParams] = useSearchParams();
     const { id } = useParams();
+    const location = useLocation();
     const hospitalId = id || searchParams.get('hospitalId');
+    const passedHospital = location.state?.hospital;
     
     const user = useSelector(state => state.user.user);
-    const [hospital, setHospital] = useState(null);
+    const [hospital, setHospital] = useState(passedHospital || null);
     const [selectedDate, setSelectedDate] = useState(null);
     const [department, setDepartment] = useState('');
     const [doctors, setDoctors] = useState([]);
@@ -27,12 +29,10 @@ export default function AppForm() {
         notes: ''
     });
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
-
-    // Fetch hospital details
+    const [error, setError] = useState(null);    // Fetch hospital details
     useEffect(() => {
         const fetchHospital = async () => {
-            if (hospitalId) {
+            if (hospitalId && !hospital) {
                 try {
                     const response = await getPublicHospitalDetailsApi(hospitalId);
                     setHospital(response.data);
@@ -44,7 +44,7 @@ export default function AppForm() {
         };
         
         fetchHospital();
-    }, [hospitalId]);    // Fetch available doctors when department and date are selected
+    }, [hospitalId, hospital]);// Fetch available doctors when department and date are selected
     useEffect(() => {
         if (department && selectedDate && hospital) {
             fetchDoctors();
@@ -200,6 +200,23 @@ export default function AppForm() {
                     required
                 />
 
+                <div className="height-42 height-xl-25" />
+            </div>
+
+            {/* Hospital Field - Disabled when pre-selected */}
+            <div className="form-col-lg-12">
+                <label className="input-label heading-color">Hospital</label>
+                <input
+                    type="text"
+                    className="form-field"
+                    value={hospital ? hospital.name : 'Loading...'}
+                    disabled={true}
+                    style={{ 
+                        backgroundColor: '#f5f5f5', 
+                        color: '#666',
+                        cursor: 'not-allowed' 
+                    }}
+                />
                 <div className="height-42 height-xl-25" />
             </div>
 

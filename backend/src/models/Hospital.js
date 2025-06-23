@@ -177,10 +177,7 @@ hospitalSchema.virtual('appointmentsCount', {
     count: true
 });
 
-// Indexes for better performance
-hospitalSchema.index({ name: 1 });
-hospitalSchema.index({ registrationNumber: 1 });
-hospitalSchema.index({ email: 1 });
+// Indexes for better performance (name, registrationNumber, email already have unique indexes)
 hospitalSchema.index({ 'address.city': 1 });
 hospitalSchema.index({ 'address.state': 1 });
 hospitalSchema.index({ type: 1 });

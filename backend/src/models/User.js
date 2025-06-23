@@ -95,8 +95,7 @@ userSchema.virtual('fullName').get(function() {
     return `${this.firstName} ${this.lastName}`;
 });
 
-// Index for better performance
-userSchema.index({ email: 1 });
+// Index for better performance (email already has unique index from schema)
 userSchema.index({ role: 1 });
 userSchema.index({ isActive: 1 });
 

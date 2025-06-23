@@ -9,7 +9,8 @@ import {
   createAdminUserApi,
   createAdminHospitalApi,
   createAdminShopApi,
-  getSystemStatsApi 
+  getSystemStatsApi,
+  deleteAdminUserApi
 } from '../../Api';
 
 const AdminPanel = () => {
@@ -26,12 +27,13 @@ const AdminPanel = () => {
   const [createType, setCreateType] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [showPassword, setShowPassword] = useState(false); // Add password visibility state
 
   const handleLogout = () => {
     dispatch(logOut());
-    navigate('/admin-login');
-    // Log the action
-    console.log('Admin logged out');
+    setTimeout(() => {
+      navigate('/admin-login');
+    }, 300); // Delay navigation to avoid double notification
   };
   const [formData, setFormData] = useState({
     // User fields
@@ -294,6 +296,28 @@ const AdminPanel = () => {
     }
   };
 
+  // Add delete handler
+  const handleDeleteUser = async (userId) => {
+    if (!window.confirm('Are you sure you want to delete this user? This action cannot be undone.')) return;
+    setLoading(true);
+    setError('');
+    setSuccess('');
+    try {
+      const response = await deleteAdminUserApi(userId);
+      if (response.data.success) {
+        setUsers(prevUsers => prevUsers.filter(u => u._id !== userId));
+        setSuccess('User deleted successfully.');
+        fetchStats();
+      } else {
+        throw new Error(response.data.error || 'Failed to delete user');
+      }
+    } catch (error) {
+      setError(error.response?.data?.error || error.message || 'Failed to delete user');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const tabs = [
     { id: 'dashboard', name: 'Dashboard', icon: '📊' },
     { id: 'users', name: 'Users', icon: '👥' },
@@ -520,6 +544,7 @@ const AdminPanel = () => {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Role</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Created</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -547,6 +572,16 @@ const AdminPanel = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {new Date(user.createdAt).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <button
+                          onClick={() => handleDeleteUser(user._id)}
+                          className="text-red-600 hover:text-red-900 px-2 py-1 rounded border border-red-200 bg-red-50 hover:bg-red-100 transition-colors"
+                          disabled={loading}
+                          title="Delete user"
+                        >
+                          Delete
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -760,16 +795,33 @@ const AdminPanel = () => {
                     </div>
                       <div>
                       <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">Password *</label>
-                      <input
-                        id="password"
-                        type="password"
-                        placeholder="Password (min 6 characters)"
-                        value={formData.password}
-                        onChange={(e) => setFormData({...formData, password: e.target.value})}
-                        className="w-full p-2 border border-gray-300 rounded-md"
-                        required
-                        minLength="6"
-                      />
+                      <div className="relative">
+                        <input
+                          id="password"
+                          type={showPassword ? 'text' : 'password'}
+                          placeholder="Password (min 6 characters)"
+                          value={formData.password}
+                          onChange={(e) => setFormData({...formData, password: e.target.value})}
+                          className="w-full p-2 border border-gray-300 rounded-md"
+                          required
+                          minLength="6"
+                        />                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm"
+                        >
+                          {showPassword ? (
+                            <svg className="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L8.05 8.05m1.828 1.828L12 12m0 0l2.122 2.122M8.05 8.05l2.12 2.12" />
+                            </svg>
+                          ) : (
+                            <svg className="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                          )}
+                        </button>
+                      </div>
                       <p className="mt-1 text-xs text-gray-500">
                         Password must be at least 6 characters and include an uppercase letter, a lowercase letter, and a number
                       </p>

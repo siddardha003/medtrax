@@ -376,10 +376,8 @@ orderSchema.virtual('profitMargin').get(function() {
     return 0;
 });
 
-// Indexes for better performance
+// Indexes for better performance (orderNumber and invoiceNumber already have unique indexes)
 orderSchema.index({ shopId: 1 });
-orderSchema.index({ orderNumber: 1 });
-orderSchema.index({ invoiceNumber: 1 });
 orderSchema.index({ 'customer.phone': 1 });
 orderSchema.index({ 'customer.email': 1 });
 orderSchema.index({ status: 1 });

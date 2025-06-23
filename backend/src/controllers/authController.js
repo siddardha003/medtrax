@@ -3,35 +3,124 @@ const { generateToken, sanitizeUser } = require('../utils/helpers');
 const { sendPasswordResetEmail, sendOTPEmail } = require('../utils/email');
 const crypto = require('crypto');
 
-// @desc    Login user
-// @route   POST /api/auth/login
+// Request deduplication tracking
+const activeLoginSessions = new Map();
+
+// Generate unique session ID
+const generateSessionId = () => {
+    return `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+};
+
+// Prevent duplicate requests middleware
+const preventDuplicateRequests = (timeWindow = 2000) => {
+    return (req, res, next) => {
+        const requestKey = `${req.ip}-${req.body.email}`;
+        const now = Date.now();
+        
+        if (activeLoginSessions.has(requestKey)) {
+            const lastRequest = activeLoginSessions.get(requestKey);
+            if (now - lastRequest.timestamp < timeWindow) {
+                console.log(`⚠️  Duplicate login request blocked for ${req.body.email}`);
+                return res.status(429).json({
+                    success: false,
+                    error: 'Login request in progress. Please wait.'
+                });
+            }
+        }
+        
+        activeLoginSessions.set(requestKey, { timestamp: now });
+        next();
+    };
+};
+
+// Track login session middleware
+const trackLoginSession = (req, res, next) => {
+    const sessionId = generateSessionId();
+    req.loginSessionId = sessionId;
+    
+    console.log(`🎯 Login session started: ${sessionId} for ${req.body.email}`);
+    
+    // Track response completion
+    const startTime = Date.now();
+    const originalSend = res.send;
+    let responseSent = false;
+
+    res.send = function(data) {
+        if (responseSent) {
+            console.log(`⚠️  Duplicate response blocked for session: ${sessionId}`);
+            return;
+        }
+        responseSent = true;
+        
+        const duration = Date.now() - startTime;
+        console.log(`✅ Login session completed: ${sessionId} (${duration}ms)`);
+        
+        // Clean up session tracking
+        const requestKey = `${req.ip}-${req.body.email}`;
+        activeLoginSessions.delete(requestKey);
+        
+        originalSend.call(this, data);
+    };
+    
+    next();
+};
+
+// @desc    Consolidated login function with enhanced debugging
+// @route   POST /api/auth/login & POST /api/auth/direct-login
 // @access  Public
 const login = async (req, res, next) => {
     try {
         const { email, password } = req.body;
+        const sessionId = req.loginSessionId;
+        
+        console.log(`🔍 Processing login for: ${email} (Session: ${sessionId})`);
+        console.log(`🔑 Password provided: ${password ? 'YES' : 'NO'} (Length: ${password ? password.length : 0})`);
 
         // Check for user
         const user = await User.findOne({ email }).select('+password');
 
         if (!user) {
+            console.log(`❌ User not found: ${email}`);
             return res.status(401).json({
                 success: false,
                 error: 'Invalid credentials'
             });
         }
 
+        console.log(`👤 User found: ${email}`);
+        console.log(`🏥 Role: ${user.role}`);
+        console.log(`🔗 Hospital ID: ${user.hospitalId || 'None'}`);
+        console.log(`🏪 Shop ID: ${user.shopId || 'None'}`);
+        console.log(`🔐 Password hash exists: ${user.password ? 'YES' : 'NO'}`);
+        console.log(`🔐 Password hash length: ${user.password ? user.password.length : 0}`);
+        console.log(`✅ Is Active: ${user.isActive}`);
+
         // Check if user is active
         if (!user.isActive) {
+            console.log(`❌ Account deactivated: ${email}`);
             return res.status(401).json({
                 success: false,
                 error: 'Account is deactivated. Please contact administrator.'
             });
         }
 
+        // Debug password comparison
+        console.log(`🔍 Attempting password comparison for: ${email}`);
+        console.log(`🔑 Plain password: "${password}"`);
+        console.log(`🔐 Hashed password (first 20 chars): ${user.password ? user.password.substring(0, 20) + '...' : 'NULL'}`);
+
         // Check if password matches
         const isMatch = await user.matchPassword(password);
+        console.log(`🎯 Password match result: ${isMatch}`);
 
         if (!isMatch) {
+            console.log(`❌ Invalid password for: ${email}`);
+            console.log(`🔍 Double-checking password hash format...`);
+            
+            // Additional debug: Check if password looks like bcrypt hash
+            const isBcryptHash = user.password && user.password.startsWith('$2');
+            console.log(`🔐 Password appears to be bcrypt hash: ${isBcryptHash}`);
+            
             return res.status(401).json({
                 success: false,
                 error: 'Invalid credentials'
@@ -52,68 +141,7 @@ const login = async (req, res, next) => {
         // Remove password from output
         const sanitizedUser = sanitizeUser(user);
 
-        res.status(200).json({
-            success: true,
-            message: 'Login successful',
-            data: {
-                token,
-                user: sanitizedUser
-            }
-        });
-
-    } catch (error) {
-        next(error);
-    }
-};
-
-// @desc    Direct login without OTP (for admin or emergency access)
-// @route   POST /api/auth/direct-login
-// @access  Public
-const directLogin = async (req, res, next) => {
-    try {
-        const { email, password } = req.body;
-
-        // Check for user
-        const user = await User.findOne({ email }).select('+password');
-
-        if (!user) {
-            return res.status(401).json({
-                success: false,
-                error: 'Invalid credentials'
-            });
-        }
-
-        // Check if user is active
-        if (!user.isActive) {
-            return res.status(401).json({
-                success: false,
-                error: 'Account is deactivated. Please contact administrator.'
-            });
-        }
-
-        // Check if password matches
-        const isMatch = await user.matchPassword(password);
-
-        if (!isMatch) {
-            return res.status(401).json({
-                success: false,
-                error: 'Invalid credentials'
-            });
-        }
-
-        // Update last login
-        user.lastLogin = new Date();
-        await user.save();
-
-        // Create token
-        const token = generateToken({ 
-            id: user._id,
-            role: user.role,
-            email: user.email
-        });
-
-        // Remove password from output
-        const sanitizedUser = sanitizeUser(user);
+        console.log(`✅ Login successful for: ${email} (Role: ${user.role})`);
 
         res.status(200).json({
             success: true,
@@ -125,9 +153,14 @@ const directLogin = async (req, res, next) => {
         });
 
     } catch (error) {
+        console.error(`❌ Login error for session ${req.loginSessionId}:`, error.message);
+        console.error(`📍 Error stack:`, error.stack);
         next(error);
     }
 };
+
+// Alias for backward compatibility - prevents code duplication
+const directLogin = login;
 // @route   GET /api/auth/me
 // @access  Private
 const getMe = async (req, res, next) => {
@@ -686,6 +719,122 @@ const resendOTP = async (req, res, next) => {
     }
 };
 
+// Debug route to check route definitions (remove in production)
+const debugRoutes = (req, res) => {
+    const routes = {
+        authRoutes: [
+            'POST /api/auth/login',
+            'POST /api/auth/direct-login',
+            'GET /api/auth/me',
+            'POST /api/auth/logout',
+            'POST /api/auth/register',
+            'PUT /api/auth/profile',
+            'PUT /api/auth/change-password',
+            'POST /api/auth/forgot-password',
+            'POST /api/auth/reset-password',
+            'POST /api/auth/refresh-token',
+            'POST /api/auth/verify-token'
+        ],
+        loginEndpoints: {
+            '/login': 'Standard login endpoint',
+            '/direct-login': 'Alias to login endpoint (same function)'
+        },
+        duplicateProtection: {
+            requestDeduplication: 'Active (2 second window)',
+            sessionTracking: 'Active',
+            responseProtection: 'Active'
+        }
+    };
+
+    res.status(200).json({
+        success: true,
+        message: 'Auth routes debug information',
+        data: routes
+    });
+};
+
+// Debug route to test admin-created credentials (remove in production)
+const testAdminCredentials = async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        
+        if (!email || !password) {
+            return res.status(400).json({
+                success: false,
+                error: 'Email and password are required for testing'
+            });
+        }
+
+        console.log(`🧪 Testing credentials for: ${email}`);
+        console.log(`🔑 Testing password: "${password}"`);
+
+        // Find user
+        const user = await User.findOne({ email }).select('+password');
+        
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                error: 'User not found',
+                debug: {
+                    searchedEmail: email
+                }
+            });
+        }
+
+        // Debug info
+        const debugInfo = {
+            userFound: true,
+            userId: user._id,
+            email: user.email,
+            role: user.role,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            isActive: user.isActive,
+            createdAt: user.createdAt,
+            hasPassword: !!user.password,
+            passwordHashLength: user.password ? user.password.length : 0,
+            passwordStartsWithBcrypt: user.password ? user.password.startsWith('$2') : false,
+            hospitalId: user.hospitalId,
+            shopId: user.shopId,
+            lastLogin: user.lastLogin
+        };
+
+        console.log(`👤 User debug info:`, debugInfo);
+
+        // Test password match
+        let passwordMatch = false;
+        let matchError = null;
+
+        try {
+            passwordMatch = await user.matchPassword(password);
+            console.log(`🎯 Password match result: ${passwordMatch}`);
+        } catch (error) {
+            matchError = error.message;
+            console.error(`❌ Password match error:`, error);
+        }
+
+        // Response
+        res.status(200).json({
+            success: true,
+            message: 'Credential test completed',
+            data: {
+                ...debugInfo,
+                passwordMatch,
+                matchError,
+                testPassword: password
+            }
+        });
+
+    } catch (error) {
+        console.error(`❌ Credential test error:`, error);
+        res.status(500).json({
+            success: false,
+            error: 'Credential test failed',
+            debug: error.message
+        });
+    }
+};
+
 module.exports = {
     login,
     directLogin,
@@ -697,6 +846,11 @@ module.exports = {
     logout,
     verifyToken,
     refreshToken,
-    register
+    register,
+    // Middleware exports
+    preventDuplicateRequests,
+    trackLoginSession,
+    debugRoutes,
+    testAdminCredentials
     // sendOTP, verifyOTP, resendOTP - commented out for now
 };

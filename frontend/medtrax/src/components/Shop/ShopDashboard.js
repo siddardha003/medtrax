@@ -133,11 +133,10 @@ const ShopDashboard = () => {
   const fetchStats = async () => {
     setLoading(true);
     setError('');
-    try {
-      // Since we might not have a specific stats API, calculate from inventory
+    try {      // Since we might not have a specific stats API, calculate from inventory
       const { data } = await ShopApi.getInventoryApi({ limit: 1000 });
       if (data.success) {
-        const allItems = data.data.inventory || [];
+        const allItems = data.data.items || [];
         const inStock = allItems.filter(item => getStockStatus(item) === 'in_stock').length;
         const lowStock = allItems.filter(item => getStockStatus(item) === 'low_stock').length;
         const outOfStock = allItems.filter(item => getStockStatus(item) === 'out_of_stock').length;
@@ -270,13 +269,30 @@ const ShopDashboard = () => {
     }
     
     setLoading(true);
-    
-    try {      const productData = {
+      try {      // Map frontend category to backend enum
+      const categoryMapping = {
+        'PRESCRIPTION MEDICINES': 'prescription_drug',
+        'OTC MEDICINES': 'otc_drug',
+        'MEDICAL DEVICES': 'medical_device',
+        'SURGICAL INSTRUMENTS': 'surgical_instrument',
+        'HEALTH SUPPLEMENTS': 'health_supplement',
+        'BABY CARE': 'baby_care',
+        'ELDERLY CARE': 'elderly_care',
+        'FIRST AID': 'first_aid',
+        'DIAGNOSTIC KITS': 'diagnostic_kit',
+        'MEDICAL CONSUMABLES': 'medical_consumables',
+        'AYURVEDIC': 'ayurvedic',
+        'HOMEOPATHIC': 'homeopathic'
+      };
+
+      const productData = {
         name: formData.name.trim(),
-        category: formData.category,
+        category: categoryMapping[formData.category] || formData.category.toLowerCase().replace(/\s+/g, '_'),
         description: formData.description.trim(),
         manufacturer: formData.manufacturer.trim(),
         sku: formData.sku.trim(),
+        batchNumber: formData.batchNumber.trim(),
+        unit: 'piece', // Add default unit
         pricing: {
           costPrice: parseFloat(formData.costPrice),
           sellingPrice: parseFloat(formData.price),
@@ -285,15 +301,17 @@ const ShopDashboard = () => {
         quantity: {
           current: parseInt(formData.stock),
           minimum: parseInt(formData.minStockLevel),
-          maximum: parseInt(formData.maxStockLevel) || parseInt(formData.minStockLevel) * 10
-        },
+          maximum: parseInt(formData.maxStockLevel) || parseInt(formData.minStockLevel) * 10        },
         prescriptionRequired: formData.prescriptionRequired,
-        expiryDate: formData.expiryDate,
-        batchNumber: formData.batchNumber.trim(),
-        shopId: userInfo?.shopId || '68550a000ed19e0791906643' // Default shop ID
+        expiryDate: formData.expiryDate
+        // Backend will use req.user.shopId automatically
       };
       
-      let response;      if (editingProduct) {
+      console.log('📦 Sending product data:', productData);
+      console.log('👤 Current user info:', userInfo);
+      
+      let response;
+      if (editingProduct) {
         response = await ShopApi.updateInventoryItemApi(editingProduct._id, productData);
         if (response.data.success) {
           setInventory(inventory.map(item => 
@@ -415,7 +433,9 @@ const ShopDashboard = () => {
 
   const handleLogout = () => {
     dispatch(logOut());
-    navigate('/login');
+    setTimeout(() => {
+      navigate('/login');
+    }, 300); // Delay navigation to avoid double notification
   };
 
   const handleInputChange = (e) => {
@@ -835,41 +855,41 @@ const ShopDashboard = () => {
                             <div className="text-xs text-gray-500 mt-1">
                               Min: {item.quantity?.minimum || item.minStockLevel || 0} | Max: {item.quantity?.maximum || item.maxStockLevel || 0}
                               </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className={`text-sm ${isExpiringSoon(item.expiryDate) ? 'text-red-600 font-medium' : 'text-gray-900'}`}>
-                                {new Date(item.expiryDate).toLocaleDateString()}
-                              </div>
-                              {isExpiringSoon(item.expiryDate) && (
-                                <div className="text-xs text-red-500">Expires soon!</div>
-                              )}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                              <button
-                                onClick={() => handleEdit(item)}
-                                className="text-blue-600 hover:text-blue-900"
-                              >
-                                Edit
-                              </button>
-                              <button
-                                onClick={() => {
-                                  const newStock = prompt(`Update stock for ${item.name}:`, item.stock);
-                                  if (newStock && !isNaN(newStock)) {
-                                    handleStockUpdate(item._id, parseInt(newStock));
-                                  }
-                                }}
-                                className="text-green-600 hover:text-green-900"
-                              >
-                                Update Stock
-                              </button>
-                              <button
-                                onClick={() => handleDelete(item._id)}
-                                className="text-red-600 hover:text-red-900"
-                              >
-                                Delete
-                              </button>
-                            </td>
-                          </tr>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className={`text-sm ${isExpiringSoon(item.expiryDate) ? 'text-red-600 font-medium' : 'text-gray-900'}`}>
+                              {new Date(item.expiryDate).toLocaleDateString()}
+                            </div>
+                            {isExpiringSoon(item.expiryDate) && (
+                              <div className="text-xs text-red-500">Expires soon!</div>
+                            )}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                            <button
+                              onClick={() => handleEdit(item)}
+                              className="text-blue-600 hover:text-blue-900"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => {
+                                const newStock = prompt(`Update stock for ${item.name}:`, item.stock);
+                                if (newStock && !isNaN(newStock)) {
+                                  handleStockUpdate(item._id, parseInt(newStock));
+                                }
+                              }}
+                              className="text-green-600 hover:text-green-900"
+                            >
+                              Update Stock
+                            </button>
+                            <button
+                              onClick={() => handleDelete(item._id)}
+                              className="text-red-600 hover:text-red-900"
+                            >
+                              Delete
+                            </button>
+                          </td>
+                        </tr>
                         ))
                       )}
                     </tbody>

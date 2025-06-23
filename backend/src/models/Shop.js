@@ -215,10 +215,7 @@ shopSchema.virtual('ordersCount', {
     count: true
 });
 
-// Indexes for better performance
-shopSchema.index({ name: 1 });
-shopSchema.index({ licenseNumber: 1 });
-shopSchema.index({ email: 1 });
+// Indexes for better performance (name, licenseNumber, email already have unique indexes)
 shopSchema.index({ 'address.city': 1 });
 shopSchema.index({ 'address.state': 1 });
 shopSchema.index({ type: 1 });

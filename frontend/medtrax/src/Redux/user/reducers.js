@@ -14,12 +14,10 @@ export default function userReducer(state = initialState, action) {
   switch (action.type) {
     case Add_LOGIN_USER:
       localStorage.setItem("profile", JSON.stringify(action.payload));
-      return { ...state, ...action.payload };
-
-    case LOGOUT:
-      localStorage.setItem("profile", JSON.stringify(null));
+      return { ...state, ...action.payload };    case LOGOUT:
+      localStorage.removeItem("profile");
       return {
-        ...action.payload,
+        ...initialState,
         token: null,
       };
     default:

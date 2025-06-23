@@ -1,9 +1,16 @@
 const errorHandler = (err, req, res, next) => {
+    // Prevent duplicate error responses
+    if (res.headersSent) {
+        console.log('⚠️  Headers already sent, skipping duplicate error response');
+        return next(err);
+    }
+
     let error = { ...err };
     error.message = err.message;
 
-    // Log error for debugging
-    console.error('Error:', err);
+    // Log error for debugging with session info if available
+    const sessionInfo = req.loginSessionId ? ` (Session: ${req.loginSessionId})` : '';
+    console.error(`❌ Error${sessionInfo}:`, err.message);
 
     // Mongoose bad ObjectId
     if (err.name === 'CastError') {
@@ -76,11 +83,16 @@ const errorHandler = (err, req, res, next) => {
         };
     }
 
-    res.status(error.statusCode || 500).json({
-        success: false,
-        error: error.message || 'Server Error',
-        ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
-    });
+    // Enhanced error response with duplicate protection
+    try {
+        res.status(error.statusCode || 500).json({
+            success: false,
+            error: error.message || 'Server Error',
+            ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+        });
+    } catch (responseError) {
+        console.error('⚠️  Error sending error response:', responseError.message);
+    }
 };
 
 module.exports = errorHandler;
