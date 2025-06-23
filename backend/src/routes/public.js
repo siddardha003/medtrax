@@ -1,6 +1,8 @@
 const express = require('express');
 const Hospital = require('../models/Hospital');
 const Shop = require('../models/Shop');
+const User = require('../models/User');
+const Appointment = require('../models/Appointment');
 
 const router = express.Router();
 
@@ -305,6 +307,46 @@ router.get('/shops/:id', async (req, res, next) => {
         });
     } catch (error) {
         next(error);
+    }
+});
+
+// @route   GET /api/public/stats
+// @desc    Get public system statistics for landing page
+// @access  Public
+router.get('/stats', async (req, res, next) => {
+    try {
+        // Get actual counts from database
+        const totalHospitals = await Hospital.countDocuments({ isActive: true });
+        const totalShops = await Shop.countDocuments({ isActive: true });
+        
+        // Get total unique patients who made appointments
+        const uniquePatientEmails = await Appointment.distinct('patient.email');
+        const totalPatients = uniquePatientEmails.length;
+        
+        // Calculate years of experience (assuming service started in 2020)
+        const currentYear = new Date().getFullYear();
+        const yearsOfExperience = currentYear - 2020;
+
+        const stats = {
+            yearsOfExperience,
+            totalPatients,
+            totalShops,
+            totalHospitals
+        };
+
+        console.log('Public stats fetched from DB:', stats);
+
+        res.status(200).json({
+            success: true,
+            data: stats
+        });
+
+    } catch (error) {
+        console.error('Get public stats error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Unable to fetch statistics'
+        });
     }
 });
 

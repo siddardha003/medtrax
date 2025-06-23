@@ -1,160 +1,196 @@
-/* Heading Styles */
-/* Center the heading container */
-.appform-heading-container2 {
-    display: flex;
-    flex-direction: column;
-    align-items:center; /* Aligns headings to the left */
-    justify-content: center;
-    margin: 0 auto; /* Centers the container horizontally on the page */
-    padding: 20px;
-    margin-top: -50px;
-    margin-bottom: 20px;
+/* AppForm.css - Modern Medical Appointment Form */
+
+/* Base Container Styles */
+.appointment-form-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  margin-top: 150px;
+  padding: 2rem;
+  display: flex;
+  gap: 100px;
+
 }
 
-/* Heading 1 - Large text */
-.appform-form-heading {
-    font-size: 50px; /* Larger font size */
-    font-weight: 700;
-    color: #008b95;
-    font-family: 'Arial', sans-serif;
-    margin: 0; /* Remove default margin */
+/* Header Styles */
+.form-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
 }
 
-/* Heading 2 - Smaller text */
-.appform-form-heading2 {
-    font-size: 40px;
-    font-weight: 600;
-    color: #21272c;
-    font-family: 'Arial', sans-serif;
-    margin: 0; /* Remove default margin */
-}
-.appform-container5 {
-    border: 2px solid #008b95; /* Black border */
-    background-color: white; /* White background */
-    padding: 20px; /* Optional: Adjust the padding for spacing */
-    border-radius: 10px; /* Optional: Adds rounded corners */
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Optional: Adds a slight shadow for depth */
-    width: 60%;
+.form-main-heading {
+  font-size: 2.8rem;
+  font-weight: 700;
+  color: #008b95;
+  margin-bottom: 0.5rem;
+  margin-top: 250px;
+  letter-spacing: -0.5px;
 }
 
-/* General form structure */
-.form-row {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    padding: 200px;
-  }
-  
-  .form-col-lg-6 {
-    width: 48%;
-    margin-bottom: 20px;
-  }
-  
-  .form-col-lg-12 {
-    width: 100%;
-  }
-  
-  .appform-input-label {
-    display: block;
-    font-size: 14px;
-    color: #333;
-    margin-bottom: 8px;
-    font-weight: 500;
-  }
-  
-  .appform-form-field {
-    width: 50%;
-    padding: 12px;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
-    font-size: 14px;
-    color: #333;
-    outline: none;
-  }
-  .appform-form-field:focus {
-    box-shadow: 0 0 10px #42b1b9; /* Yellow blur shadow */
-
-    outline: none;
-  }
-  
-  .appform-form-field::placeholder {
-    color: #9ca3af;
-  }
-  
-  
-  .height-42 {
-    height: 42px;
-  }
-  
-  .height-xl-25 {
-    height: 25px;
-  }
-  
-  /* For the date and time input with icons */      
-  .appform-date{
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    margin-right: 100px;
-    }
-
-  .appform-date input {
-    width: 150px;
-    /* Set the width of the input fields */
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 10px;
-  }
-  
-  /* Datepicker adjustments */
-
-  
-  /* .react-datepicker__input-container input {
-    width: 100%;
-    padding: 12px;
-    border-radius: 8px;
-    border: 1px solid #d1d5db;
-    font-size: 14px;
-    color: #333;
-  } */
-  
-  /* Radio button styles */
-  .radio-group {
-    display: flex;
-    gap: 20px;
-    flex-wrap: wrap;
-  }
-  
-  .radio-wrap {
-    display: flex;
-    align-items: center;
-  }
-  
-  .radio-input {
-    margin-right: 10px;
-  }
-  
-  .radio-label {
-    font-size: 14px;
-    color: #333;
-    cursor: pointer;
-  }
-  
-/* Submit button styles */
-/* Submit button styles */
-.appform-btn {
-    background-color: #02a2ae;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 25px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: background-color 0.3s ease;
-    margin-top: 20px;
-  }
-
-  .appform-btn :hover {
-    background-color: #008b95;
+.form-sub-heading {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #21272c;
+  margin-top: 0;
 }
+
+/* Form Card Container */
+.form-card {
+  border: 2px solid #008b95;
+  background-color: white;
+  padding: 2.5rem;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  margin: 0 auto;
+  width: 90%;
+  max-width: 800px;
+}
+
+/* Form Grid Layout */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.8rem;
+}
+
+/* Form Field Styles */
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 0.6rem;
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.85rem 1.2rem;
+  border: 1px solid #cbd5e0;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  color: #2d3748;
+  transition: all 0.3s ease;
+  background-color: #f8fafc;
+}
+
+.form-input:focus {
+  border-color: #008b95;
+  box-shadow: 0 0 0 3px rgba(0, 139, 149, 0.2);
+  outline: none;
+  background-color: white;
+}
+
+/* Full-width fields */
+.full-width {
+  grid-column: span 2;
+}
+
+/* Date Picker Styles */
+.date-picker-container {
+  position: relative;
+}
+
+.date-picker-container .icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #64748b;
+}
+
+/* Select Dropdown Styles */
+.form-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1rem;
+  padding-right: 2.5rem;
+}
+
+/* Textarea Styles */
+.form-textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+/* Submit Button Styles */
+.submit-button {
+  background-color: #02a2ae;
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 50px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+  margin-top: 1rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.submit-button:hover {
+  background-color: #008b95;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.submit-button:disabled {
+  background-color: #cbd5e0;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Error Message Styles */
+.error-message {
+  color: #e53e3e;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+  padding: 0.75rem;
+  background-color: #fff5f5;
+  border-radius: 6px;
+  border-left: 4px solid #e53e3e;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
   
+  .form-card {
+    padding: 1.5rem;
+    width: 95%;
+  }
+  
+  .form-main-heading {
+    font-size: 2.2rem;
+  }
+  
+  .form-sub-heading {
+    font-size: 1.6rem;
+  }
+}
+
+/* Animation for Form Elements */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.form-group {
+  animation: fadeIn 0.4s ease forwards;
+  opacity: 0;
+}
+
+/* Sequential Animation Delays */
+.form-group:nth-child(1) { animation-delay: 0.1s; }
+.form-group:nth-child(2) { animation-delay: 0.2s; }
+.form-group:nth-child(3) { animation-delay: 0.3s; }
+.form-group:nth-child(4) { animation-delay: 0.4s; }
+.form-group:nth-child(5) { animation-delay: 0.5s; }
+/* Continue as needed for more elements */
