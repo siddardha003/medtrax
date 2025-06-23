@@ -213,6 +213,23 @@ export default function AppForm() {
                 <div className="height-42 height-xl-25" />
             </div>
 
+            {/* Hospital Field - Disabled when pre-selected */}
+            <div className="form-col-lg-12">
+                <label className="input-label heading-color">Hospital</label>
+                <input
+                    type="text"
+                    className="form-field"
+                    value={hospital ? hospital.name : 'Loading...'}
+                    disabled={true}
+                    style={{ 
+                        backgroundColor: '#f5f5f5', 
+                        color: '#666',
+                        cursor: 'not-allowed' 
+                    }}
+                />
+                <div className="height-42 height-xl-25" />
+            </div>
+
             {/* Preferred Date Field */}
             <div className="form-col-lg-12">
                 <label className="input-label heading-color">Preferred Date</label>
