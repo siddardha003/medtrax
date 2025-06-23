@@ -252,8 +252,7 @@ const MedicalshopDetails = () => {
     ];
 
     const today = new Date().toLocaleString("en-US", { weekday: "long" });
-    const [showPhoneNumber, setShowPhoneNumber] = useState(false);
-    const handleContactNowClick = () => setShowPhoneNumber(true);
+    const [showPhoneNumber, setShowPhoneNumber] = useState(false);    const handleContactNowClick = () => setShowPhoneNumber(true);
 
     // Function to transform backend services data to frontend format
     const transformServices = (backendServices) => {
@@ -351,8 +350,7 @@ const MedicalshopDetails = () => {
                 setShopData(fallbackShopData);
                 setLoading(false);
                 return;
-            }            
-            setLoading(true);
+            }            setLoading(true);
             try {
                 const response = await getPublicShopDetailsApi(shopId);
                 const shopData = response.data;
@@ -400,11 +398,9 @@ const MedicalshopDetails = () => {
         <div className="medicalshop-ui">
             {/* Header */}
             <div className="medicalshop-header">
-                <h1>{displayData.name}</h1>                
-                <div className="medicalshoprating">
+                <h1>{displayData.name}</h1>                <div className="medicalshoprating">
                     ⭐ {displayData.rating ? displayData.rating.toFixed(1) : '4.4'} ({displayData.reviewsCount || 0} reviews)
-                </div>                
-                <p className="medicalshop-timing">
+                </div>                <p className="medicalshop-timing">
                     🕒 Open until {displayData.closingTime || '10:00 PM'}
                 </p>
                 <p className="medicalshop-location">
@@ -414,8 +410,7 @@ const MedicalshopDetails = () => {
                     </a>
                 </p>
             </div>
-            
-            {/* Images Section */}
+              {/* Images Section */}
             <div className="medicalshop-images">
                 <img 
                     src={displayData.images && displayData.images[0] ? displayData.images[0] : 'https://via.placeholder.com/400x300?text=No+Image'} 
@@ -444,8 +439,7 @@ const MedicalshopDetails = () => {
                         <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                             <button className="close-btn" onClick={closeModal1}>
                                 &times;
-                            </button>                            
-                            {(displayData.images || []).map((image, index) => (
+                            </button>                            {(displayData.images || []).map((image, index) => (
                                 <img key={index} src={image} alt={`Image ${index}`} className="modal-image" />
                             ))}
                         </div>
@@ -456,89 +450,44 @@ const MedicalshopDetails = () => {
             {/* Main Content */}
             <div className="med-services-booking">
                 <div className="med-services-section">
-                    {/* Enhanced Products & Services Section */}
-                    <div className="products-services-section">
-                        <h2 className="section-title">Pharmacy Products & Services</h2>
-                        
-                        {/* Categories Navigation */}
-                        <div className="categories-nav-container">
-                            <button
-                                className="scroll-button left-button"
-                                onClick={() => scrollreview1("left")}
-                            >
-                                &#9664;
-                            </button>
-                            <div className="categories-nav" ref={serviceContainerRef}>
-                                {(displayData.services || []).map((serviceType, index) => (
-                                    <button
-                                        key={index}
-                                        className={`category-tab ${selectedService === index ? "active" : ""}`}
-                                        onClick={() => setSelectedService(index)}
-                                    >
-                                        <span className="category-icon">
-                                            {serviceType.category === "Prescription Medicines" && "💊"}
-                                            {serviceType.category === "OTC Medicines" && "🩹"}
-                                            {serviceType.category === "Ointments & Creams" && "🧴"}
-                                            {serviceType.category === "Baby Care" && "🍼"}
-                                            {serviceType.category === "Medical Devices" && "🩺"}
-                                            {serviceType.category === "Health Supplements" && "💪"}
-                                            {serviceType.category === "Elderly Care" && "🧓"}
-                                            {serviceType.category === "Home Delivery" && "🚚"}
-                                            {serviceType.category === "Online Consultation" && "💻"}
-                                        </span>
-                                        {serviceType.category}
-                                    </button>
-                                ))}
-                            </div>
-                            <button
-                                className="scroll-button right-button"
-                                onClick={() => scrollreview1("right")}
-                            >
-                                &#9654;
-                            </button>
+                    <h2>Products & Services</h2>
+                    <div className="scroll-container">
+                        <button
+                            className="scroll-button left-button"
+                            onClick={() => scrollreview1("left")}
+                        >
+                            &#9664;
+                        </button>                        <div className="med-service-tabs" ref={serviceContainerRef}>
+                            {(displayData.services || []).map((serviceType, index) => (
+                                <button
+                                    key={index}
+                                    className={`medtab ${selectedService === index ? "active" : ""}`}
+                                    onClick={() => setSelectedService(index)}
+                                >
+                                    {serviceType.category}
+                                </button>
+                            ))}
                         </div>
-                        
-                        {/* Products List */}
-                        <div className="products-container">
-                            <div className="products-header">
-                                <h3 className="products-category-title">
-                                    {(displayData.services && displayData.services[selectedService]?.category) || "Products"}
-                                </h3>
-                                <div className="products-count">
-                                    {(displayData.services && displayData.services[selectedService]?.items?.length) || 0} items available
+                        <button
+                            className="scroll-button right-button"
+                            onClick={() => scrollreview1("right")}
+                        >
+                            &#9654;
+                        </button>
+                    </div>
+                      <div className="med-service-list">
+                        {(displayData.services && displayData.services[selectedService] && displayData.services[selectedService].items || []).map((item, idx) => (
+                            <div key={idx} className="med-service-item">
+                                <div>
+                                    <h4>{item.name}</h4>
+                                    <p className="availability">{item.availability}</p>
+                                </div>
+                                <div className="med-service-book">
+                                    <span>₹{item.price}</span>
+                                    <button className="book-btn">Add to Cart</button>
                                 </div>
                             </div>
-                            
-                            <div className="products-grid">
-                                {(displayData.services && displayData.services[selectedService]?.items || []).map((item, idx) => (
-                                    <div key={idx} className="product-card">
-                                        <div className="product-image-placeholder">
-                                            {item.name.includes("Tablet") && "💊"}
-                                            {item.name.includes("Cream") && "🧴"}
-                                            {item.name.includes("Oil") && "🛢️"}
-                                            {item.name.includes("Device") && "🩺"}
-                                            {item.name.includes("Delivery") && "🚚"}
-                                            {item.name.includes("Consultation") && "👨‍⚕️"}
-                                        </div>
-                                        <div className="product-details">
-                                            <h4 className="product-name">{item.name}</h4>
-                                            <div className="product-meta">
-                                                <span className={`product-availability ${item.availability === "In Stock" ? "in-stock" : "limited-stock"}`}>
-                                                    {item.availability}
-                                                </span>
-                                                <span className="product-price">₹{item.price}</span>
-                                            </div>
-                                        </div>
-                                        <div className="product-actions">
-                                            <button className="add-to-cart-btn">
-                                                <span className="cart-icon">🛒</span> Add to Cart
-                                            </button>
-                                            <button className="quick-view-btn">Quick View</button>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
+                        ))}
                     </div>
 
                     {/* Reviews Section */}
@@ -646,14 +595,12 @@ const MedicalshopDetails = () => {
                 {/* Booking Card */}
                 <div className="med-booking-card">
                     <div className="med-booking-medical-header">
-                        <h2>{displayData.name || 'Medical Shop'}</h2>                        
-                        <div className="med-booking-rating">
+                        <h2>{displayData.name || 'Medical Shop'}</h2>                        <div className="med-booking-rating">
                             ⭐ {displayData.rating ? displayData.rating.toFixed(1) : '4.4'} ({displayData.reviewsCount || 0} reviews)
                         </div>
                         <button className="med-book-now-btn" onClick={handleContactNowClick}>
                             Contact now
-                        </button>                        
-                        {showPhoneNumber && (
+                        </button>                        {showPhoneNumber && (
                             <div className="phone-number-display">
                                 <p>📞 {displayData.phone || 'Phone not available'}</p>
                                 <p className="timing-note">Available 9AM-9PM</p>
