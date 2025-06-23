@@ -1,7 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useAuth } from '../../hooks/useAuth';
+import {
+  saveMedicineReminderApi,
+  getMedicineRemindersApi,
+  deleteMedicineReminderApi
+} from '../../Api';
 import "../css/Medreminder.css";
 
 const MedReminder = () => {
+  const { isAuthenticated, user } = useAuth();
   const [reminders, setReminders] = useState([]); // Store saved reminders
   const [formData, setFormData] = useState({
     name: "",
@@ -15,14 +22,22 @@ const MedReminder = () => {
   const [showForm, setShowForm] = useState(false); // Control form visibility
 
   // Fetch reminders from the database on component mount
-  // useEffect(() => {
-  //   const fetchReminders = async () => {
-  //     const savedReminders = await getRemindersFromDatabase();
-  //     setReminders(savedReminders);
-  //   };
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchReminders();
+    }
+  }, [isAuthenticated]);
 
-  //   fetchReminders();
-  // }, []);
+  const fetchReminders = async () => {
+    try {
+      const response = await getMedicineRemindersApi({ active: true });
+      if (response.data.success) {
+        setReminders(response.data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching reminders:', error);
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value, files } = e.target;
@@ -43,32 +58,70 @@ const MedReminder = () => {
       };
     });
   };
-
-  const handleSubmit =  (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Save new reminder to the database
-    // const savedReminder = await saveReminderToDatabase(formData);
+    if (isAuthenticated) {
+      try {
+        // Create FormData for image upload if needed
+        const reminderData = {
+          name: formData.name,
+          startDate: formData.startDate,
+          endDate: formData.endDate,
+          times: formData.times.filter(time => time !== ""),
+          days: formData.days,
+          notes: ""
+        };
 
-    // if (savedReminder) {
-      // Add the saved reminder to the local state
-      setReminders((prev) => [...prev, formData]);
+        // Handle image upload if present
+        if (formData.image) {
+          // For now, store image as base64 or handle file upload separately
+          const reader = new FileReader();
+          reader.onloadend = async () => {
+            reminderData.image = reader.result;
+            await saveReminder(reminderData);
+          };
+          reader.readAsDataURL(formData.image);
+        } else {
+          await saveReminder(reminderData);
+        }
+      } catch (error) {
+        console.error('Error saving reminder:', error);
+        alert('Error saving reminder. Please try again.');
+      }
+    } else {
+      // For non-authenticated users, just add to local state
+      setReminders((prev) => [...prev, { ...formData, id: Date.now() }]);
+      resetForm();
+      alert('Please login to save your reminders permanently.');
+    }
+  };
 
-      // Reset form data and hide the form
-      setFormData({
-        name: "",
-        image: null,
-        startDate: "",
-        endDate: "",
-        times: [""],
-        days: [],
-      });
-      setShowForm(false);
-     };
-    //  else {
-    //   alert("Failed to save the reminder. Please try again.");
-    // }
-  // };
+  const saveReminder = async (reminderData) => {
+    try {
+      const response = await saveMedicineReminderApi(reminderData);
+      if (response.data.success) {
+        setReminders((prev) => [...prev, response.data.data]);
+        resetForm();
+        alert('Reminder saved successfully!');
+      }
+    } catch (error) {
+      console.error('Error saving reminder:', error);
+      alert('Error saving reminder. Please try again.');
+    }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      name: "",
+      image: null,
+      startDate: "",
+      endDate: "",
+      times: [""],
+      days: [],
+    });
+    setShowForm(false);
+  };
 
   const handleAddNew = () => {
     setShowForm(true);
@@ -88,14 +141,21 @@ const MedReminder = () => {
       }));
     }
   };
-
   const handleDeleteReminder = async (index, reminderId) => {
-    const response = await deleteReminderFromDatabase(reminderId);
-
-    if (response.success) {
-      setReminders((prev) => prev.filter((_, i) => i !== index));
+    if (isAuthenticated && reminderId) {
+      try {
+        const response = await deleteMedicineReminderApi(reminderId);
+        if (response.data.success) {
+          setReminders((prev) => prev.filter((_, i) => i !== index));
+          alert('Reminder deleted successfully!');
+        }
+      } catch (error) {
+        console.error('Error deleting reminder:', error);
+        alert('Error deleting reminder. Please try again.');
+      }
     } else {
-      alert("Failed to delete the reminder. Please try again.");
+      // For non-authenticated users, just remove from local state
+      setReminders((prev) => prev.filter((_, i) => i !== index));
     }
   };
 
@@ -147,7 +207,6 @@ const MedReminder = () => {
       return { success: false };
     }
   };
-
   return (
     <div className="medical-reminder-container">
       <div className="rembanner">
@@ -160,6 +219,27 @@ const MedReminder = () => {
           alt="Health tracker illustration"
           className="rembanner-image"
         />
+      </div>
+
+      {/* User Status Indicator */}
+      <div className="user-status-indicator" style={{
+        textAlign: 'center',
+        padding: '10px',
+        margin: '20px',
+        backgroundColor: isAuthenticated ? '#e8f5e8' : '#fff3cd',
+        border: `1px solid ${isAuthenticated ? '#d4edda' : '#ffeaa7'}`,
+        borderRadius: '5px',
+        fontSize: '14px'
+      }}>
+        {isAuthenticated ? (
+          <span style={{ color: '#155724' }}>
+            ✓ Logged in as {user?.name || 'User'} - Your medicine reminders will be saved permanently
+          </span>
+        ) : (
+          <span style={{ color: '#856404' }}>
+            ⚠️ You're browsing as a guest - Please log in to save your medicine reminders permanently
+          </span>
+        )}
       </div>
 
       <div className="reminder-container20">

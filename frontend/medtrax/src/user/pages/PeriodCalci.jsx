@@ -1,13 +1,44 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '../../hooks/useAuth';
+import { savePeriodDataApi, getPeriodDataApi } from '../../Api';
 import '../css/PeriodCalci.css';
 
 const PeriodCalculator = () => {
+  const { isAuthenticated, user } = useAuth();
   const [startDate, setStartDate] = useState('');
   const [duration, setDuration] = useState(5); // Default period duration
   const [cycleLength, setCycleLength] = useState(28); // Default cycle length
   const [results, setResults] = useState(null);
 
-  const calculateDates = () => {
+  // Load saved period data for authenticated users
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadPeriodData();
+    }
+  }, [isAuthenticated]);
+
+  const loadPeriodData = async () => {
+    try {
+      const response = await getPeriodDataApi();
+      if (response.data.success && response.data.data) {
+        const data = response.data.data;
+        setStartDate(new Date(data.lastPeriodStart).toISOString().split('T')[0]);
+        setDuration(data.periodDuration);
+        setCycleLength(data.cycleLength);
+        
+        // Show calculated results
+        setResults({
+          ovulationDate: new Date(data.estimatedOvulation).toDateString(),
+          periodStart: new Date(data.nextPeriodStart).toDateString(),
+          periodEnd: new Date(data.nextPeriodEnd).toDateString(),
+        });
+      }
+    } catch (error) {
+      console.error('Error loading period data:', error);
+    }
+  };
+
+  const calculateDates = async () => {
     if (!startDate) {
       alert('Please select a start date.');
       return;
@@ -23,11 +54,33 @@ const PeriodCalculator = () => {
     const nextPeriodEnd = new Date(nextPeriodStart);
     nextPeriodEnd.setDate(nextPeriodStart.getDate() + duration - 1);
 
-    setResults({
+    const calculatedResults = {
       ovulationDate: ovulationDate.toDateString(),
       periodStart: nextPeriodStart.toDateString(),
       periodEnd: nextPeriodEnd.toDateString(),
-    });
+    };
+
+    setResults(calculatedResults);
+
+    // Save to backend if user is authenticated
+    if (isAuthenticated) {
+      try {
+        const response = await savePeriodDataApi({
+          lastPeriodStart: startDate,
+          periodDuration: duration,
+          cycleLength: cycleLength
+        });
+        
+        if (response.data.success) {
+          alert('Period data saved successfully!');
+        }
+      } catch (error) {
+        console.error('Error saving period data:', error);
+        alert('Error saving period data. Data calculated locally.');
+      }
+    } else {
+      alert('Please login to save your period data permanently.');
+    }
   };
 
   const resetForm = () => {
@@ -36,7 +89,6 @@ const PeriodCalculator = () => {
     setCycleLength(28);
     setResults(null);
   };
-
   return (
     <div className="period-calci-container">
       <div className="percalcibanner">
@@ -50,6 +102,28 @@ const PeriodCalculator = () => {
           className="percalcibanner-image"
         />
       </div>
+
+      {/* User Status Indicator */}
+      <div className="user-status-indicator" style={{
+        textAlign: 'center',
+        padding: '10px',
+        margin: '20px',
+        backgroundColor: isAuthenticated ? '#e8f5e8' : '#fff3cd',
+        border: `1px solid ${isAuthenticated ? '#d4edda' : '#ffeaa7'}`,
+        borderRadius: '5px',
+        fontSize: '14px'
+      }}>
+        {isAuthenticated ? (
+          <span style={{ color: '#155724' }}>
+            ✓ Logged in as {user?.name || 'User'} - Your period data will be saved permanently
+          </span>
+        ) : (
+          <span style={{ color: '#856404' }}>
+            ⚠️ You're browsing as a guest - Please log in to save your period data permanently
+          </span>
+        )}
+      </div>
+
       <div className="pertracker-container20">
 
         <div className="periodinp-section20">

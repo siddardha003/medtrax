@@ -90,3 +90,38 @@ export const logoutApi = () => API.post('/api/auth/logout')
 // Keep existing APIs for backward compatibility
 export { signUpUserApi as createUserApi, signInUserApi as loginUserApi }
 
+// Health Tracking APIs
+// Weight Tracker APIs
+export const saveWeightDataApi = (formData) => API.post('/api/health/weight', formData)
+export const getWeightHistoryApi = (params) => API.get('/api/health/weight/history', { params })
+export const getLatestWeightApi = () => API.get('/api/health/weight/latest')
+
+// Hormone Tracker APIs
+export const saveHormoneDataApi = (formData) => API.post('/api/health/hormone', formData)
+export const getHormoneHistoryApi = (params) => API.get('/api/health/hormone/history', { params })
+
+// Sleep Tracker APIs
+export const saveSleepDataApi = (formData) => API.post('/api/health/sleep', formData)
+export const getSleepHistoryApi = (params) => API.get('/api/health/sleep/history', { params })
+
+// Headache Tracker APIs
+export const saveHeadacheDataApi = (formData) => API.post('/api/health/headache', formData)
+export const getHeadacheHistoryApi = (params) => API.get('/api/health/headache/history', { params })
+
+// Stress Tracker APIs
+export const saveStressDataApi = (formData) => API.post('/api/health/stress', formData)
+export const getStressHistoryApi = (params) => API.get('/api/health/stress/history', { params })
+
+// Stomach Tracker APIs
+export const saveStomachDataApi = (formData) => API.post('/api/health/stomach', formData)
+export const getStomachHistoryApi = (params) => API.get('/api/health/stomach/history', { params })
+
+// Medicine Reminder APIs
+export const saveMedicineReminderApi = (formData) => API.post('/api/health/reminder', formData)
+export const getMedicineRemindersApi = (params) => API.get('/api/health/reminder', { params })
+export const deleteMedicineReminderApi = (id) => API.delete(`/api/health/reminder/${id}`)
+
+// Period Data APIs
+export const savePeriodDataApi = (formData) => API.post('/api/health/period', formData)
+export const getPeriodDataApi = () => API.get('/api/health/period')
+
