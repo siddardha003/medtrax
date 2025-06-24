@@ -9,7 +9,7 @@ const { sendWelcomeEmail } = require('../utils/email');
 // @access  Private (Super Admin only)
 const createUser = async (req, res, next) => {
     try {
-        const { email, firstName, lastName, role, phone, hospitalId, shopId } = req.body;
+        const { email, password, role, hospitalId, shopId } = req.body;
 
         // Check if user already exists
         const existingUser = await User.findOne({ email });
@@ -72,47 +72,15 @@ const createUser = async (req, res, next) => {
                     error: 'Shop already has an assigned admin'
                 });
             }
-        }        // Use provided password or generate a random one
-        let password = req.body.password;
-        console.log(`🔍 Request body password received: "${req.body.password}"`);
-        console.log(`🔍 Password length: ${req.body.password ? req.body.password.length : 0}`);
-        if (!password) {
-            password = generateRandomPassword();
-            console.log(`🎲 Generated random password: "${password}"`);
-        } else {
-            console.log(`✅ Using provided password: "${password}"`);
-        }
-        console.log(`🔑 Final password for ${email}: "${password}"`);
-
-        // Create user data
+        }        // Create user data
         const userData = {
             email,
             password,
-            firstName,
-            lastName,
             role,
-            phone,
+            hospitalId: role === 'hospital_admin' ? hospitalId : undefined,
+            shopId: role === 'shop_admin' ? shopId : undefined,
             createdBy: req.user.id
         };
-
-        // Add role-specific fields
-        if (role === 'hospital_admin') {
-            userData.hospitalId = hospitalId;
-        } else if (role === 'shop_admin') {
-            userData.shopId = shopId;
-        }
-
-        console.log(`👤 Creating user with data:`, {
-            email: userData.email,
-            role: userData.role,
-            firstName: userData.firstName,
-            lastName: userData.lastName,
-            phone: userData.phone,
-            hospitalId: userData.hospitalId,
-            shopId: userData.shopId,
-            hasPassword: !!userData.password,
-            passwordLength: userData.password ? userData.password.length : 0
-        });
 
         // Create user
         const user = await User.create(userData);
@@ -384,21 +352,23 @@ const deleteUser = async (req, res, next) => {
 // @access  Private (Super Admin only)
 const registerHospital = async (req, res, next) => {
     try {
+        const { name, address, pincode, city, state, phone, email } = req.body;
         const hospitalData = {
-            ...req.body,
+            name,
+            address,
+            pincode,
+            city,
+            state,
+            phone,
+            email,
             createdBy: req.user.id
         };
-
         const hospital = await Hospital.create(hospitalData);
-
         res.status(201).json({
             success: true,
             message: 'Hospital registered successfully',
-            data: {
-                hospital
-            }
+            data: { hospital }
         });
-
     } catch (error) {
         next(error);
     }
@@ -473,21 +443,23 @@ const getHospitals = async (req, res, next) => {
 // @access  Private (Super Admin only)
 const registerShop = async (req, res, next) => {
     try {
+        const { name, address, pincode, city, state, phone, email } = req.body;
         const shopData = {
-            ...req.body,
+            name,
+            address,
+            pincode,
+            city,
+            state,
+            phone,
+            email,
             createdBy: req.user.id
         };
-
         const shop = await Shop.create(shopData);
-
         res.status(201).json({
             success: true,
             message: 'Medical shop registered successfully',
-            data: {
-                shop
-            }
+            data: { shop }
         });
-
     } catch (error) {
         next(error);
     }
