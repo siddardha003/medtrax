@@ -39,24 +39,16 @@ const AdminPanel = () => {
     // User fields
     email: '',
     password: '',
-    firstName: '',
-    lastName: '',
-    phone: '',
     role: '',
     hospitalId: '',
     shopId: '',
-    // Hospital fields
+    // Hospital/Shop fields
     name: '',
     address: '',
+    pincode: '',
     city: '',
     state: '',
-    pincode: '',
-    contactPhone: '',
-    contactEmail: '',
-    type: '',
-    // Shop fields
-    licenseNumber: '',
-    ownerName: ''
+    phone: ''
   });
   useEffect(() => {
     if (activeTab === 'dashboard') {
@@ -144,138 +136,85 @@ const AdminPanel = () => {
     setLoading(true);
     setError('');
     setSuccess('');
-    
     try {
-      console.log('Creating new entity of type:', createType);
-        // Basic validation
+      let response;
       if (createType === 'user') {
-        // Validate required fields for user creation
         if (!formData.email) throw new Error('Email is required');
         if (!formData.password) throw new Error('Password is required');
-        if (!formData.firstName) throw new Error('First name is required');
         if (!formData.role) throw new Error('Role is required');
-        
-        // Email validation
-        const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
-        if (!emailRegex.test(formData.email)) throw new Error('Please enter a valid email');
-        
-        // Password validation - must be at least 6 characters and contain uppercase, lowercase, and number
-        if (formData.password.length < 6) throw new Error('Password must be at least 6 characters');
-        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/;
-        if (!passwordRegex.test(formData.password)) {
-          throw new Error('Password must contain at least one uppercase letter, one lowercase letter, and one number');
-        }
-        
-        // Last name validation
-        if (formData.lastName && formData.lastName.length < 2) {
-          throw new Error('Last name must be at least 2 characters');
-        }
-        
-        // Role-specific validations
-        if (formData.role === 'hospital_admin' && !formData.hospitalId) {
-          throw new Error('Hospital ID is required for hospital admin');
-        }
-        
-        if (formData.role === 'shop_admin' && !formData.shopId) {
-          throw new Error('Shop ID is required for shop admin');
-        }
-      }
-      
-      console.log('Form data:', formData);
-      
-      let response;      if (createType === 'user') {
-        // Prepare user data with required fields
+        if (formData.role === 'hospital_admin' && !formData.hospitalId) throw new Error('Hospital selection is required');
+        if (formData.role === 'shop_admin' && !formData.shopId) throw new Error('Shop selection is required');
         const userData = {
           email: formData.email,
           password: formData.password,
-          firstName: formData.firstName,
-          lastName: formData.lastName || '',
-          phone: formData.phone || '',
           role: formData.role,
+          hospitalId: formData.role === 'hospital_admin' ? formData.hospitalId : undefined,
+          shopId: formData.role === 'shop_admin' ? formData.shopId : undefined,
         };
-        
-        // Add role-specific fields
-        if (formData.role === 'hospital_admin' && formData.hospitalId) {
-          userData.hospitalId = formData.hospitalId;
-        } else if (formData.role === 'shop_admin' && formData.shopId) {
-          userData.shopId = formData.shopId;
-        }
-        
-        console.log('Sending user create request with data:', userData);
-        
-        try {
-          response = await createAdminUserApi(userData);
-          
-          if (response.data.success) {
-            console.log('User created successfully:', response.data);
-            
-            // Add new user to the list with proper data structure
-            const newUser = response.data.data.user || response.data.data;
-            setUsers(prevUsers => [newUser, ...prevUsers]);
-            
-            setSuccess(`Admin user ${userData.firstName} ${userData.lastName} created successfully. Credentials have been sent to ${userData.email}.`);
-          } else {
-            throw new Error(response.data.error || 'Failed to create user');
-          }
-        } catch (error) {
-          console.error('API error details:', error.response?.data);
-          throw error;
+        response = await createAdminUserApi(userData);
+        if (response.data.success) {
+          setUsers(prevUsers => [response.data.data.user, ...prevUsers]);
+          setSuccess('Admin created successfully. Credentials sent to email.');
+        } else {
+          throw new Error(response.data.error || 'Failed to create user');
         }
       } else if (createType === 'hospital') {
-        response = await createAdminHospitalApi(formData);
+        const hospitalData = {
+          name: formData.name,
+          address: formData.address,
+          pincode: formData.pincode,
+          city: formData.city,
+          state: formData.state,
+          phone: formData.phone,
+          email: formData.email,
+        };
+        response = await createAdminHospitalApi(hospitalData);
         if (response.data.success) {
-          setHospitals([response.data.data, ...hospitals]);
-          setSuccess(`Hospital ${formData.name} created successfully`);
+          setHospitals([response.data.data.hospital, ...hospitals]);
+          setSuccess('Hospital created successfully');
         } else {
           throw new Error(response.data.error || 'Failed to create hospital');
         }
       } else if (createType === 'shop') {
-        response = await createAdminShopApi(formData);
+        const shopData = {
+          name: formData.name,
+          address: formData.address,
+          pincode: formData.pincode,
+          city: formData.city,
+          state: formData.state,
+          phone: formData.phone,
+          email: formData.email,
+        };
+        response = await createAdminShopApi(shopData);
         if (response.data.success) {
-          setShops([response.data.data, ...shops]);
-          setSuccess(`Shop ${formData.name} created successfully`);
+          setShops([response.data.data.shop, ...shops]);
+          setSuccess('Shop created successfully');
         } else {
           throw new Error(response.data.error || 'Failed to create shop');
         }
       }
-        // Reset form data
       setFormData({
-        email: '', password: '', firstName: '', lastName: '', phone: '', role: '',
-        hospitalId: '', shopId: '',
-        name: '', address: '', city: '', state: '', pincode: '', contactPhone: '',
-        contactEmail: '', type: '', licenseNumber: '', ownerName: ''
+        email: '', password: '', role: '', hospitalId: '', shopId: '',
+        name: '', address: '', pincode: '', city: '', state: '', phone: ''
       });
-      
-      // Close modal and refresh stats
       setShowCreateModal(false);
       fetchStats();
     } catch (error) {
-      console.error('Error creating:', error);
-        // Extract error message from different possible formats
-      let errorMessage = 'An unexpected error occurred';
-      
-      if (error.response) {
-        // Server responded with an error
-        console.log('Error response data:', error.response.data);
-        
-        if (error.response.data && error.response.data.details) {
-          // Format validation errors
-          const validationErrors = error.response.data.details
-            .map(err => `${err.field}: ${err.message}`)
-            .join(', ');
-          errorMessage = `Validation failed: ${validationErrors}`;
-        } else if (error.response.data && error.response.data.error) {
+      // Enhanced error handling for backend validation errors
+      let errorMessage = 'An error occurred';
+      if (error.response && error.response.data) {
+        if (error.response.data.details && Array.isArray(error.response.data.details)) {
+          errorMessage = error.response.data.details.map(
+            d => `${d.field}: ${d.message}`
+          ).join(' | ');
+        } else if (error.response.data.error) {
           errorMessage = error.response.data.error;
-        } else if (error.response.data && error.response.data.message) {
+        } else if (error.response.data.message) {
           errorMessage = error.response.data.message;
-        } else if (error.response.statusText) {
-          errorMessage = `Server error: ${error.response.statusText}`;
         }
       } else if (error.message) {
-        // Local validation error or network error
         errorMessage = error.message;
       }
-      
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -663,9 +602,9 @@ const AdminPanel = () => {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Owner</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">License</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Address</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Location</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Contact</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                   </tr>
                 </thead>
@@ -676,13 +615,13 @@ const AdminPanel = () => {
                         <div className="text-sm font-medium text-gray-900">{shop.name}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{shop.ownerName}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{shop.licenseNumber}</div>
+                        <div className="text-sm text-gray-900">{shop.address}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">{shop.city}, {shop.state}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">{shop.phone}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
@@ -747,39 +686,6 @@ const AdminPanel = () => {
               <form onSubmit={handleCreate} className="space-y-4">
                 {createType === 'user' && (
                   <>
-                    <div className="mb-4">
-                      <h4 className="text-md font-medium text-gray-700 mb-2">Admin Account Information</h4>
-                      <p className="text-sm text-gray-500 mb-4">
-                        Create login credentials for a Hospital or Shop administrator. They will use these credentials to access their dashboard.
-                      </p>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">First Name *</label>
-                        <input
-                          id="firstName"
-                          type="text"
-                          placeholder="First Name"
-                          value={formData.firstName}
-                          onChange={(e) => setFormData({...formData, firstName: e.target.value})}
-                          className="w-full p-2 border border-gray-300 rounded-md"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
-                        <input
-                          id="lastName"
-                          type="text"
-                          placeholder="Last Name"
-                          value={formData.lastName}
-                          onChange={(e) => setFormData({...formData, lastName: e.target.value})}
-                          className="w-full p-2 border border-gray-300 rounded-md"
-                        />
-                      </div>
-                    </div>
-                    
                     <div>
                       <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email Address *</label>
                       <input
@@ -787,13 +693,13 @@ const AdminPanel = () => {
                         type="email"
                         placeholder="Email"
                         value={formData.email}
-                        onChange={(e) => setFormData({...formData, email: e.target.value})}
+                        onChange={e => setFormData({ ...formData, email: e.target.value })}
                         className="w-full p-2 border border-gray-300 rounded-md"
                         required
                       />
                       <p className="mt-1 text-xs text-gray-500">Login credentials will be sent to this email</p>
                     </div>
-                      <div>
+                    <div>
                       <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">Password *</label>
                       <div className="relative">
                         <input
@@ -801,7 +707,7 @@ const AdminPanel = () => {
                           type={showPassword ? 'text' : 'password'}
                           placeholder="Password (min 6 characters)"
                           value={formData.password}
-                          onChange={(e) => setFormData({...formData, password: e.target.value})}
+                          onChange={e => setFormData({ ...formData, password: e.target.value })}
                           className="w-full p-2 border border-gray-300 rounded-md"
                           required
                           minLength="6"
@@ -828,23 +734,11 @@ const AdminPanel = () => {
                     </div>
                     
                     <div>
-                      <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-                      <input
-                        id="phone"
-                        type="tel"
-                        placeholder="Phone Number"
-                        value={formData.phone}
-                        onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                        className="w-full p-2 border border-gray-300 rounded-md"
-                      />
-                    </div>
-                    
-                    <div>
                       <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">Admin Role *</label>
                       <select
                         id="role"
                         value={formData.role}
-                        onChange={(e) => setFormData({...formData, role: e.target.value})}
+                        onChange={e => setFormData({ ...formData, role: e.target.value })}
                         className="w-full p-2 border border-gray-300 rounded-md"
                         required
                       >
@@ -867,7 +761,7 @@ const AdminPanel = () => {
                         <select
                           id="hospitalId"
                           value={formData.hospitalId}
-                          onChange={(e) => setFormData({...formData, hospitalId: e.target.value})}
+                          onChange={e => setFormData({ ...formData, hospitalId: e.target.value })}
                           className="w-full p-2 border border-gray-300 rounded-md"
                           required
                         >
@@ -892,7 +786,7 @@ const AdminPanel = () => {
                         <select
                           id="shopId"
                           value={formData.shopId}
-                          onChange={(e) => setFormData({...formData, shopId: e.target.value})}
+                          onChange={e => setFormData({ ...formData, shopId: e.target.value })}
                           className="w-full p-2 border border-gray-300 rounded-md"
                           required
                         >
@@ -919,34 +813,32 @@ const AdminPanel = () => {
                       type="text"
                       placeholder="Hospital Name"
                       value={formData.name}
-                      onChange={(e) => setFormData({...formData, name: e.target.value})}
+                      onChange={e => setFormData({ ...formData, name: e.target.value })}
                       className="w-full p-2 border border-gray-300 rounded-md"
                       required
                     />
-                    <select
-                      value={formData.type}
-                      onChange={(e) => setFormData({...formData, type: e.target.value})}
-                      className="w-full p-2 border border-gray-300 rounded-md"
-                      required
-                    >
-                      <option value="">Select Type</option>
-                      <option value="government">Government</option>
-                      <option value="private">Private</option>
-                      <option value="trust">Trust</option>
-                    </select>
-                    <textarea
+                    <input
+                      type="text"
                       placeholder="Address"
                       value={formData.address}
-                      onChange={(e) => setFormData({...formData, address: e.target.value})}
+                      onChange={e => setFormData({ ...formData, address: e.target.value })}
                       className="w-full p-2 border border-gray-300 rounded-md"
                       required
                     />
-                    <div className="grid grid-cols-3 gap-4">
+                    <input
+                      type="text"
+                      placeholder="Pincode"
+                      value={formData.pincode}
+                      onChange={e => setFormData({ ...formData, pincode: e.target.value })}
+                      className="w-full p-2 border border-gray-300 rounded-md"
+                      required
+                    />
+                    <div className="grid grid-cols-2 gap-4">
                       <input
                         type="text"
                         placeholder="City"
                         value={formData.city}
-                        onChange={(e) => setFormData({...formData, city: e.target.value})}
+                        onChange={e => setFormData({ ...formData, city: e.target.value })}
                         className="p-2 border border-gray-300 rounded-md"
                         required
                       />
@@ -954,37 +846,27 @@ const AdminPanel = () => {
                         type="text"
                         placeholder="State"
                         value={formData.state}
-                        onChange={(e) => setFormData({...formData, state: e.target.value})}
-                        className="p-2 border border-gray-300 rounded-md"
-                        required
-                      />
-                      <input
-                        type="text"
-                        placeholder="Pincode"
-                        value={formData.pincode}
-                        onChange={(e) => setFormData({...formData, pincode: e.target.value})}
+                        onChange={e => setFormData({ ...formData, state: e.target.value })}
                         className="p-2 border border-gray-300 rounded-md"
                         required
                       />
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <input
-                        type="tel"
-                        placeholder="Contact Phone"
-                        value={formData.contactPhone}
-                        onChange={(e) => setFormData({...formData, contactPhone: e.target.value})}
-                        className="p-2 border border-gray-300 rounded-md"
-                        required
-                      />
-                      <input
-                        type="email"
-                        placeholder="Contact Email"
-                        value={formData.contactEmail}
-                        onChange={(e) => setFormData({...formData, contactEmail: e.target.value})}
-                        className="p-2 border border-gray-300 rounded-md"
-                        required
-                      />
-                    </div>
+                    <input
+                      type="tel"
+                      placeholder="Phone Number"
+                      value={formData.phone}
+                      onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                      className="w-full p-2 border border-gray-300 rounded-md"
+                      required
+                    />
+                    <input
+                      type="email"
+                      placeholder="Email"
+                      value={formData.email}
+                      onChange={e => setFormData({ ...formData, email: e.target.value })}
+                      className="w-full p-2 border border-gray-300 rounded-md"
+                      required
+                    />
                   </>
                 )}
 
@@ -994,41 +876,32 @@ const AdminPanel = () => {
                       type="text"
                       placeholder="Shop Name"
                       value={formData.name}
-                      onChange={(e) => setFormData({...formData, name: e.target.value})}
+                      onChange={e => setFormData({ ...formData, name: e.target.value })}
+                      className="w-full p-2 border border-gray-300 rounded-md"
+                      required
+                    />
+                    <input
+                      type="text"
+                      placeholder="Address"
+                      value={formData.address}
+                      onChange={e => setFormData({ ...formData, address: e.target.value })}
+                      className="w-full p-2 border border-gray-300 rounded-md"
+                      required
+                    />
+                    <input
+                      type="text"
+                      placeholder="Pincode"
+                      value={formData.pincode}
+                      onChange={e => setFormData({ ...formData, pincode: e.target.value })}
                       className="w-full p-2 border border-gray-300 rounded-md"
                       required
                     />
                     <div className="grid grid-cols-2 gap-4">
                       <input
                         type="text"
-                        placeholder="Owner Name"
-                        value={formData.ownerName}
-                        onChange={(e) => setFormData({...formData, ownerName: e.target.value})}
-                        className="p-2 border border-gray-300 rounded-md"
-                        required
-                      />
-                      <input
-                        type="text"
-                        placeholder="License Number"
-                        value={formData.licenseNumber}
-                        onChange={(e) => setFormData({...formData, licenseNumber: e.target.value})}
-                        className="p-2 border border-gray-300 rounded-md"
-                        required
-                      />
-                    </div>
-                    <textarea
-                      placeholder="Address"
-                      value={formData.address}
-                      onChange={(e) => setFormData({...formData, address: e.target.value})}
-                      className="w-full p-2 border border-gray-300 rounded-md"
-                      required
-                    />
-                    <div className="grid grid-cols-3 gap-4">
-                      <input
-                        type="text"
                         placeholder="City"
                         value={formData.city}
-                        onChange={(e) => setFormData({...formData, city: e.target.value})}
+                        onChange={e => setFormData({ ...formData, city: e.target.value })}
                         className="p-2 border border-gray-300 rounded-md"
                         required
                       />
@@ -1036,69 +909,42 @@ const AdminPanel = () => {
                         type="text"
                         placeholder="State"
                         value={formData.state}
-                        onChange={(e) => setFormData({...formData, state: e.target.value})}
-                        className="p-2 border border-gray-300 rounded-md"
-                        required
-                      />
-                      <input
-                        type="text"
-                        placeholder="Pincode"
-                        value={formData.pincode}
-                        onChange={(e) => setFormData({...formData, pincode: e.target.value})}
+                        onChange={e => setFormData({ ...formData, state: e.target.value })}
                         className="p-2 border border-gray-300 rounded-md"
                         required
                       />
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <input
-                        type="tel"
-                        placeholder="Contact Phone"
-                        value={formData.contactPhone}
-                        onChange={(e) => setFormData({...formData, contactPhone: e.target.value})}
-                        className="p-2 border border-gray-300 rounded-md"
-                        required
-                      />
-                      <input
-                        type="email"
-                        placeholder="Contact Email"
-                        value={formData.contactEmail}
-                        onChange={(e) => setFormData({...formData, contactEmail: e.target.value})}
-                        className="p-2 border border-gray-300 rounded-md"
-                        required
-                      />
-                    </div>
+                    <input
+                      type="tel"
+                      placeholder="Phone Number"
+                      value={formData.phone}
+                      onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                      className="w-full p-2 border border-gray-300 rounded-md"
+                      required
+                    />
+                    <input
+                      type="email"
+                      placeholder="Email"
+                      value={formData.email}
+                      onChange={e => setFormData({ ...formData, email: e.target.value })}
+                      className="w-full p-2 border border-gray-300 rounded-md"
+                      required
+                    />
                   </>
                 )}
-
-                <div className="flex justify-end space-x-2">
+                <div className="flex justify-end gap-4">
                   <button
-                    type="button"
                     onClick={() => setShowCreateModal(false)}
-                    className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                    className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md transition-colors"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
                     disabled={loading}
-                    className={`px-4 py-2 text-white rounded-md flex items-center ${
-                      loading ? 'bg-blue-400' : 'bg-blue-600 hover:bg-blue-700'
-                    }`}
                   >
-                    {loading && (
-                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                    )}
-                    {loading 
-                      ? 'Creating...' 
-                      : `Create ${createType === 'user' 
-                          ? 'Admin Account' 
-                          : createType === 'hospital' 
-                          ? 'Hospital' 
-                          : 'Shop'}`
-                    }
+                    {loading ? 'Processing...' : 'Create'}
                   </button>
                 </div>
               </form>

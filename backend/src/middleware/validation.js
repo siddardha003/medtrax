@@ -29,24 +29,18 @@ const validateUserRegistration = [
         .withMessage('Please provide a valid email'),
     body('password')
         .isLength({ min: 6 })
-        .withMessage('Password must be at least 6 characters long')
-        .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
-        .withMessage('Password must contain at least one uppercase letter, one lowercase letter, and one number'),
-    body('firstName')
-        .isLength({ min: 2, max: 50 })
-        .trim()
-        .withMessage('First name must be between 2 and 50 characters'),
-    body('lastName')
-        .isLength({ min: 2, max: 50 })
-        .trim()
-        .withMessage('Last name must be between 2 and 50 characters'),
+        .withMessage('Password must be at least 6 characters long'),
     body('role')
-        .isIn(['super_admin', 'hospital_admin', 'shop_admin'])
-        .withMessage('Role must be super_admin, hospital_admin, or shop_admin'),
-    body('phone')
-        .optional()
-        .isMobilePhone()
-        .withMessage('Please provide a valid phone number'),
+        .isIn(['hospital_admin', 'shop_admin'])
+        .withMessage('Role must be hospital_admin or shop_admin'),
+    body('hospitalId')
+        .if(body('role').equals('hospital_admin'))
+        .notEmpty()
+        .withMessage('Hospital selection is required'),
+    body('shopId')
+        .if(body('role').equals('shop_admin'))
+        .notEmpty()
+        .withMessage('Shop selection is required'),
     handleValidationErrors
 ];
 
@@ -94,44 +88,29 @@ const validateHospitalRegistration = [
         .isLength({ min: 2, max: 100 })
         .trim()
         .withMessage('Hospital name must be between 2 and 100 characters'),
-    body('registrationNumber')
+    body('address')
         .notEmpty()
         .trim()
-        .withMessage('Registration number is required'),
+        .withMessage('Address is required'),
+    body('pincode')
+        .notEmpty()
+        .trim()
+        .withMessage('Pincode is required'),
+    body('city')
+        .notEmpty()
+        .trim()
+        .withMessage('City is required'),
+    body('state')
+        .notEmpty()
+        .trim()
+        .withMessage('State is required'),
+    body('phone')
+        .isMobilePhone()
+        .withMessage('Please provide a valid phone number'),
     body('email')
         .isEmail()
         .normalizeEmail()
         .withMessage('Please provide a valid email'),
-    body('phone')
-        .isMobilePhone()
-        .withMessage('Please provide a valid phone number'),
-    body('address.street')
-        .notEmpty()
-        .trim()
-        .withMessage('Street address is required'),
-    body('address.city')
-        .notEmpty()
-        .trim()
-        .withMessage('City is required'),
-    body('address.state')
-        .notEmpty()
-        .trim()
-        .withMessage('State is required'),
-    body('address.zipCode')
-        .notEmpty()
-        .trim()
-        .withMessage('ZIP code is required'),
-    body('type')
-        .isIn(['general', 'specialty', 'multispecialty', 'clinic', 'nursing_home'])
-        .withMessage('Invalid hospital type'),
-    body('bedCapacity')
-        .optional()
-        .isInt({ min: 1 })
-        .withMessage('Bed capacity must be at least 1'),
-    body('contactPerson.name')
-        .notEmpty()
-        .trim()
-        .withMessage('Contact person name is required'),
     handleValidationErrors
 ];
 
@@ -141,54 +120,29 @@ const validateShopRegistration = [
         .isLength({ min: 2, max: 100 })
         .trim()
         .withMessage('Shop name must be between 2 and 100 characters'),
-    body('licenseNumber')
+    body('address')
         .notEmpty()
         .trim()
-        .withMessage('License number is required'),
+        .withMessage('Address is required'),
+    body('pincode')
+        .notEmpty()
+        .trim()
+        .withMessage('Pincode is required'),
+    body('city')
+        .notEmpty()
+        .trim()
+        .withMessage('City is required'),
+    body('state')
+        .notEmpty()
+        .trim()
+        .withMessage('State is required'),
+    body('phone')
+        .isMobilePhone()
+        .withMessage('Please provide a valid phone number'),
     body('email')
         .isEmail()
         .normalizeEmail()
         .withMessage('Please provide a valid email'),
-    body('phone')
-        .isMobilePhone()
-        .withMessage('Please provide a valid phone number'),
-    body('address.street')
-        .notEmpty()
-        .trim()
-        .withMessage('Street address is required'),
-    body('address.city')
-        .notEmpty()
-        .trim()
-        .withMessage('City is required'),
-    body('address.state')
-        .notEmpty()
-        .trim()
-        .withMessage('State is required'),
-    body('address.zipCode')
-        .notEmpty()
-        .trim()
-        .withMessage('ZIP code is required'),
-    body('type')
-        .optional()
-        .isIn(['pharmacy', 'medical_store', 'surgical_store', 'herbal_store'])
-        .withMessage('Invalid shop type'),
-    body('license.number')
-        .notEmpty()
-        .trim()
-        .withMessage('License number is required'),
-    body('license.type')
-        .isIn(['drug_license', 'pharmacy_license', 'wholesale_license'])
-        .withMessage('Invalid license type'),
-    body('license.issueDate')
-        .isISO8601()
-        .withMessage('Invalid license issue date'),
-    body('license.expiryDate')
-        .isISO8601()
-        .withMessage('Invalid license expiry date'),
-    body('owner.name')
-        .notEmpty()
-        .trim()
-        .withMessage('Owner name is required'),
     handleValidationErrors
 ];
 
