@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
 import { loginAdminAccount } from '../../Redux/user/actions';
+import { showNotification } from '../../Redux/notification/actions';
 import styled from 'styled-components';
 
 const Container = styled.div`
@@ -92,15 +93,31 @@ const AdminLogin = () => {
   
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  
   const { userInfo } = useSelector(state => state.user || {});
+  
   // Redirect if already logged in as admin
   useEffect(() => {
-    if (userInfo && userInfo.id) {
-      // We'll let the Redux action handle the redirection
-      console.log('Admin already logged in, Redux will handle navigation');
+    if (userInfo && userInfo.id && userInfo.isAdmin) {
+      console.log('Admin already logged in, redirecting to appropriate dashboard');
+      // Navigate based on admin role
+      switch (userInfo.role) {
+        case 'super_admin':
+          navigate('/admin-panel');
+          break;
+        case 'hospital_admin':
+          navigate('/hospital-dashboard');
+          break;
+        case 'shop_admin':
+          navigate('/shop-dashboard');
+          break;
+        default:
+          navigate('/');
+          break;
+      }
     }
-  }, [userInfo, navigate]);  const handleSubmit = async (e) => {
+  }, [userInfo, navigate]);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     
@@ -119,12 +136,25 @@ const AdminLogin = () => {
       };
       
       console.log('Admin login attempt with data:', { ...loginData, role: selectedRole });
-      await dispatch(loginAdminAccount(loginData, navigate));
+      const result = await dispatch(loginAdminAccount(loginData, navigate));
+      
+      if (result && result.success) {
+        dispatch(showNotification({
+          message: result.message || 'Admin login successful!',
+          messageType: 'success'
+        }));
+      }
     } catch (err) {
-      setError('Login failed. Please check your credentials and try again.');
+      const errorMessage = err?.response?.data?.message || err?.message || 'Login failed. Please check your credentials and try again.';
+      setError(errorMessage);
+      dispatch(showNotification({
+        message: errorMessage,
+        messageType: 'error'
+      }));
     } finally {
       setLoading(false);
-    }  };
+    }
+  };
 
   return (
     <Container>

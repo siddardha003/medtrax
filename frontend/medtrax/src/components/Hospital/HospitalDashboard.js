@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { logOut } from '../../Redux/user/actions';
+import { showNotification } from '../../Redux/notification/actions';
 import * as HospitalApi from '../../Api';
 
 const HospitalDashboard = () => {
@@ -321,12 +322,23 @@ const HospitalDashboard = () => {
     } finally {
       setLoading(false);
     }
-  };
-  const handleLogout = () => {
-    dispatch(logOut());
-    setTimeout(() => {
-      navigate('/admin-login');
-    }, 300); // Delay navigation to avoid double notification
+  };  const handleLogout = async () => {
+    console.log('Hospital admin logout clicked');
+    try {
+      const result = await dispatch(logOut());
+      if (result && result.success) {
+        dispatch(showNotification({
+          message: result.message || 'Logged out successfully',
+          messageType: 'success'
+        }));
+      }
+      navigate('/');
+    } catch (error) {
+      dispatch(showNotification({
+        message: 'Logout failed',
+        messageType: 'error'
+      }));
+    }
   };
 
   const getStatusColor = (status) => {
@@ -952,38 +964,7 @@ const HospitalDashboard = () => {
             </div>
           </div>
         </div>
-      </header>
-
-      {/* Notifications */}
-      {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md mx-4 mt-4 relative">
-          <span className="block sm:inline">{error}</span>
-          <button
-            onClick={() => setError('')}
-            className="absolute top-0 bottom-0 right-0 px-4 py-3"
-          >
-            <span className="sr-only">Dismiss</span>
-            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-      )}
-      
-      {success && (
-        <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-md mx-4 mt-4 relative">
-          <span className="block sm:inline">{success}</span>
-          <button
-            onClick={() => setSuccess('')}
-            className="absolute top-0 bottom-0 right-0 px-4 py-3"
-          >
-            <span className="sr-only">Dismiss</span>
-            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-      )}
+      </header>      {/* Removed duplicate local notification system - using global Redux notifications only */}
 
       {/* Navigation */}
       <nav className="bg-white shadow-sm border-b">

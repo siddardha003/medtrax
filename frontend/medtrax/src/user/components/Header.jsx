@@ -18,21 +18,29 @@ const Header = ({ data }) => {
 
   const handleMobileToggle = () => {
     setMobileToggle(!mobileToggle);
-  };
+  };  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  
   const handleLogout = () => {
+    if (isLoggingOut) {
+      console.log('Logout already in progress, ignoring duplicate call');
+      return;
+    }
+    
+    console.log('Logout button clicked');
+    setIsLoggingOut(true);
+    
     // Clear user data
     dispatch(logOut());
-    // Redirect to home page
-    navigate('/');
     // Close dropdown
     setShowProfileDropdown(false);
-    // Add a small delay to ensure state updates
+    // Navigate to home page
+    navigate('/');
+    
+    // Reset flag after a short delay
     setTimeout(() => {
-      console.log('User logged out successfully');
-      // Force a page refresh to ensure clean state
-      window.location.reload();
-    }, 100);
-  };  const navigateToDashboard = () => {
+      setIsLoggingOut(false);
+    }, 1000);
+  };const navigateToDashboard = () => {
     console.log('Navigating to dashboard, user role:', userInfo?.role, 'isAdmin:', userInfo?.isAdmin);
     
     if (userInfo?.isAdmin) {

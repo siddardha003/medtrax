@@ -20,12 +20,9 @@ axios.defaults.baseURL = 'http://localhost:5003';
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <Provider store={store}>
-  <React.StrictMode>
     <BrowserRouter>
       <App />
     </BrowserRouter>
-  </React.StrictMode>
-  </Provider>,
-    
+  </Provider>
 );
 

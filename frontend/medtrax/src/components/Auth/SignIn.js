@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { loginAccount } from '../../Redux/user/actions';
+import { loginUserAccount } from '../../Redux/user/actions';
 
 const SignIn = () => {
   const dispatch = useDispatch();
@@ -20,13 +20,13 @@ const SignIn = () => {
       [e.target.name]: e.target.value
     });
   };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     
     try {
-      await dispatch(loginAccount(formData, navigate));
+      // SignIn is for regular users only
+      await dispatch(loginUserAccount(formData, navigate));
     } catch (error) {
       console.error('Login error:', error);
     } finally {

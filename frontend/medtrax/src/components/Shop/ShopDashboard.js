@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { logOut } from '../../Redux/user/actions';
+import { showNotification } from '../../Redux/notification/actions';
 import * as ShopApi from '../../Api';
 
 const ShopDashboard = () => {
@@ -27,12 +28,7 @@ const ShopDashboard = () => {
   const [filters, setFilters] = useState({
     category: '',
     stockStatus: '',
-    prescriptionRequired: ''
-  });
-
-  // Error and success message states
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+    prescriptionRequired: ''  });
 
   // Form data for inventory items
   const [formData, setFormData] = useState({
@@ -95,22 +91,7 @@ const ShopDashboard = () => {
   const totalValue = inventory.reduce((sum, item) => {
     const currentStock = item.quantity?.current || item.stock || 0;
     const price = item.pricing?.sellingPrice || item.price || 0;
-    return sum + (price * currentStock);
-  }, 0);
-  // Clear messages after timeout
-  useEffect(() => {
-    if (error) {
-      const timer = setTimeout(() => setError(''), 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [error]);
-
-  useEffect(() => {
-    if (success) {
-      const timer = setTimeout(() => setSuccess(''), 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [success]);
+    return sum + (price * currentStock);  }, 0);
 
   useEffect(() => {
     if (activeTab === 'dashboard') {
@@ -128,11 +109,9 @@ const ShopDashboard = () => {
       fetchInventory();
     }
   }, [filters, searchQuery]);
-
   // Data fetching functions
   const fetchStats = async () => {
     setLoading(true);
-    setError('');
     try {      // Since we might not have a specific stats API, calculate from inventory
       const { data } = await ShopApi.getInventoryApi({ limit: 1000 });
       if (data.success) {
@@ -150,15 +129,17 @@ const ShopDashboard = () => {
           contactClicks: Math.floor(Math.random() * 100) + 50 // Simulated data
         });
       } else {
-        setError('Failed to fetch statistics');
+        dispatch(showNotification('Failed to fetch statistics', 'error'));
       }
     } catch (error) {
       console.error('Error fetching stats:', error);
-      setError('Unable to load shop statistics. Please try again.');
+      dispatch(showNotification('Unable to load shop statistics. Please try again.', 'error'));
     } finally {
       setLoading(false);
     }
-  };  const fetchInventoryPreview = async () => {
+  };
+  
+  const fetchInventoryPreview = async () => {
     try {
       const { data } = await ShopApi.getInventoryApi({ limit: 5 });
       if (data.success) {
@@ -168,10 +149,8 @@ const ShopDashboard = () => {
       console.error('Error fetching inventory preview:', error);
     }
   };
-
   const fetchInventory = async () => {
     setLoading(true);
-    setError('');
     try {
       const params = {
         search: searchQuery,
@@ -192,11 +171,11 @@ const ShopDashboard = () => {
       if (data.success) {
         setInventory(data.data.items || []);
       } else {
-        setError('Failed to fetch inventory');
+        dispatch(showNotification('Failed to fetch inventory', 'error'));
       }
     } catch (error) {
       console.error('Error fetching inventory:', error);
-      setError('Unable to load inventory. Please try again.');
+      dispatch(showNotification('Unable to load inventory. Please try again.', 'error'));
     } finally {
       setLoading(false);
     }
@@ -204,7 +183,6 @@ const ShopDashboard = () => {
 
   const fetchAnalytics = async () => {
     setLoading(true);
-    setError('');
     try {
       // For now, we'll simulate analytics data since the backend might not have detailed analytics
       const simulatedAnalytics = {
@@ -222,10 +200,9 @@ const ShopDashboard = () => {
       setStats(prev => ({
         ...prev,
         analytics: simulatedAnalytics
-      }));
-    } catch (error) {
+      }));    } catch (error) {
       console.error('Error fetching analytics:', error);
-      setError('Unable to load analytics data');
+      dispatch(showNotification('Unable to load analytics data', 'error'));
     } finally {
       setLoading(false);
     }
@@ -258,18 +235,16 @@ const ShopDashboard = () => {
   // Form handlers
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
     
     // Validate form
     const validationErrors = validateForm();
     if (validationErrors.length > 0) {
-      setError(validationErrors.join('. '));
+      dispatch(showNotification(validationErrors.join('. '), 'error'));
       return;
     }
-    
-    setLoading(true);
-      try {      // Map frontend category to backend enum
+      setLoading(true);
+    try {
+      // Map frontend category to backend enum
       const categoryMapping = {
         'PRESCRIPTION MEDICINES': 'prescription_drug',
         'OTC MEDICINES': 'otc_drug',
@@ -297,11 +272,11 @@ const ShopDashboard = () => {
           costPrice: parseFloat(formData.costPrice),
           sellingPrice: parseFloat(formData.price),
           mrp: parseFloat(formData.price) * 1.1 // Default MRP as 110% of selling price
-        },
-        quantity: {
+        },        quantity: {
           current: parseInt(formData.stock),
           minimum: parseInt(formData.minStockLevel),
-          maximum: parseInt(formData.maxStockLevel) || parseInt(formData.minStockLevel) * 10        },
+          maximum: parseInt(formData.maxStockLevel) || parseInt(formData.minStockLevel) * 10
+        },
         prescriptionRequired: formData.prescriptionRequired,
         expiryDate: formData.expiryDate
         // Backend will use req.user.shopId automatically
@@ -317,29 +292,30 @@ const ShopDashboard = () => {
           setInventory(inventory.map(item => 
             item._id === editingProduct._id ? response.data.data.item : item
           ));
-          setSuccess('Product updated successfully!');
+          dispatch(showNotification('Product updated successfully!', 'success'));
         }
       } else {
         response = await ShopApi.addInventoryItemApi(productData);
         if (response.data.success) {
           setInventory([response.data.data.item, ...inventory]);
-          setSuccess('Product added successfully!');
+          dispatch(showNotification('Product added successfully!', 'success'));
         }
       }
       
       if (!response.data.success) {
-        setError(response.data.error || 'Failed to save product');
+        dispatch(showNotification(response.data.error || 'Failed to save product', 'error'));
       } else {
         resetForm();
         fetchStats(); // Refresh stats
       }
     } catch (error) {
       console.error('Error saving product:', error);
-      setError(error.response?.data?.error || error.message || 'Failed to save product');
-    } finally {
+      dispatch(showNotification(error.response?.data?.error || error.message || 'Failed to save product', 'error'));    } finally {
       setLoading(false);
     }
-  };  const handleEdit = (product) => {
+  };
+
+  const handleEdit = (product) => {
     setEditingProduct(product);
     setFormData({
       name: product.name || '',
@@ -358,7 +334,6 @@ const ShopDashboard = () => {
     });
     setShowAddForm(true);
   };
-
   const handleDelete = async (productId) => {
     if (!window.confirm('Are you sure you want to delete this product?')) return;
     
@@ -367,14 +342,14 @@ const ShopDashboard = () => {
       const { data } = await ShopApi.deleteInventoryItemApi(productId);
       if (data.success) {
         setInventory(inventory.filter(item => item._id !== productId));
-        setSuccess('Product deleted successfully!');
+        dispatch(showNotification('Product deleted successfully!', 'success'));
         fetchStats(); // Refresh stats
       } else {
-        setError('Failed to delete product');
+        dispatch(showNotification('Failed to delete product', 'error'));
       }
     } catch (error) {
       console.error('Error deleting product:', error);
-      setError('Failed to delete product');
+      dispatch(showNotification('Failed to delete product', 'error'));
     } finally {
       setLoading(false);
     }
@@ -385,7 +360,7 @@ const ShopDashboard = () => {
     try {
       const product = inventory.find(item => item._id === productId);
       if (!product) {
-        setError('Product not found');
+        dispatch(showNotification('Product not found', 'error'));
         return;
       }      const updatedData = {
         quantity: {
@@ -398,14 +373,14 @@ const ShopDashboard = () => {
         setInventory(inventory.map(item => 
           item._id === productId ? data.data.item : item
         ));
-        setSuccess('Stock updated successfully!');
+        dispatch(showNotification('Stock updated successfully!', 'success'));
         fetchStats(); // Refresh stats
       } else {
-        setError('Failed to update stock');
+        dispatch(showNotification('Failed to update stock', 'error'));
       }
     } catch (error) {
       console.error('Error updating stock:', error);
-      setError('Failed to update stock');
+      dispatch(showNotification('Failed to update stock', 'error'));
     } finally {
       setLoading(false);
     }
@@ -429,13 +404,23 @@ const ShopDashboard = () => {
     });
     setEditingProduct(null);
     setShowAddForm(false);
-  };
-
-  const handleLogout = () => {
-    dispatch(logOut());
-    setTimeout(() => {
-      navigate('/login');
-    }, 300); // Delay navigation to avoid double notification
+  };  const handleLogout = async () => {
+    console.log('Shop admin logout clicked');
+    try {
+      const result = await dispatch(logOut());
+      if (result && result.success) {
+        dispatch(showNotification({
+          message: result.message || 'Logged out successfully',
+          messageType: 'success'
+        }));
+      }
+      navigate('/');
+    } catch (error) {
+      dispatch(showNotification({
+        message: 'Logout failed',
+        messageType: 'error'
+      }));
+    }
   };
 
   const handleInputChange = (e) => {
@@ -517,56 +502,8 @@ const ShopDashboard = () => {
                 <span>{tab.name}</span>
               </button>
             ))}
-          </nav>
-        </div>
+          </nav>        </div>
       </div>
-
-      {/* Notifications */}
-      {(error || success) && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          {error && (
-            <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-4">
-              <div className="flex">
-                <div className="flex-shrink-0">
-                  <span className="text-red-400">❌</span>
-                </div>
-                <div className="ml-3">
-                  <p className="text-sm text-red-700">{error}</p>
-                </div>
-                <div className="ml-auto pl-3">
-                  <button
-                    onClick={() => setError('')}
-                    className="text-red-400 hover:text-red-600"
-                  >
-                    ✕
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-          
-          {success && (
-            <div className="bg-green-50 border-l-4 border-green-400 p-4 mb-4">
-              <div className="flex">
-                <div className="flex-shrink-0">
-                  <span className="text-green-400">✅</span>
-                </div>
-                <div className="ml-3">
-                  <p className="text-sm text-green-700">{success}</p>
-                </div>
-                <div className="ml-auto pl-3">
-                  <button
-                    onClick={() => setSuccess('')}
-                    className="text-green-400 hover:text-green-600"
-                  >
-                    ✕
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Dashboard Tab */}

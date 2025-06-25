@@ -1,34 +1,22 @@
 import { createUserApi, loginUserApi } from "../../Api";
-import { showNotification } from "../notification/actions";
 
 export const CREATE_ACCOUNT = "CREATE_ACCOUNT";
 export const Add_LOGIN_USER = "Add_LOGIN_USER";
 export const LOGOUT = "LOGOUT";
+export const INITIALIZE_AUTH = "INITIALIZE_AUTH";
 
 export const createAccount = (formData, navigate) => async (dispatch) => {
   try {
     const { data } = await createUserApi(formData);
     
-    // Store user info for successful registration but don't auto-login
-    dispatch(
-      showNotification({
-        massageType: "success",
-        message: data.message || "Account created successfully! Please login.",
-      })
-    );
-    
     // Navigate to login page after successful registration
     if (navigate) {
       navigate("/login");
     }
+    
+    return data; // Return data for component to handle notifications
   } catch (error) {
     console.log(error?.message);
-    dispatch(
-      showNotification({
-        message: error?.response?.data?.error || error?.response?.data?.message || "Registration failed",
-        massageType: "error",
-      })
-    );
     console.log(error);
     // Re-throw to allow component to handle the error
     throw error;
@@ -64,33 +52,22 @@ export const loginUserAccount = (formData, navigate) => async (dispatch) => {
           isAdmin: false  // Force isAdmin to false for regular user login
         }
       };
-      
-      // Store in localStorage
+        // Store in localStorage
       localStorage.setItem("profile", JSON.stringify(userData));
       
       dispatch({ type: Add_LOGIN_USER, payload: userData });
-      dispatch(
-        showNotification({
-          massageType: "success",
-          message: data.message || `Welcome ${userData.userInfo.name}`,
-        })
-      );
       
       // Always navigate to homepage for regular users
       if (navigate) {
         console.log('Regular user successfully logged in, going to homepage');
         navigate("/");
       }
+      
+      return { success: true, data: userData, message: data.message || `Welcome ${userData.userInfo.name}` };
     } else {
       throw new Error("Invalid response format");
     }
   } catch (error) {
-    dispatch(
-      showNotification({
-        message: error?.response?.data?.error || error?.response?.data?.message || "Login failed",
-        massageType: "error",
-      })
-    );
     console.log(error);
     throw error; // Re-throw to allow components to handle the error
   }
@@ -127,14 +104,7 @@ export const loginAdminAccount = (formData, navigate) => async (dispatch) => {
       
       // Store in localStorage
       localStorage.setItem("profile", JSON.stringify(userData));
-      
-      dispatch({ type: Add_LOGIN_USER, payload: userData });
-      dispatch(
-        showNotification({
-          massageType: "success",
-          message: data.message || `Welcome Admin ${userData.userInfo.name}`,
-        })
-      );
+        dispatch({ type: Add_LOGIN_USER, payload: userData });
       
       // Navigate based on admin role - ONLY if navigate function is provided
       if (navigate) {
@@ -153,8 +123,7 @@ export const loginAdminAccount = (formData, navigate) => async (dispatch) => {
           case 'shop_admin':
             console.log('Redirecting shop_admin to /shop-dashboard');
             navigate("/shop-dashboard");
-            break;
-          default:
+            break;          default:
             // Fallback for unknown admin roles to homepage
             console.log('Unknown admin role, redirecting to homepage');
             navigate("/");
@@ -163,44 +132,36 @@ export const loginAdminAccount = (formData, navigate) => async (dispatch) => {
       } else {
         console.log('No navigate function provided, skipping navigation');
       }
+      
+      return { success: true, data: userData, message: data.message || `Welcome Admin ${userData.userInfo.name}` };
     } else {
       throw new Error("Invalid response format");
     }
   } catch (error) {
-    dispatch(
-      showNotification({
-        message: error?.response?.data?.error || error?.response?.data?.message || "Admin login failed",
-        massageType: "error",
-      })
-    );
     console.log(error);
     throw error; // Re-throw to allow components to handle the error
   }
 };
 
-// Rename the existing loginAccount to loginAdminAccount for clarity
-export const loginAccount = (formData, navigate) => async (dispatch) => {
-  console.log('Original loginAccount called, checking if admin or regular user');
-  
-  const isAdminLogin = formData.role && ['super_admin', 'hospital_admin', 'shop_admin'].includes(formData.role);
-  
-  if (isAdminLogin) {
-    return dispatch(loginAdminAccount(formData, navigate));
-  } else {
-    return dispatch(loginUserAccount(formData, navigate));
-  }
-};
+// Remove the wrapper function that causes double calls
+// Components should call loginUserAccount or loginAdminAccount directly
+// export const loginAccount = (formData, navigate) => async (dispatch) => {
+//   console.log('Original loginAccount called, checking if admin or regular user');
+//   
+//   const isAdminLogin = formData.role && ['super_admin', 'hospital_admin', 'shop_admin'].includes(formData.role);
+//   
+//   if (isAdminLogin) {
+//     return dispatch(loginAdminAccount(formData, navigate));
+//   } else {
+//     return dispatch(loginUserAccount(formData, navigate));
+//   }
+// };
 
 export const logOut = () => async (dispatch) => {
+  console.log('Logging out user...');
+  
   // Completely remove the profile from localStorage
   localStorage.removeItem("profile");
-  
-  dispatch(
-    showNotification({
-      message: "Logged out successfully",
-      massageType: "success",
-    })
-  );
   
   dispatch({
     type: LOGOUT,
@@ -216,6 +177,26 @@ export const logOut = () => async (dispatch) => {
     },
   });
   
-  // Force navigation to home page
-  window.location.href = '/';
+  console.log('User logged out, navigation will be handled by component');
+  return { success: true, message: "Logged out successfully" };
+};
+
+// Initialize authentication state from localStorage on app startup
+export const initializeAuth = () => (dispatch) => {
+  try {
+    const profile = localStorage.getItem("profile");
+    if (profile && profile !== 'null' && profile !== 'undefined') {
+      const userData = JSON.parse(profile);
+      if (userData && userData.token && userData.userInfo?.id) {
+        console.log('Initializing authentication state from localStorage');
+        dispatch({ type: Add_LOGIN_USER, payload: userData });
+      } else {
+        console.log('Invalid profile data found, clearing localStorage');
+        localStorage.removeItem("profile");
+      }
+    }
+  } catch (error) {
+    console.error('Error initializing auth state:', error);
+    localStorage.removeItem("profile");
+  }
 };

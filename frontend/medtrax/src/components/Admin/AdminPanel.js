@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { logOut } from '../../Redux/user/actions';
+import { showNotification } from '../../Redux/notification/actions';
 import { 
   getAdminUsersApi, 
   getAdminHospitalsApi,
@@ -25,16 +26,28 @@ const AdminPanel = () => {
   const [loading, setLoading] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [createType, setCreateType] = useState('');
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [error, setError] = useState('');  const [success, setSuccess] = useState('');
   const [showPassword, setShowPassword] = useState(false); // Add password visibility state
-
-  const handleLogout = () => {
-    dispatch(logOut());
-    setTimeout(() => {
-      navigate('/admin-login');
-    }, 300); // Delay navigation to avoid double notification
+  
+  const handleLogout = async () => {
+    console.log('Admin logout clicked');
+    try {
+      const result = await dispatch(logOut());
+      if (result && result.success) {
+        dispatch(showNotification({
+          message: result.message || 'Logged out successfully',
+          messageType: 'success'
+        }));
+      }
+      navigate('/');
+    } catch (error) {
+      dispatch(showNotification({
+        message: 'Logout failed',
+        messageType: 'error'
+      }));
+    }
   };
+  
   const [formData, setFormData] = useState({
     // User fields
     email: '',
@@ -283,40 +296,7 @@ const AdminPanel = () => {
             </button>
           </div>
         </div>
-      </div>
-
-      {/* Notification Messages */}
-      {error && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
-          <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded relative" role="alert">
-            <span className="block sm:inline">{error}</span>
-            <button 
-              onClick={() => setError('')}
-              className="absolute top-0 bottom-0 right-0 px-4 py-3"
-            >
-              <svg className="h-6 w-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-        </div>
-      )}
-
-      {success && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
-          <div className="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded relative" role="alert">
-            <span className="block sm:inline">{success}</span>
-            <button 
-              onClick={() => setSuccess('')}
-              className="absolute top-0 bottom-0 right-0 px-4 py-3"
-            >
-              <svg className="h-6 w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-        </div>
-      )}
+      </div>      {/* Removed duplicate local notification system - using global Redux notifications only */}
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Tabs */}

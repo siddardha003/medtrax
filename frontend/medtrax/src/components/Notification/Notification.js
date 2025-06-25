@@ -18,11 +18,10 @@ const Notification = () => {
   if (!notification.message) {
     return null;
   }
-
   const getNotificationClasses = () => {
-    const baseClasses = "fixed top-4 right-4 max-w-md w-full bg-white border-l-4 rounded-lg shadow-lg z-50 p-4";
+    const baseClasses = "fixed top-4 right-4 max-w-md w-full bg-white border-l-4 rounded-lg shadow-lg z-[99999] p-4";
     
-    switch (notification.massageType || notification.messageType) {
+    switch (notification.messageType) {
       case 'success':
         return `${baseClasses} border-green-500`;
       case 'error':
@@ -35,7 +34,7 @@ const Notification = () => {
   };
 
   const getIconClasses = () => {
-    switch (notification.massageType || notification.messageType) {
+    switch (notification.messageType) {
       case 'success':
         return 'text-green-500';
       case 'error':
@@ -48,7 +47,7 @@ const Notification = () => {
   };
 
   const getIcon = () => {
-    switch (notification.massageType || notification.messageType) {
+    switch (notification.messageType || notification.messageType) {
       case 'success':
         return '✅';
       case 'error':
