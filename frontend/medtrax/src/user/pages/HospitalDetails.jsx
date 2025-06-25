@@ -1,41 +1,85 @@
-import React, { useState, useRef, useEffect } from "react";
-import { useParams, useSearchParams } from "react-router-dom";
-import { getPublicShopDetailsApi } from "../../Api";
-import "../css/MedicalshopDetails.css";
-import MedicalshopMap from "../components/Medicalshopmap";
+import React, { useState, useRef } from "react";
+import "../css/HospitalDetails.css";
+import HospitalMap from "../components/Hospitalmap";
 
-const MedicalshopDetails = () => {
-    const { id } = useParams();
-    const [searchParams] = useSearchParams();
-    const shopId = id || searchParams.get('shopId');
-    
-    const [shopData, setShopData] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [isModalOpen1, setIsModalOpen1] = useState(false);
+const HospitalDetails = () => {
+    // Dummy hospital data
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
-    // Modal functions
-    const openModal1 = () => setIsModalOpen1(true);
-    const closeModal1 = () => setIsModalOpen1(false);
+    const openModal = () => {
+        setIsModalOpen(true);
+    };
 
-    // Styles
-    const styles1 = {
+    const closeModal = () => {
+        setIsModalOpen(false);
+    };
+    const styles = {
         container: {
             maxWidth: "500px",
             margin: "0 auto",
             padding: "20px",
-            border: "1px solid #ccc",
+            border: "1px solid #ccc", 
             borderRadius: "8px",
             backgroundColor: "#f9f9f9",
             boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
         },
+        header: {
+            textAlign: "center",
+            color: "#333",
+        },
+        form: {
+            display: "flex",
+            flexDirection: "column",
+            gap: "15px",
+        },
+        starContainer: {
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+        },
+        star: {
+            fontSize: "24px",
+        },
+        inputContainer: {
+            display: "flex",
+            flexDirection: "column",
+        },
+        label: {
+            fontSize: "16px",
+            marginBottom: "5px",
+            color: "#333",
+        },
+        textarea: {
+            width: "100%",
+            height: "100px",
+            borderRadius: "4px",
+            padding: "10px",
+            border: "1px solid #ccc",
+            resize: "none",
+            backgroundColor: "#fff",
+            color: "#333",
+        },
+        button: {
+            padding: "10px 20px",
+            borderRadius: "4px",
+            backgroundColor: "#007BFF",
+            color: "#fff",
+            border: "none",
+            cursor: "pointer",
+            fontSize: "16px",
+        },
+        result: {
+            textAlign: "center",
+        },
+
+
         containernew: {
             fontFamily: "Arial, sans-serif",
             padding: "20px",
             maxWidth: "400px",
         },
         title: {
-            fontSize: "1.5rem",
+            fontSize: "3 rem ",
             fontWeight: "bold",
             marginBottom: "10px",
         },
@@ -72,97 +116,164 @@ const MedicalshopDetails = () => {
             color: "#000",
         },
     };
-
-    // Fallback data for medical shop
-    const fallbackShopData = {
-        name: "Apollo Pharmacy",
-        rating: 4.4,
+    const hospitalData = {
+        name: "City Hospital - Downtown",
+        rating: 4.8,
         reviewsCount: 259,
-        closingTime: "10:00 PM",
-        location: "Bhimavaram, West Godavari",
-        phone: "080 4628 6939",
+        closingTime: "10:00pm",
+        location: "Downtown, Dubai",
         directionsLink: "https://maps.google.com",
         images: [
-            "https://www.apollopharmacy.in/cdn/shop/files/Store_1200x.jpg?v=1614323335",
-            "https://www.apollopharmacy.in/cdn/shop/files/Store_2_1200x.jpg?v=1614323335",
-            "https://www.apollopharmacy.in/cdn/shop/files/Store_3_1200x.jpg?v=1614323335",
-            "https://www.apollopharmacy.in/cdn/shop/files/Store_4_1200x.jpg?v=1614323335"
+            "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Hospital-de-Bellvitge.jpg/640px-Hospital-de-Bellvitge.jpg", // Main image
+            "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Hospital-de-Bellvitge.jpg/640px-Hospital-de-Bellvitge.jpg", // Secondary image 1
+            "https://c8.alamy.com/comp/H1RWH2/hospital-building-and-department-with-doctors-working-office-surgery-H1RWH2.jpg", // Secondary image 2
+            "https://data1.ibtimes.co.in/en/full/761597/jammu-500-bedded-hospital.jpg?h=450&l=50&t=40", // Secondary image 2
+            "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Hospital-de-Bellvitge.jpg/640px-Hospital-de-Bellvitge.jpg", // Main image
+            "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Hospital-de-Bellvitge.jpg/640px-Hospital-de-Bellvitge.jpg", // Secondary image 1
+            "https://c8.alamy.com/comp/H1RWH2/hospital-building-and-department-with-doctors-working-office-surgery-H1RWH2.jpg", // Secondary image 2
+            "https://data1.ibtimes.co.in/en/full/761597/jammu-500-bedded-hospital.jpg?h=450&l=50&t=40", // Secondary image 2
         ],
         services: [
             {
-                category: "Prescription Medicines",
-                items: [
-                    { name: "Paracetamol 500mg (10 tablets)", price: 25, availability: "In Stock" },
-                    { name: "Azithromycin 500mg (5 tablets)", price: 150, availability: "In Stock" },
-                    { name: "Amoxicillin 500mg (10 capsules)", price: 120, availability: "In Stock" },
-                    { name: "Cetirizine 10mg (10 tablets)", price: 35, availability: "In Stock" }
-                ]
+                category: "General Checkup",
+                image: "https://img.freepik.com/free-vector/charity-logo-hands-supporting-heart-icon-flat-design-vector-illustration_53876-136266.jpg",
+                description: "Regular health checkups",
+                doctors: [
+                    { id: 1, name: "Dr. Alice Smith", degree: "MBBS, MD", image: "https://via.placeholder.com/150" },
+                    { id: 2, name: "Dr. John Doe", degree: "MBBS, MS", image: "https://via.placeholder.com/150" },
+                ],
             },
             {
-                category: "OTC Medicines", 
-                items: [
-                    { name: "Vitamin C 500mg (30 tablets)", price: 150, availability: "In Stock" },
-                    { name: "Calcium + Vitamin D3 (60 tablets)", price: 200, availability: "Limited Stock" },
-                    { name: "Multivitamins (30 capsules)", price: 250, availability: "In Stock" },
-                    { name: "Digene Antacid (10 tablets)", price: 45, availability: "In Stock" }
-                ]
+                category: "Dental Care",
+                image: "https://www.carolinasmilesdentist.com/wp-content/uploads/Tooth1901.jpg",
+                description: "Comprehensive dental care services",
+                doctors: [
+                    { id: 5, name: "Dr. Emily Brown", degree: "BDS, MDS", image: "https://via.placeholder.com/150" },
+                    { id: 6, name: "Dr. David Miller", degree: "BDS", image: "https://via.placeholder.com/150" },
+                ],
             },
             {
-                category: "Ointments & Creams",
-                items: [
-                    { name: "Moov Pain Relief Cream 30g", price: 85, availability: "In Stock" },
-                    { name: "Boroline Antiseptic Cream 20g", price: 45, availability: "In Stock" },
-                    { name: "Betadine Ointment 20g", price: 95, availability: "In Stock" },
-                    { name: "Volini Gel 30g", price: 110, availability: "In Stock" }
-                ]
+                category: "Pediatrics",
+                image: "https://www.eurokidsindia.com/blog/wp-content/uploads/2024/03/observe-children-at-play-870x557.jpg",
+                description: "Best child care services",
+                doctors: [
+                    { id: 7, name: "Dr. Arjun", degree: "BDS, MDS", image: "https://hips.hearstapps.com/hmg-prod/images/portrait-of-a-happy-young-doctor-in-his-clinic-royalty-free-image-1661432441.jpg?crop=0.66698xw:1xh;center,top&resize=1200:*" },
+                    { id: 8, name: "Dr. Smithi", degree: "BDS", image: "https://via.placeholder.com/150" },
+                    { id: 9, name: "Dr. Kranthi", degree: "BDS, MDS", image: "https://via.placeholder.com/150" },
+                    { id: 10, name: "Dr. Viraj", degree: "BDS", image: "https://via.placeholder.com/150" },
+                    { id: 11, name: "Dr. Zara", degree: "BDS, MBBS", image: "https://via.placeholder.com/150" },
+                    { id: 12, name: "Dr. Rakshitha", degree: "BDS", image: "https://via.placeholder.com/150" },
+                    { id: 13, name: "Dr. Laxmi", degree: "BDS, FRCS", image: "https://via.placeholder.com/150" },
+                ],
             },
             {
-                category: "Baby Care",
-                items: [
-                    { name: "Himalaya Baby Powder 100g", price: 120, availability: "In Stock" },
-                    { name: "Johnson's Baby Oil 100ml", price: 150, availability: "In Stock" },
-                    { name: "Pampers Diapers (M, 10 pcs)", price: 350, availability: "In Stock" },
-                    { name: "Dexolac Baby Formula 400g", price: 450, availability: "In Stock" }
-                ]
+                category: "Orthopedics",
+                image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTN10PBtPn1zNAxJ5MJZF2hDTw1o6lKXDgm3Q&s",
+                description: "Bone and joint care services",
+                doctors: [
+                    { id: 14, name: "Dr. Henry Adams", degree: "MBBS, MS Ortho", image: "https://desunhospital.com/wp-content/uploads/2023/12/Dr.-Aditya-Varma-2-scaled.jpg" },
+                    { id: 15, name: "Dr. Rachel Green", degree: "MBBS, DNB Ortho", image: "https://www.yourfreecareertest.com/wp-content/uploads/2018/01/how_to_become_a_doctor.jpg" },
+                ],
             },
             {
-                category: "Medical Devices",
-                items: [
-                    { name: "Digital Thermometer", price: 250, availability: "In Stock" },
-                    { name: "Blood Pressure Monitor", price: 1200, availability: "In Stock" },
-                    { name: "Oximeter", price: 800, availability: "Limited Stock" },
-                    { name: "Nebulizer", price: 1800, availability: "In Stock" }
-                ]
-            }
-        ]
+                category: "Cardiology",
+                image: "https://www.nm.org/-/media/northwestern/healthbeat/images/health%20library/nm-ten-signs-cardiologist_preview.jpg",
+                description: "Heart health and care",
+                doctors: [
+                    { id: 16, name: "Dr. Steve Parker", degree: "MBBS, DM Cardiology", image: "https://via.placeholder.com/150" },
+                    { id: 17, name: "Dr. Mia Clark", degree: "MBBS, MD Cardiology", image: "https://via.placeholder.com/150" },
+                ],
+            },
+            {
+                category: "Dermatology",
+                image: "https://www.renaimedicity.org/wp-content/uploads/2021/03/dermatology-cosmetology-inn.jpg",
+                description: "Skin care and treatments",
+                doctors: [
+                    { id: 18, name: "Dr. Ava Taylor", degree: "MBBS, MD Dermatology", image: "https://via.placeholder.com/150" },
+                    { id: 19, name: "Dr. Noah Williams", degree: "MBBS, DNB Dermatology", image: "https://via.placeholder.com/150" },
+                ],
+            },
+            {
+                category: "Psychiatry",
+                image: "https://tanveernaseer.com/wp-content/uploads/2022/07/Reasons-to-become-psychiatrist.jpg",
+                description: "Mental health and wellness",
+                doctors: [
+                    { id: 20, name: "Dr. Ethan Brown", degree: "MBBS, MD Psychiatry", image: "https://via.placeholder.com/150" },
+                    { id: 21, name: "Dr. Olivia Davis", degree: "MBBS, DM Psychiatry", image: "https://via.placeholder.com/150" },
+                ],
+            },
+            {
+                category: "Physiotherapy",
+                image: "https://www.capitalphysiotherapy.com.au/wp-content/uploads/2017/01/Prevention-Screening-Sports.jpg",
+                description: "Physical therapy and rehabilitation",
+                doctors: [
+                    { id: 22, name: "Dr. Liam Wilson", degree: "BPT, MPT", image: "https://via.placeholder.com/150" },
+                    { id: 23, name: "Dr. Sophia Martinez", degree: "BPT", image: "https://via.placeholder.com/150" },
+                ],
+            },
+            {
+                category: "Gynecology",
+                image: "https://www.khadehospital.com/wp-content/uploads/2021/03/Gynaecology.jpg",
+                description: "Women's health and maternity care",
+                doctors: [
+                    { id: 24, name: "Dr. Emma Moore", degree: "MBBS, MD Gynecology", image: "https://via.placeholder.com/150" },
+                    { id: 25, name: "Dr. Daniel Johnson", degree: "MBBS, DNB Gynecology", image: "https://via.placeholder.com/150" },
+                ],
+            },
+        ],
     };
 
-    const [selectedService, setSelectedService] = useState(0);
+
     const [reviews, setReviews] = useState([
         {
-            name: "Rahul Sharma",
-            location: "Hyderabad, India",
-            text: "Great pharmacy with all medicines available. Staff is very helpful and knowledgeable.",
+            name: "Ciara",
+            location: "Los Angeles, USA",
+            text: "Great way to discover new salons. Recently moved to a new city and didn't know any salons. Fresha gave me a whole new list to choose from!",
             stars: 5,
         },
         {
-            name: "Priya Patel",
-            location: "Mumbai, India",
-            text: "Always find what I need here. Good prices and genuine medicines.",
+            name: "Jonny",
+            location: "Melbourne, Australia",
+            text: "Such a sleek and powerful app. I highly recommend booking your appointments on Fresha.",
+            stars: 3,
+        },
+        {
+            name: "Anton",
+            location: "Los Angeles, USA",
+            text: "My clients love booking appointments online with Fresha. The consultation forms and free SMS reminders are so convenient.",
             stars: 4,
         },
         {
-            name: "Anil Kumar",
-            location: "Delhi, India",
-            text: "Late night availability is a lifesaver. Delivered medicines when my child was sick at midnight.",
+            name: "Susan",
+            location: "Brisbane, Australia",
+            text: "Love this beauty booking app. There are so many great features to explore. The consultation forms and client reminder texts are great – best of all, it's free.",
             stars: 5,
         },
         {
-            name: "Sunita Reddy",
-            location: "Bangalore, India",
-            text: "Professional service and quick delivery. Their online ordering system works perfectly.",
-            stars: 4,
-        }
+            name: "Ciara",
+            location: "Los Angeles, USA",
+            text: "Great way to discover new salons. Recently moved to a new city and didn't know any salons. Fresha gave me a whole new list to choose from!",
+            stars: 5,
+        },
+        {
+            name: "Jonny",
+            location: "Melbourne, Australia",
+            text: "Such a sleek and powerful app. I highly recommend booking your appointments on Fresha.",
+            stars: 5,
+        },
+        {
+            name: "Anton",
+            location: "Los Angeles, USA",
+            text: "My clients love booking appointments online with Fresha. The consultation forms and free SMS reminders are so convenient.",
+            stars: 5,
+        },
+        {
+            name: "Susan",
+            location: "Brisbane, Australia",
+            text: "Love this beauty booking app. There are so many great features to explore. The consultation forms and client reminder texts are great – best of all, it's free.",
+            stars: 5,
+        },
+
     ]);
 
     const [user, setUser] = useState({
@@ -170,6 +281,7 @@ const MedicalshopDetails = () => {
         name: "John Doe",
         location: "New York, USA",
     });
+
 
     const [newReview, setNewReview] = useState({
         stars: 0,
@@ -179,7 +291,7 @@ const MedicalshopDetails = () => {
     const handleStarClick = (index) => {
         setNewReview((prev) => ({
             ...prev,
-            stars: index + 1,
+            stars: index + 1, // Set stars based on the clicked star index
         }));
     };
 
@@ -209,11 +321,34 @@ const MedicalshopDetails = () => {
         alert("Review submitted successfully!");
     };
 
+
+
+    const tabsContainerRef = useRef(null);
+
+    const scrollTabs = (direction) => {
+        const scrollAmount = 230; // Adjust scroll amount
+
+        if (tabsContainerRef.current) {
+            const container = tabsContainerRef.current;
+
+            // Adjust for smooth scrolling in horizontal direction
+            if (direction === "left") {
+                container.scrollLeft -= scrollAmount;
+            } else {
+                container.scrollLeft += scrollAmount;
+            }
+        }
+    };
+
     const reviewContainerRef = useRef(null);
+
     const scrollreview = (direction) => {
-        const scrollAmo = 300;
+        const scrollAmo = 300; // Adjust scroll amount
+
         if (reviewContainerRef.current) {
             const revcontainer = reviewContainerRef.current;
+
+            // Adjust for smooth scrolling in horizontal direction
             if (direction === "left") {
                 revcontainer.scrollLeft -= scrollAmo;
             } else {
@@ -222,328 +357,130 @@ const MedicalshopDetails = () => {
         }
     };
 
-    const serviceContainerRef = useRef(null);
-    const scrollreview1 = (direction) => {
-        const scrollAmou = 150;
-        if (serviceContainerRef.current) {
-            const servicecontainer = serviceContainerRef.current;
-            if (direction === "left") {
-                servicecontainer.scrollLeft -= scrollAmou;
-            } else {
-                servicecontainer.scrollLeft += scrollAmou;
-            }
-        }
-    };
+    const [selectedService, setSelectedService] = useState(0); // Default tab
 
-    const [selectedMedicalshop, setSelectedMedicalshop] = useState({
-        name: 'Apollo Pharmacy',
+    const [selectedHospital, setSelectedHospital] = useState({
+        name: 'City Hospital - Downtown',
         latitude: 17.4065,
         longitude: 78.4772,
     });
 
     const openingTimes = [
-        { day: "Monday", time: "8:00 AM - 10:00 PM" },
-        { day: "Tuesday", time: "8:00 AM - 10:00 PM" },
-        { day: "Wednesday", time: "8:00 AM - 10:00 PM" },
-        { day: "Thursday", time: "8:00 AM - 10:00 PM" },
-        { day: "Friday", time: "8:00 AM - 10:00 PM" },
-        { day: "Saturday", time: "8:00 AM - 10:00 PM" },
-        { day: "Sunday", time: "9:00 AM - 9:00 PM" },
+        { day: "Monday", time: "12:00 pm - 11:00 pm" },
+        { day: "Tuesday", time: "12:00 pm - 11:00 pm" },
+        { day: "Wednesday", time: "12:00 pm - 11:00 pm" },
+        { day: "Thursday", time: "12:00 pm - 11:00 pm" },
+        { day: "Friday", time: "12:00 pm - 11:00 pm" },
+        { day: "Saturday", time: "12:00 pm - 11:00 pm" },
+        { day: "Sunday", time: "12:00 pm - 11:00 pm" },
     ];
 
     const today = new Date().toLocaleString("en-US", { weekday: "long" });
-    const [showPhoneNumber, setShowPhoneNumber] = useState(false);
-    const handleContactNowClick = () => setShowPhoneNumber(true);
-
-    // Function to transform backend services data to frontend format
-    const transformServices = (backendServices) => {
-        if (!backendServices || !Array.isArray(backendServices)) return fallbackShopData.services;
-        
-        const serviceMapping = {
-            'prescription_dispensing': {
-                category: "Prescription Medicines",
-                items: [
-                    { name: "Paracetamol 500mg (10 tablets)", price: 25, availability: "In Stock" },
-                    { name: "Azithromycin 500mg (5 tablets)", price: 150, availability: "In Stock" },
-                    { name: "Amoxicillin 500mg (10 capsules)", price: 120, availability: "In Stock" },
-                    { name: "Cetirizine 10mg (10 tablets)", price: 35, availability: "In Stock" }
-                ]
-            },
-            'otc_medicines': {
-                category: "OTC Medicines",
-                items: [
-                    { name: "Vitamin C 500mg (30 tablets)", price: 150, availability: "In Stock" },
-                    { name: "Calcium + Vitamin D3 (60 tablets)", price: 200, availability: "Limited Stock" },
-                    { name: "Multivitamins (30 capsules)", price: 250, availability: "In Stock" },
-                    { name: "Digene Antacid (10 tablets)", price: 45, availability: "In Stock" }
-                ]
-            },
-            'health_supplements': {
-                category: "Health Supplements",
-                items: [
-                    { name: "Protein Powder 1kg", price: 2500, availability: "In Stock" },
-                    { name: "Omega-3 Fish Oil (60 capsules)", price: 800, availability: "In Stock" },
-                    { name: "Whey Protein 2kg", price: 3500, availability: "In Stock" },
-                    { name: "BCAA Powder 300g", price: 1200, availability: "In Stock" }
-                ]
-            },
-            'medical_devices': {
-                category: "Medical Devices",
-                items: [
-                    { name: "Digital Thermometer", price: 250, availability: "In Stock" },
-                    { name: "Blood Pressure Monitor", price: 1200, availability: "In Stock" },
-                    { name: "Oximeter", price: 800, availability: "Limited Stock" },
-                    { name: "Nebulizer", price: 1800, availability: "In Stock" }
-                ]
-            },
-            'baby_care': {
-                category: "Baby Care",
-                items: [
-                    { name: "Himalaya Baby Powder 100g", price: 120, availability: "In Stock" },
-                    { name: "Johnson's Baby Oil 100ml", price: 150, availability: "In Stock" },
-                    { name: "Pampers Diapers (M, 10 pcs)", price: 350, availability: "In Stock" },
-                    { name: "Dexolac Baby Formula 400g", price: 450, availability: "In Stock" }
-                ]
-            },
-            'elderly_care': {
-                category: "Elderly Care",
-                items: [
-                    { name: "Adult Diapers (L, 10 pcs)", price: 400, availability: "In Stock" },
-                    { name: "Walking Stick", price: 600, availability: "In Stock" },
-                    { name: "Blood Sugar Monitor", price: 1500, availability: "In Stock" },
-                    { name: "Compression Stockings", price: 800, availability: "In Stock" }
-                ]
-            },
-            'home_delivery': {
-                category: "Home Delivery",
-                items: [
-                    { name: "Standard Delivery (Same Day)", price: 50, availability: "Available" },
-                    { name: "Express Delivery (2 Hours)", price: 100, availability: "Available" },
-                    { name: "Prescription Refill Service", price: 30, availability: "Available" },
-                    { name: "Emergency Medicine Delivery", price: 150, availability: "24/7 Available" }
-                ]
-            },
-            'online_consultation': {
-                category: "Online Consultation",
-                items: [
-                    { name: "General Physician Consultation", price: 500, availability: "Available" },
-                    { name: "Specialist Doctor Consultation", price: 1000, availability: "Available" },
-                    { name: "Pharmacist Consultation", price: 200, availability: "Available" },
-                    { name: "Health Checkup Package", price: 2000, availability: "Available" }
-                ]
-            }
-        };
-
-        const transformedServices = [];
-        backendServices.forEach(serviceKey => {
-            if (serviceMapping[serviceKey]) {
-                transformedServices.push(serviceMapping[serviceKey]);
-            }
-        });
-
-        return transformedServices.length > 0 ? transformedServices : fallbackShopData.services;
-    };
-
-    // Use effect to fetch shop data
-    useEffect(() => {
-        const fetchShopDetails = async () => {
-            if (!shopId) {
-                setShopData(fallbackShopData);
-                setLoading(false);
-                return;
-            }            
-            setLoading(true);
-            try {
-                const response = await getPublicShopDetailsApi(shopId);
-                const shopData = response.data;
-                
-                // Transform the services data to match frontend expectations
-                const transformedShopData = {
-                    ...shopData,
-                    services: transformServices(shopData.services),
-                    // Add other fallback properties if missing
-                    rating: shopData.rating || 4.4,
-                    reviewsCount: shopData.reviewsCount || 0,
-                    closingTime: shopData.closingTime || '10:00 PM',
-                    location: shopData.fullAddress || shopData.address ? 
-                        `${shopData.address.street}, ${shopData.address.city}, ${shopData.address.state}` : 
-                        'Location not available',
-                    phone: shopData.phone || 'Phone not available',
-                    directionsLink: shopData.directionsLink || 'https://maps.google.com',
-                    images: shopData.images || fallbackShopData.images
-                };
-                
-                setShopData(transformedShopData);
-            } catch (err) {
-                console.error('Error fetching shop details:', err);
-                setError(err.message);
-                setShopData(fallbackShopData);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchShopDetails();
-    }, [shopId]);
-
-    const displayData = shopData || fallbackShopData;
-
-    if (loading) {
-        return <div className="loading-spinner">Loading...</div>;
-    }
-
-    if (error) {
-        return <div className="error-message">Error: {error}</div>;
-    }
 
     return (
-        <div className="medicalshop-ui">
+        <div className="hospital-ui">
             {/* Header */}
-            <div className="medicalshop-header">
-                <h1>{displayData.name}</h1>                
-                <div className="medicalshoprating">
-                    ⭐ {displayData.rating ? displayData.rating.toFixed(1) : '4.4'} ({displayData.reviewsCount || 0} reviews)
-                </div>                
-                <p className="medicalshop-timing">
-                    🕒 Open until {displayData.closingTime || '10:00 PM'}
+            <div className="hospital-header">
+                <h1>{hospitalData.name}</h1>
+                <div className="rating">
+                    ⭐⭐⭐⭐⭐ {hospitalData.rating} ({hospitalData.reviewsCount})
+                </div>
+                <p className="hospital-timing">
+                    🕒 Open until {hospitalData.closingTime}
                 </p>
-                <p className="medicalshop-location">
-                    📍 {displayData.location || 'Location not available'}{" "}
-                    <a href={displayData.directionsLink || '#'} target="_blank" rel="noreferrer">
+                <p className="hospital-location">
+                    📍 {hospitalData.location}{" "}
+                    <a href={hospitalData.directionsLink} target="_blank" rel="noreferrer">
                         Get directions
                     </a>
                 </p>
             </div>
-            
+
             {/* Images Section */}
-            <div className="medicalshop-images">
-                <img 
-                    src={displayData.images && displayData.images[0] ? displayData.images[0] : 'https://via.placeholder.com/400x300?text=No+Image'} 
-                    alt="Main" 
-                    className="main-image" 
-                />
+            <div className="hospital-images">
+                {/* Main Image */}
+                <img src={hospitalData.images[0]} alt="Main" className="main-image" />
+
+                {/* Image Grid */}
                 <div className="image-grid">
-                    <img 
-                        src={displayData.images && displayData.images[1] ? displayData.images[1] : 'https://via.placeholder.com/400x300?text=No+Image'} 
-                        alt="Secondary 1" 
-                        className="thumbnail" 
-                    />
+                    <img src={hospitalData.images[1]} alt="Secondary 1" className="thumbnail" />
                     <div className="thumbnail-container">
-                        <img 
-                            src={displayData.images && displayData.images[2] ? displayData.images[2] : 'https://via.placeholder.com/400x300?text=No+Image'} 
-                            alt="Secondary 2" 
-                            className="thumbnail" 
-                        />
-                        <button className="see-all-btn" onClick={openModal1}>
+                        <img src={hospitalData.images[2]} alt="Secondary 2" className="thumbnail" />
+                        <button className="see-all-btn" onClick={openModal}>
                             See All
                         </button>
                     </div>
                 </div>
-                {isModalOpen1 && (
-                    <div className="modal-overlay" onClick={closeModal1}>
+                {isModalOpen && (
+                    <div className="modal-overlay" onClick={closeModal}>
                         <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                            <button className="close-btn" onClick={closeModal1}>
+                            <button className="close-btn" onClick={closeModal}>
                                 &times;
-                            </button>                            
-                            {(displayData.images || []).map((image, index) => (
+                            </button>
+                            {hospitalData.images.map((image, index) => (
                                 <img key={index} src={image} alt={`Image ${index}`} className="modal-image" />
                             ))}
                         </div>
                     </div>
                 )}
             </div>
-            
-            {/* Main Content */}
-            <div className="med-services-booking">
-                <div className="med-services-section">
-                    {/* Enhanced Products & Services Section */}
-                    <div className="products-services-section">
-                        <h2 className="section-title">Pharmacy Products & Services</h2>
-                        
-                        {/* Categories Navigation */}
-                        <div className="categories-nav-container">
-                            <button
-                                className="scroll-button left-button"
-                                onClick={() => scrollreview1("left")}
-                            >
-                                &#9664;
-                            </button>
-                            <div className="categories-nav" ref={serviceContainerRef}>
-                                {(displayData.services || []).map((serviceType, index) => (
-                                    <button
+            {/* Services Section */}
+            <div className="services-booking">
+                <div className="services-section">
+                    <h2>Departments</h2>
+                    {/* Horizontal Scrollable Tabs with Buttons */}
+                    <div className="scroll-container">
+                        <button
+                            className="scroll-button left-button"
+                            onClick={() => scrollTabs("left")}
+                        >
+                            &#9664;
+                        </button>
+                        <div className="service-tabs-container">
+                            <div className="service-tabs" ref={tabsContainerRef}>
+                                {hospitalData.services.map((serviceType, index) => (
+                                    <div
                                         key={index}
-                                        className={`category-tab ${selectedService === index ? "active" : ""}`}
+                                        className={`tab-card ${selectedService === index ? "active" : ""}`}
                                         onClick={() => setSelectedService(index)}
                                     >
-                                        <span className="category-icon">
-                                            {serviceType.category === "Prescription Medicines" && "💊"}
-                                            {serviceType.category === "OTC Medicines" && "🩹"}
-                                            {serviceType.category === "Ointments & Creams" && "🧴"}
-                                            {serviceType.category === "Baby Care" && "🍼"}
-                                            {serviceType.category === "Medical Devices" && "🩺"}
-                                            {serviceType.category === "Health Supplements" && "💪"}
-                                            {serviceType.category === "Elderly Care" && "🧓"}
-                                            {serviceType.category === "Home Delivery" && "🚚"}
-                                            {serviceType.category === "Online Consultation" && "💻"}
-                                        </span>
-                                        {serviceType.category}
-                                    </button>
-                                ))}
-                            </div>
-                            <button
-                                className="scroll-button right-button"
-                                onClick={() => scrollreview1("right")}
-                            >
-                                &#9654;
-                            </button>
-                        </div>
-                        
-                        {/* Products List */}
-                        <div className="products-container">
-                            <div className="products-header">
-                                <h3 className="products-category-title">
-                                    {(displayData.services && displayData.services[selectedService]?.category) || "Products"}
-                                </h3>
-                                <div className="products-count">
-                                    {(displayData.services && displayData.services[selectedService]?.items?.length) || 0} items available
-                                </div>
-                            </div>
-                            
-                            <div className="products-grid">
-                                {(displayData.services && displayData.services[selectedService]?.items || []).map((item, idx) => (
-                                    <div key={idx} className="product-card">
-                                        <div className="product-image-placeholder">
-                                            {item.name.includes("Tablet") && "💊"}
-                                            {item.name.includes("Cream") && "🧴"}
-                                            {item.name.includes("Oil") && "🛢️"}
-                                            {item.name.includes("Device") && "🩺"}
-                                            {item.name.includes("Delivery") && "🚚"}
-                                            {item.name.includes("Consultation") && "👨‍⚕️"}
-                                        </div>
-                                        <div className="product-details">
-                                            <h4 className="product-name">{item.name}</h4>
-                                            <div className="product-meta">
-                                                <span className={`product-availability ${item.availability === "In Stock" ? "in-stock" : "limited-stock"}`}>
-                                                    {item.availability}
-                                                </span>
-                                                <span className="product-price">₹{item.price}</span>
-                                            </div>
-                                        </div>
-                                        <div className="product-actions">
-                                            <button className="add-to-cart-btn">
-                                                <span className="cart-icon">🛒</span> Add to Cart
-                                            </button>
-                                            <button className="quick-view-btn">Quick View</button>
-                                        </div>
+                                        <img src={serviceType.image} alt={serviceType.category} className="tab-image" />
+                                        <h4 className="tab-name">{serviceType.category}</h4>
+                                        <p className="tab-description">{serviceType.description}</p>
                                     </div>
                                 ))}
                             </div>
                         </div>
+                        <button
+                            className="scroll-button right-button"
+                            onClick={() => scrollTabs("right")}
+                        >
+                            &#9654;
+                        </button>
                     </div>
 
-                    {/* Reviews Section */}
+
+                    {/* Doctors Display */}
+                    <div className="team-container">
+                        <h2>Meet our Experts</h2>
+                        <div className="team-grid">
+                            {hospitalData.services[selectedService]?.doctors.map((doctor) => (
+                                <div className="team-card" key={doctor.id}>
+                                    <div className="image-container">
+                                        <img src={doctor.image} alt={doctor.name} className="doctor-image" />
+                                    </div>
+                                    <h3 className="doctor-name">{doctor.name}</h3>
+                                    <p className="doctor-degree">{doctor.degree}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+
+                    {/* Reviews Section - Moved Below Services */}
                     <div className="reviews-section">
-                        <h2>Customer Reviews</h2>
+                        <h2>Reviews</h2>
+                        {/* Display Reviews */}
                         <div className="scroll-container">
                             <button
                                 className="scroll-button left-button"
@@ -555,13 +492,10 @@ const MedicalshopDetails = () => {
                                 <div className="review-tabs" ref={reviewContainerRef}>
                                     {reviews.map((review, index) => (
                                         <div key={index} className="review-card">
-                                            <div className="review-stars">
-                                                {"⭐".repeat(review.stars)}
-                                                {review.stars < 5 && "☆".repeat(5 - review.stars)}
-                                            </div>
+                                            <div className="review-stars">{"⭐".repeat(review.stars)}</div>
                                             <h4>{review.text}</h4>
-                                            <p className="review-author">{review.name}</p>
-                                            <p className="review-location">{review.location}</p>
+                                            <p>{review.name}</p>
+                                            <p>{review.location}</p>
                                         </div>
                                     ))}
                                 </div>
@@ -575,10 +509,13 @@ const MedicalshopDetails = () => {
                         </div>
 
                         {/* Add Review Section */}
-                        <h2>Share Your Experience</h2>
+                        <h2>Submit Your Review</h2>
                         {user.isLoggedIn ? (
                             <form className="review-form" onSubmit={handleReviewSubmit}>
-                                <label>Rating:</label>
+                                <label>
+                                    Rating:
+                                </label>
+
                                 <div className="star-rating">
                                     {[0, 1, 2, 3, 4].map((index) => (
                                         <span
@@ -590,12 +527,14 @@ const MedicalshopDetails = () => {
                                         </span>
                                     ))}
                                 </div>
-                                <label>Review:</label>
+                                <label>
+                                    Review:
+                                </label>
                                 <textarea
                                     name="text"
                                     value={newReview.text}
                                     onChange={handleReviewChange}
-                                    placeholder="How was your experience with this pharmacy?"
+                                    placeholder="Write your review here..."
                                     required
                                 ></textarea>
                                 <button type="submit">Submit Review</button>
@@ -604,36 +543,32 @@ const MedicalshopDetails = () => {
                             <p>Please log in to submit a review.</p>
                         )}
                     </div>
-                    
-                    {/* Location Map */}
-                    <div className="map-section">
-                        <h2>Our Location</h2>
-                        <MedicalshopMap
-                            latitude={selectedMedicalshop.latitude}
-                            longitude={selectedMedicalshop.longitude}
-                            medicalshopName={selectedMedicalshop.name}
+                    <div style={{ margin: '10px' }}>
+                        <h2>{selectedHospital.name}</h2>
+                        <HospitalMap
+                            latitude={selectedHospital.latitude}
+                            longitude={selectedHospital.longitude}
+                            hospitalName={selectedHospital.name}
                         />
                     </div>
-                    
-                    {/* Opening Hours */}
-                    <div style={styles1.containernew}>
-                        <h2 style={styles1.title}>Opening Hours</h2>
-                        <ul style={styles1.list}>
+                    <div style={styles.containernew}>
+                        <h2 style={styles.title}>Opening times</h2>
+                        <ul style={styles.list}>
                             {openingTimes.map(({ day, time }) => (
                                 <li
                                     key={day}
                                     style={{
-                                        ...styles1.listItem,
-                                        ...(day === today ? styles1.highlight : {}),
+                                        ...styles.listItem,
+                                        ...(day === today ? styles.highlight : {}),
                                     }}
                                 >
-                                    <span style={styles1.dayContainer}>
-                                        <span style={styles1.dot}></span>
-                                        <span style={styles1.day}>{day}</span>
+                                    <span style={styles.dayContainer}>
+                                        <span style={styles.dot}></span>
+                                        <span style={styles.day}>{day}</span>
                                     </span>
                                     <span style={{
-                                        ...styles1.time,
-                                        ...(day === today ? styles1.highlight : {}),
+                                        ...styles.time,
+                                        ...(day === today ? styles.highlight : {}),
                                     }}>
                                         {time}
                                     </span>
@@ -641,40 +576,28 @@ const MedicalshopDetails = () => {
                             ))}
                         </ul>
                     </div>
+
                 </div>
-                
-                {/* Booking Card */}
-                <div className="med-booking-card">
-                    <div className="med-booking-medical-header">
-                        <h2>{displayData.name || 'Medical Shop'}</h2>                        
-                        <div className="med-booking-rating">
-                            ⭐ {displayData.rating ? displayData.rating.toFixed(1) : '4.4'} ({displayData.reviewsCount || 0} reviews)
+                {/* Booking Section */}
+                <div className="booking-card">
+                    <div className="booking-hospital-header">
+                        <h1>{hospitalData.name}</h1>
+                        <div className="booking-rating">
+                            ⭐ {hospitalData.rating} ({hospitalData.reviewsCount})
                         </div>
-                        <button className="med-book-now-btn" onClick={handleContactNowClick}>
-                            Contact now
-                        </button>                        
-                        {showPhoneNumber && (
-                            <div className="phone-number-display">
-                                <p>📞 {displayData.phone || 'Phone not available'}</p>
-                                <p className="timing-note">Available 9AM-9PM</p>
-                            </div>
-                        )}
-                        <div className="store-info">
-                            <p>🏬 Store pick-up available</p>
-                            <p>🚚 Home delivery option</p>
-                            <p>🕒 Open until {displayData.closingTime || '10:00 PM'}</p>
-                        </div>
-                        <p className="location-info">
-                            📍 {displayData.location || 'Location not available'}{" "}
-                            <a href={displayData.directionsLink || '#'} target="_blank" rel="noreferrer">
+                        <button className="book-now-btn">Book now</button>
+                        <p>🕒 Open until {hospitalData.closingTime}</p>
+                        <p>
+                            📍 {hospitalData.location}{" "}
+                            <a href={hospitalData.directionsLink} target="_blank" rel="noreferrer">
                                 Get directions
                             </a>
                         </p>
                     </div>
                 </div>
             </div>
-        </div>
+        </div >
     );
 };
 
-export default MedicalshopDetails;
+export default HospitalDetails;

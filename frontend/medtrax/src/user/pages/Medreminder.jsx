@@ -7,6 +7,22 @@ import {
 } from '../../Api';
 import "../css/Medreminder.css";
 
+// Helper: Request browser notification permission
+const requestNotificationPermission = () => {
+  if ("Notification" in window) {
+    if (Notification.permission === "default") {
+      Notification.requestPermission();
+    }
+  }
+};
+
+// Helper: Show a browser notification
+const showBrowserNotification = (title, options) => {
+  if ("Notification" in window && Notification.permission === "granted") {
+    new Notification(title, options);
+  }
+};
+
 const MedReminder = () => {
   const { isAuthenticated, user } = useAuth();
   const [reminders, setReminders] = useState([]); // Store saved reminders
@@ -26,13 +42,26 @@ const MedReminder = () => {
     if (isAuthenticated) {
       fetchReminders();
     }
+    requestNotificationPermission();
   }, [isAuthenticated]);
 
   const fetchReminders = async () => {
     try {
       const response = await getMedicineRemindersApi({ active: true });
+      console.log('Fetched reminders from backend (full):', JSON.stringify(response.data, null, 2));
       if (response.data.success) {
-        setReminders(response.data.data);
+        // Map reminders to ensure each has an 'id' property
+        const remindersWithId = response.data.data.map(rem => ({
+          ...rem,
+          id: rem._id || rem.id // Use _id if present, fallback to id
+        }));
+        setReminders(remindersWithId);
+        console.log('Reminders set in state:', remindersWithId);
+        if (Array.isArray(remindersWithId)) {
+          remindersWithId.forEach((rem, idx) => {
+            console.log(`Reminder[${idx}] id:`, rem.id);
+          });
+        }
       }
     } catch (error) {
       console.error('Error fetching reminders:', error);
@@ -94,6 +123,11 @@ const MedReminder = () => {
       setReminders((prev) => [...prev, { ...formData, id: Date.now() }]);
       resetForm();
       alert('Please login to save your reminders permanently.');
+      // Show browser notification
+      showBrowserNotification('Medicine Reminder Set!', {
+        body: `You have set a reminder for ${formData.name}.`,
+        icon: '/images/Medtrax-logo.png',
+      });
     }
   };
 
@@ -104,6 +138,11 @@ const MedReminder = () => {
         setReminders((prev) => [...prev, response.data.data]);
         resetForm();
         alert('Reminder saved successfully!');
+        // Show browser notification
+        showBrowserNotification('Medicine Reminder Set!', {
+          body: `You have set a reminder for ${reminderData.name}.`,
+          icon: '/images/Medtrax-logo.png', 
+        });
       }
     } catch (error) {
       console.error('Error saving reminder:', error);
@@ -142,11 +181,14 @@ const MedReminder = () => {
     }
   };
   const handleDeleteReminder = async (index, reminderId) => {
+    console.log('handleDeleteReminder called. isAuthenticated:', isAuthenticated, 'reminderId:', reminderId);
     if (isAuthenticated && reminderId) {
       try {
+        console.log('Attempting to delete reminder with ID:', reminderId);
         const response = await deleteMedicineReminderApi(reminderId);
+        console.log('Delete API response:', response.data);
         if (response.data.success) {
-          setReminders((prev) => prev.filter((_, i) => i !== index));
+          await fetchReminders();
           alert('Reminder deleted successfully!');
         }
       } catch (error) {
@@ -154,59 +196,10 @@ const MedReminder = () => {
         alert('Error deleting reminder. Please try again.');
       }
     } else {
-      // For non-authenticated users, just remove from local state
       setReminders((prev) => prev.filter((_, i) => i !== index));
     }
   };
-
-  // Mock function to fetch reminders from the database
-  // const getRemindersFromDatabase = async () => {
-  //   try {
-  //     const response = await fetch("https://example.com/api/reminders");
-  //     const data = await response.json();
-  //     return data;
-  //   } catch (error) {
-  //     console.error("Error fetching reminders:", error);
-  //     return [];
-  //   }
-  // };
-
-  // Mock function to save reminder to the database
-  const saveReminderToDatabase = async (reminder) => {
-    try {
-      const response = await fetch("https://example.com/api/reminders", {
-        method: "POST",
-        body: JSON.stringify(reminder),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      if (response.ok) {
-        const savedReminder = await response.json();
-        return savedReminder;
-      }
-    } catch (error) {
-      console.error("Error saving reminder:", error);
-    }
-    return null;
-  };
-
-  // Mock function to delete reminder from the database
-  const deleteReminderFromDatabase = async (reminderId) => {
-    try {
-      const response = await fetch(`https://example.com/api/reminders/${reminderId}`, {
-        method: "DELETE",
-      });
-
-      if (response.ok) {
-        return { success: true };
-      }
-      return { success: false };
-    } catch (error) {
-      console.error("Error deleting reminder:", error);
-      return { success: false };
-    }
-  };
+  
   return (
     <div className="medical-reminder-container">
       <div className="rembanner">
@@ -365,11 +358,29 @@ const MedReminder = () => {
             <div key={index} className="reminder-section20">
               <h3>{reminder.name}</h3>
               {reminder.image && (
-                <img
-                  src={URL.createObjectURL(reminder.image)}
-                  alt={reminder.name}
-                  className="rem-image-icon20"
-                />
+                (() => {
+                  if (typeof reminder.image === 'string') {
+                    // If it's a base64 string or URL, use directly
+                    return (
+                      <img
+                        src={reminder.image}
+                        alt={reminder.name}
+                        className="rem-image-icon20"
+                      />
+                    );
+                  } else if (reminder.image instanceof File || reminder.image instanceof Blob) {
+                    // If it's a File/Blob, use createObjectURL
+                    return (
+                      <img
+                        src={URL.createObjectURL(reminder.image)}
+                        alt={reminder.name}
+                        className="rem-image-icon20"
+                      />
+                    );
+                  } else {
+                    return null;
+                  }
+                })()
               )}
               <p>
                 <strong>Start Date:</strong> {reminder.startDate}
