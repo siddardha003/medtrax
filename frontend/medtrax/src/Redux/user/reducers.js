@@ -1,4 +1,4 @@
-import { Add_LOGIN_USER, LOGOUT } from "./actions";
+import { Add_LOGIN_USER, LOGOUT, INITIALIZE_AUTH } from "./actions";
 
 const initialState = {
   token: null,
@@ -13,15 +13,16 @@ const initialState = {
 export default function userReducer(state = initialState, action) {
   switch (action.type) {
     case Add_LOGIN_USER:
+    case INITIALIZE_AUTH:
       localStorage.setItem("profile", JSON.stringify(action.payload));
-      return { ...state, ...action.payload };    case LOGOUT:
+      return { ...state, ...action.payload };
+    case LOGOUT:
       localStorage.removeItem("profile");
       return {
         ...initialState,
         token: null,
       };
     default:
-      const profile = JSON.parse(localStorage.getItem("profile")||'{}');
-      return profile;
+      return state;
   }
 }

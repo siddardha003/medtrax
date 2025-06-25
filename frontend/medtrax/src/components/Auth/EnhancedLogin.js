@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
-import { loginAccount } from '../../Redux/user/actions';
+import { loginUserAccount, loginAdminAccount } from '../../Redux/user/actions';
 import styled from 'styled-components';
 
 const Container = styled.div`
@@ -121,16 +121,37 @@ const EnhancedLogin = () => {
   const navigate = useNavigate();
   
   const { userInfo } = useSelector(state => state.user || {});
-
   // Save login type preference to localStorage
   useEffect(() => {
     localStorage.setItem('medtrax_login_type', loginType);
-  }, [loginType]);  // Let Redux handle redirection
+  }, [loginType]);
+
+  // Redirect if already logged in
   useEffect(() => {
     if (userInfo && userInfo.id) {
-      console.log('User already logged in, Redux will handle navigation');
+      console.log('User already logged in, redirecting appropriately');
+      if (userInfo.isAdmin) {
+        // Admin users - redirect to their dashboard
+        switch (userInfo.role) {
+          case 'super_admin':
+            navigate('/admin-panel');
+            break;
+          case 'hospital_admin':
+            navigate('/hospital-dashboard');
+            break;
+          case 'shop_admin':
+            navigate('/shop-dashboard');
+            break;
+          default:
+            navigate('/');
+            break;
+        }
+      } else {
+        // Regular users - redirect to homepage
+        navigate('/');
+      }
     }
-  }, [userInfo]);
+  }, [userInfo, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -139,17 +160,27 @@ const EnhancedLogin = () => {
     if (loginType === 'admin' && !selectedRole) {
       setError('Please select an admin role');
       return;
-    }
-
-    setLoading(true);    try {
-      const loginData = {
-        email,
-        password,
-        role: loginType === 'admin' ? selectedRole : undefined // Let backend use default role for regular users
-      };
-      
-      console.log('Login attempt with data:', loginData);
-      await dispatch(loginAccount(loginData, navigate));
+    }    setLoading(true);
+    
+    try {
+      if (loginType === 'admin') {
+        // Admin login
+        const loginData = {
+          email,
+          password,
+          role: selectedRole
+        };
+        console.log('Admin login attempt with data:', loginData);
+        await dispatch(loginAdminAccount(loginData, navigate));
+      } else {
+        // Regular user login
+        const loginData = {
+          email,
+          password
+        };
+        console.log('User login attempt with data:', loginData);
+        await dispatch(loginUserAccount(loginData, navigate));
+      }
     } catch (err) {
       setError('Login failed. Please check your credentials and try again.');
     } finally {

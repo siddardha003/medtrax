@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
 import { loginUserAccount } from '../../Redux/user/actions';
+import { showNotification } from '../../Redux/notification/actions';
 import styled from 'styled-components';
 
 const Container = styled.div`
@@ -80,16 +81,17 @@ const UserLogin = () => {
   
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  
   const { userInfo } = useSelector(state => state.user || {});
+  
   // Redirect if already logged in
   useEffect(() => {
     if (userInfo && userInfo.id) {
-      // We'll let the Redux action handle the redirection
-      // This prevents conflicts between redirection logic
-      console.log('User already logged in, Redux will handle navigation');
+      console.log('User already logged in, redirecting to homepage');
+      navigate('/');
     }
-  }, [userInfo, navigate]);  const handleSubmit = async (e) => {
+  }, [userInfo, navigate]);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     
@@ -107,12 +109,25 @@ const UserLogin = () => {
       };
       
       console.log('User login attempt with data:', loginData);
-      await dispatch(loginUserAccount(loginData, navigate));
+      const result = await dispatch(loginUserAccount(loginData, navigate));
+      
+      if (result && result.success) {
+        dispatch(showNotification({
+          message: result.message || 'Login successful!',
+          messageType: 'success'
+        }));
+      }
     } catch (err) {
-      setError('Login failed. Please check your credentials and try again.');
+      const errorMessage = err?.response?.data?.message || err?.message || 'Login failed. Please check your credentials and try again.';
+      setError(errorMessage);
+      dispatch(showNotification({
+        message: errorMessage,
+        messageType: 'error'
+      }));
     } finally {
       setLoading(false);
-    }  };
+    }
+  };
 
   return (
     <Container>

@@ -26,6 +26,7 @@ import BabyVaccination from './user/pages/BabyVaccination';
 // Authentication Components
 import UserLogin from './components/Auth/UserLogin';
 import AdminLogin from './components/Auth/AdminLogin';
+import AuthInitializer from './components/Auth/AuthInitializer';
 import Notification from './components/Notification/Notification';
 import ProtectedRoute from './components/Auth/ProtectedRoute';
 import { HospitalDashboard } from './components/Hospital';
@@ -43,11 +44,13 @@ import SymptomChecker from './user/pages/SymptomChecker';
 
 function App() {
   return (
-    <div className="App">
-      <Notification />      <Routes>
-        <Route path="/" element={<Layout />}>
-          <Route index element={<Home2 />} />
-          <Route path="/Hospital" element={<HospitalFinder />} />
+    <AuthInitializer>
+      <div className="App">
+        <Notification />
+        <Routes>
+          <Route path="/" element={<Layout />}>
+            <Route index element={<Home2 />} />
+            <Route path="/Hospital" element={<HospitalFinder />} />
           <Route path="/HospitalDetails" element={<HospitalDetails />} />
           <Route path="/About" element={<AboutPage />} />
           <Route path="/Contact" element={<ContactPage />} />
@@ -94,10 +97,10 @@ function App() {
         <Route path="/admin-panel" element={
           <ProtectedRoute requiredRole="super_admin">
             <AdminPanel />
-          </ProtectedRoute>
-        } />
+          </ProtectedRoute>        } />
       </Routes>
-    </div>
+      </div>
+    </AuthInitializer>
   );
 }
 

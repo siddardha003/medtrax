@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { createAccount } from '../../Redux/user/actions';
+import { showNotification } from '../../Redux/notification/actions';
 
 const SignUp = () => {
   const dispatch = useDispatch();
@@ -67,15 +68,26 @@ const SignUp = () => {
     if (!validateForm()) {
       return;
     }
-    
-    setLoading(true);
+      setLoading(true);
     
     try {
       // Remove confirmPassword before sending to backend
       const { confirmPassword, ...dataToSend } = formData;
-      await dispatch(createAccount(dataToSend, navigate));
+      const result = await dispatch(createAccount(dataToSend, navigate));
+      
+      if (result && result.success) {
+        dispatch(showNotification({
+          message: result.message || 'Account created successfully! Please login.',
+          messageType: 'success'
+        }));
+      }
     } catch (error) {
       console.error('Registration error:', error);
+      const errorMessage = error?.response?.data?.message || error?.message || 'Registration failed. Please try again.';
+      dispatch(showNotification({
+        message: errorMessage,
+        messageType: 'error'
+      }));
     } finally {
       setLoading(false);
     }
