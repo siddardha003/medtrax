@@ -18,9 +18,7 @@ const publicRoutes = require('./src/routes/public');
 const healthRoutes = require('./src/routes/health');
 const uploadsRoutes = require('./src/routes/uploads');
 const reviewRoutes = require('./src/routes/review');
-
 const notificationRoutes = require('./src/routes/notification');
-
 
 // Import middleware
 const errorHandler = require('./src/middleware/errorHandler');
@@ -90,6 +88,7 @@ app.use('/api/health', healthRoutes);
 app.use('/api/uploads', uploadsRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/notification', notificationRoutes);
+app.use('/api/uploads', uploadsRoutes);
 
 // Welcome route
 app.get('/', (req, res) => {

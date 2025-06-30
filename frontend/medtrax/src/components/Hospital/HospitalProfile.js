@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { showNotification } from '../../Redux/notification/actions';
-import { getHospitalProfileApi, updateHospitalProfileApi, uploadHospitalImageApi } from '../../Api';
+import { getHospitalProfileApi, updateHospitalProfileApi, uploadHospitalImageApi, uploadServiceImageApi, uploadDoctorImageApi } from '../../Api';
 import './HospitalProfile.css';
 
 const HospitalProfile = () => {
@@ -205,25 +205,120 @@ const HospitalProfile = () => {
     try {
       const { data } = await uploadHospitalImageApi(formData);
       if (data.success) {
+        // Store the Cloudinary URL from the response
+        // Check for all possible URL properties
+        const cloudinaryUrl = data.data.secure_url || data.data.url || data.data.imageUrl;
+        
+        if (!cloudinaryUrl) {
+          console.error('No URL found in response:', data.data);
+          setError('Failed to get image URL from server. Please try again.');
+          return;
+        }
+        
         setBasicInfo(prev => ({
           ...prev,
-          images: [...prev.images, data.data.imageUrl]
+          images: [...prev.images, cloudinaryUrl]
         }));
         setSuccess('Image uploaded successfully');
+        
+        // Log success with the URL for verification
+        console.log('Image uploaded successfully to Cloudinary:', cloudinaryUrl);
       }
     } catch (error) {
       console.error('Error uploading image:', error);
+      console.error('Error details:', error.response?.data || 'No error details available');
       setError('Failed to upload image. Please try again.');
     } finally {
       setUploadingImage(false);
     }
   };
 
+  // Remove an image from hospital profile
   const removeImage = (index) => {
     setBasicInfo(prev => ({
       ...prev,
       images: prev.images.filter((_, i) => i !== index)
     }));
+  };
+
+  // Upload service image to Cloudinary
+  const uploadServiceImage = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Create form data
+    const formData = new FormData();
+    formData.append('image', file);
+
+    setUploadingImage(true);
+    setError('');
+    try {
+      const { data } = await uploadServiceImageApi(formData);
+      if (data.success) {
+        // Store the Cloudinary URL
+        const cloudinaryUrl = data.data.secure_url || data.data.url || data.data.imageUrl;
+        
+        if (!cloudinaryUrl) {
+          console.error('No URL found in response:', data.data);
+          setError('Failed to get image URL from server. Please try again.');
+          return;
+        }
+        
+        // Update service with the image URL
+        setNewService(prev => ({
+          ...prev,
+          image: cloudinaryUrl
+        }));
+        setSuccess('Service image uploaded successfully');
+        console.log('Service image uploaded successfully:', cloudinaryUrl);
+      }
+    } catch (error) {
+      console.error('Error uploading service image:', error);
+      console.error('Error details:', error.response?.data || 'No error details available');
+      setError('Failed to upload service image. Please try again.');
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  // Upload doctor image to Cloudinary
+  const uploadDoctorImage = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Create form data
+    const formData = new FormData();
+    formData.append('image', file);
+
+    setUploadingImage(true);
+    setError('');
+    try {
+      const { data } = await uploadDoctorImageApi(formData);
+      if (data.success) {
+        // Store the Cloudinary URL
+        const cloudinaryUrl = data.data.secure_url || data.data.url || data.data.imageUrl;
+        
+        if (!cloudinaryUrl) {
+          console.error('No URL found in response:', data.data);
+          setError('Failed to get image URL from server. Please try again.');
+          return;
+        }
+        
+        // Update doctor with the image URL
+        setNewDoctor(prev => ({
+          ...prev,
+          image: cloudinaryUrl
+        }));
+        setSuccess('Doctor image uploaded successfully');
+        console.log('Doctor image uploaded successfully:', cloudinaryUrl);
+      }
+    } catch (error) {
+      console.error('Error uploading doctor image:', error);
+      console.error('Error details:', error.response?.data || 'No error details available');
+      setError('Failed to upload doctor image. Please try again.');
+    } finally {
+      setUploadingImage(false);
+    }
   };
 
   const saveChanges = async () => {
@@ -405,6 +500,10 @@ const HospitalProfile = () => {
                     src={image} 
                     alt={`Hospital ${index}`} 
                     className="w-full h-32 object-cover rounded"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = 'https://via.placeholder.com/150?text=No+Image';
+                    }}
                   />
                   <button 
                     type="button"
@@ -487,6 +586,10 @@ const HospitalProfile = () => {
                         src={doctor.image} 
                         alt={doctor.name}
                         className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = 'https://via.placeholder.com/150?text=Doctor';
+                        }}
                       />
                     </div>
                     <div className="flex-grow">
@@ -530,8 +633,21 @@ const HospitalProfile = () => {
                     name="image"
                     value={newDoctor.image}
                     onChange={handleNewDoctorChange}
-                    className="w-full p-2 border rounded mb-3"
+                    className="w-full p-2 border rounded mb-2"
                   />
+                  <div className="mb-3">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Upload Doctor Image
+                    </label>
+                    <input 
+                      type="file"
+                      onChange={uploadDoctorImage}
+                      className="w-full p-2 border rounded" 
+                      accept="image/*"
+                      disabled={uploadingImage}
+                    />
+                    {uploadingImage && <p className="text-sm text-gray-500 mt-1">Uploading image...</p>}
+                  </div>
                   <button 
                     type="button"
                     onClick={() => addDoctor(serviceIndex)}
@@ -569,8 +685,21 @@ const HospitalProfile = () => {
                 name="image"
                 value={newService.image}
                 onChange={handleNewServiceChange}
-                className="w-full p-2 border rounded"
+                className="w-full p-2 border rounded mb-2"
               />
+              <div className="mb-3">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Upload Service Image
+                </label>
+                <input 
+                  type="file"
+                  onChange={uploadServiceImage}
+                  className="w-full p-2 border rounded" 
+                  accept="image/*"
+                  disabled={uploadingImage}
+                />
+                {uploadingImage && <p className="text-sm text-gray-500 mt-1">Uploading image...</p>}
+              </div>
             </div>
             <button 
               type="button"

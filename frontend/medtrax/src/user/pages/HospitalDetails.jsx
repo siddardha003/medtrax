@@ -1,12 +1,14 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import "../css/HospitalDetails.css";
 import "../css/Reviews.css";
 import HospitalMap from "../components/Hospitalmap";
 import { getPublicHospitalDetailsApi, submitReviewApi, getHospitalReviewsApi } from "../../Api";
 
 const HospitalDetails = () => {
-    const { id } = useParams();
+    // Get id from URL query params
+    const [searchParams] = useSearchParams();
+    const id = searchParams.get('id');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -28,6 +30,12 @@ const HospitalDetails = () => {
                 console.log('Hospital data received:', data);
 
                 if (data.success) {
+                    console.log('Hospital location:', data.data.hospital.location);
+                    console.log('Hospital address details:', {
+                        address: data.data.hospital.address,
+                        city: data.data.hospital.city,
+                        state: data.data.hospital.state
+                    });
                     setHospitalData(data.data.hospital);
                 } else {
                     setError('Failed to load hospital details');
@@ -42,8 +50,23 @@ const HospitalDetails = () => {
 
         if (id) {
             fetchHospitalDetails();
+        } else {
+            console.warn('No hospital ID found in URL parameters');
+            setLoading(false);
+            setError('No hospital ID provided');
         }
     }, [id]);
+
+    // Update selectedHospital when hospitalData changes
+    useEffect(() => {
+        if (hospitalData) {
+            setSelectedHospital({
+                name: hospitalData.name,
+                latitude: hospitalData.location?.latitude || 17.4065,
+                longitude: hospitalData.location?.longitude || 78.4772,
+            });
+        }
+    }, [hospitalData]);
 
     const openModal = () => {
         setIsModalOpen(true);
@@ -396,10 +419,14 @@ const HospitalDetails = () => {
 
     const [selectedService, setSelectedService] = useState(0); // Default tab
 
+    // Make sure we have valid coordinates for the map
+    const hospitalLatitude = hospitalData?.location?.latitude || 17.4065;
+    const hospitalLongitude = hospitalData?.location?.longitude || 78.4772;
+
     const [selectedHospital, setSelectedHospital] = useState({
         name: displayData.name,
-        latitude: hospitalData?.location?.latitude || 17.4065,
-        longitude: hospitalData?.location?.longitude || 78.4772,
+        latitude: hospitalLatitude,
+        longitude: hospitalLongitude,
     });
 
     const openingTimes = hospitalData?.openingTimes?.length > 0 ? hospitalData.openingTimes : [
@@ -478,7 +505,8 @@ const HospitalDetails = () => {
                     🕒 Open until {displayData.closingTime}
                 </p>
                 <p className="hospital-location">
-                    📍 {displayData.location}{" "}
+                    📍 {displayData.formattedLocation || `${displayData.address || ''}, ${displayData.city || ''}, ${displayData.state || ''}`.replace(/,\s*,/g, ',').replace(/,\s*$/g, '')}
+                    {" "}
                     <a href={displayData.directionsLink} target="_blank" rel="noreferrer">
                         Get directions
                     </a>
@@ -758,7 +786,8 @@ const HospitalDetails = () => {
                         <button className="book-now-btn">Book now</button>
                         <p>🕒 Open until {displayData.closingTime}</p>
                         <p>
-                            📍 {displayData.location}{" "}
+                            📍 {displayData.formattedLocation || `${displayData.address || ''}, ${displayData.city || ''}, ${displayData.state || ''}`.replace(/,\s*,/g, ',').replace(/,\s*$/g, '')}
+                            {" "}
                             <a href={displayData.directionsLink} target="_blank" rel="noreferrer">
                                 Get directions
                             </a>

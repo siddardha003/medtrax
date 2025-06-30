@@ -62,6 +62,22 @@ export const cancelAppointmentApi = (id, formData) => API.put(`/api/hospital/app
 export const getAppointmentStatsApi = () => API.get('/api/hospital/appointments/stats')
 export const searchPatientsApi = (query) => API.get(`/api/hospital/patients/search?q=${query}`)
 
+// Image Upload APIs
+export const uploadServiceImageApi = (formData) => {
+  return API.post('/api/hospital/service-image', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  });
+};
+
+export const uploadDoctorImageApi = (formData) => {
+  return API.post('/api/hospital/doctor-image', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  });
+};
+
+// Removed duplicate uploadHospitalImageApi (moved to Hospital Profile section)
+export const deleteImageApi = (publicId) => API.delete(`/api/hospital/images/${publicId}`);
+
 // Shop Management APIs (Public for listing)
 export const getShopsApi = (params) => API.get('/api/public/shops', { params })
 export const getShopApi = (id) => API.get(`/api/public/shops/${id}`)
@@ -112,7 +128,10 @@ export const deleteAdminShopApi = (id) => API.delete(`/api/admin/shops/${id}`)
 // Public APIs (for frontend hospital/shop listing)
 export const getPublicHospitalsApi = (params) => API.get('/api/public/hospitals', { params })
 export const getPublicShopsApi = (params) => API.get('/api/public/shops', { params })
-export const getPublicHospitalDetailsApi = (id) => API.get(`/api/public/hospitals/${id}`)
+export const getPublicHospitalDetailsApi = (id) => {
+  console.log(`Calling API for hospital details with ID: ${id}`);
+  return API.get(`/api/public/hospitals/${id}`);
+}
 export const getPublicShopDetailsApi = (id) => API.get(`/api/public/shops/${id}`)
 export const getPublicStatsApi = () => API.get('/api/public/stats')
 
