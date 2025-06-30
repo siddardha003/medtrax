@@ -61,56 +61,60 @@ function App() {
       <div className="App">
         <Notification />
         <Routes>
+          {/* Public and user-facing routes with Layout */}
           <Route path="/" element={<Layout />}>
             <Route index element={<Home2 />} />
             <Route path="/Hospital" element={<HospitalFinder />} />
-          <Route path="/HospitalDetails" element={<HospitalDetails />} />
-          <Route path="/About" element={<AboutPage />} />
-          <Route path="/Contact" element={<ContactPage />} />
-
-          <Route path="/Appointments" element={<Appointments />} />
-          <Route path="/AppForm" element={<AppForm />} />
-
-          <Route path="/Medicines" element={<Medicines />} />
-          <Route path="/MedicalshopDetails" element={<MedicalshopDetails />} />
-
-          <Route path="/MedicalCare" element={<MedicalCarePage />} />
-          <Route path="/HealthTracker" element={<HealthTracker />} />
-          <Route path="/Baby" element={<BabyDevelopmentTracker />} />
-          <Route path="/BabyVaccine" element={<BabyVaccination />} />
-          <Route path="/PeriodCalci" element={<PeriodCalculator />} />
-          <Route path="/Medreminder" element={<MedReminder />} />
-          <Route path="/SymptomChecker" element={<SymptomChecker />} />
-          <Route path="/EssentialTest" element={<EssentialTest />} />
+            <Route path="/HospitalDetails" element={<HospitalDetails />} />
+            <Route path="/About" element={<AboutPage />} />
+            <Route path="/Contact" element={<ContactPage />} />
+            <Route path="/Appointments" element={<Appointments />} />
+            <Route path="/AppForm" element={<AppForm />} />
+            <Route path="/Medicines" element={<Medicines />} />
+            <Route path="/MedicalshopDetails" element={<MedicalshopDetails />} />
+            <Route path="/MedicalCare" element={<MedicalCarePage />} />
+            <Route path="/HealthTracker" element={<HealthTracker />} />
+            <Route path="/Baby" element={<BabyDevelopmentTracker />} />
+            <Route path="/BabyVaccine" element={<BabyVaccination />} />
+            <Route path="/PeriodCalci" element={<PeriodCalculator />} />
+            <Route path="/Medreminder" element={<MedReminder />} />
+            <Route path="/SymptomChecker" element={<SymptomChecker />} />
+            <Route path="/EssentialTest" element={<EssentialTest />} />
+            
             {/* Authentication Routes */}
-          <Route path="/login" element={<UserLogin />} />
-          <Route path="/admin-login" element={<AdminLogin />} />
-          <Route path="/admin-portal" element={<AdminPortal />} />
-          <Route path="/signup" element={<Signup />} />
-        </Route>
-          {/* User Dashboard Route - redirects to homepage */}        <Route path="/user-home" element={
-          <ProtectedRoute>
-            <Home2 />
-          </ProtectedRoute>
-        } />
+            <Route path="/login" element={<UserLogin />} />
+            <Route path="/admin-login" element={<AdminLogin />} />
+            <Route path="/admin-portal" element={<AdminPortal />} />
+            <Route path="/signup" element={<Signup />} />
+          </Route>
+          
+          {/* User Dashboard Route - redirects to homepage with user layout */}
+          <Route path="/user-home" element={
+            <ProtectedRoute>
+              <Layout>
+                <Home2 />
+              </Layout>
+            </ProtectedRoute>
+          } />
         
-       {/* Role-based Protected Routes */}
-        <Route path="/hospital-dashboard" element={
-          <ProtectedRoute requiredRole="hospital_admin">
-            <HospitalDashboard />
-          </ProtectedRoute>
-        } />
+          {/* Admin routes without Layout to prevent header/footer display */}
+          <Route path="/hospital-dashboard" element={
+            <ProtectedRoute requiredRole="hospital_admin">
+              <HospitalDashboard />
+            </ProtectedRoute>
+          } />
 
-        <Route path="/shop-dashboard" element={
-          <ProtectedRoute requiredRole="shop_admin">
-            <ShopDashboard />
-          </ProtectedRoute>
-        } />
+          <Route path="/shop-dashboard" element={
+            <ProtectedRoute requiredRole="shop_admin">
+              <ShopDashboard />
+            </ProtectedRoute>
+          } />
 
-        <Route path="/admin-panel" element={
-          <ProtectedRoute requiredRole="super_admin">
-            <AdminPanel />
-          </ProtectedRoute>        } />
+          <Route path="/admin-panel" element={
+            <ProtectedRoute requiredRole="super_admin">
+              <AdminPanel />
+            </ProtectedRoute>
+          } />
       </Routes>
       </div>
     </AuthInitializer>

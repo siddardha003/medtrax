@@ -3,12 +3,48 @@ import axios from 'axios';
 const API = axios.create({ baseURL: 'http://localhost:5000' })
 
 API.interceptors.request.use(req => {
-  const token = JSON.parse(localStorage.getItem('profile'))?.token;
-  if (token) {
-    req.headers.Authorization = `Bearer ${token}`
+  try {
+    const profileData = localStorage.getItem('profile');
+    if (profileData) {
+      const profile = JSON.parse(profileData);
+      const token = profile?.token; // Redux format
+      
+      if (token) {
+        req.headers.Authorization = `Bearer ${token}`;
+        console.log('Added auth token to request');
+      } else {
+        console.log('No auth token found in profile');
+      }
+    }
+  } catch (error) {
+    console.error('Error adding auth token to request:', error);
   }
-  return req
+  return req;
 })
+
+// Add a response interceptor for better error handling
+API.interceptors.response.use(
+  response => response,
+  error => {
+    // Handle token expiration
+    if (error.response?.status === 401 && 
+        error.response?.data?.error?.includes('Token expired')) {
+      // Clear the expired token
+      localStorage.removeItem('profile');
+      // Redirect to login page if needed
+      window.location.href = '/admin/login';
+    }
+    
+    // Handle inactive hospital errors
+    if (error.response?.status === 403 &&
+        error.response?.data?.error?.includes('inactive') &&
+        error.response?.data?.error?.includes('hospital')) {
+      console.log('❌ Hospital access error detected. This may be due to an inactive hospital.');
+    }
+    
+    return Promise.reject(error);
+  }
+);
 
 // Hospital Management APIs (Public for listing)
 export const getHospitalsApi = (params) => API.get('/api/public/hospitals', { params })
@@ -101,6 +137,10 @@ export const getLatestWeightApi = () => API.get('/api/health/weight/latest')
 export const saveHormoneDataApi = (formData) => API.post('/api/health/hormone', formData)
 export const getHormoneHistoryApi = (params) => API.get('/api/health/hormone/history', { params })
 
+// Review APIs
+export const submitReviewApi = (formData) => API.post('/api/reviews/submit', formData)
+export const getHospitalReviewsApi = (hospitalId) => API.get(`/api/reviews/hospital/${hospitalId}`)
+
 // Sleep Tracker APIs
 export const saveSleepDataApi = (formData) => API.post('/api/health/sleep', formData)
 export const getSleepHistoryApi = (params) => API.get('/api/health/sleep/history', { params })
@@ -127,5 +167,16 @@ export const updateMedicineReminderApi = (id, formData) => API.put(`/api/health/
 export const savePeriodDataApi = (formData) => API.post('/api/health/period', formData)
 export const getPeriodDataApi = () => API.get('/api/health/period')
 
+// Hospital Profile Management APIs
+export const getHospitalProfileApi = () => API.get('/api/hospital/profile')
+export const updateHospitalProfileApi = (formData) => API.put('/api/hospital/profile', formData)
+export const uploadHospitalImageApi = (formData) => {
+  const config = {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  }
+  return API.post('/api/hospital/profile/upload-image', formData, config)
+}
 export default API;
 

@@ -10,7 +10,8 @@
     "seed:admin": "node seeders/seed.js admin",
     "seed:sample": "node seeders/seed.js sample",
     "seed:all": "node seeders/seed.js all",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "activate-hospitals": "node utils/activate-hospitals.js"
   },
   "keywords": [
     "hospital",
@@ -32,6 +33,7 @@
     "express-rate-limit": "^7.1.5",
     "express-validator": "^7.0.1",
     "helmet": "^7.1.0",
+    "iconv-lite": "^0.6.3",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.0.3",
     "morgan": "^1.10.0",

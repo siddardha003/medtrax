@@ -6,7 +6,10 @@ const {
     updateAppointment,
     cancelAppointment,
     getAppointmentStats,
-    searchPatients
+    searchPatients,
+    getHospitalProfile,
+    updateHospitalProfile,
+    uploadHospitalImage
 } = require('../controllers/hospitalController');
 
 const { protect, authorize, validateUserRole } = require('../middleware/auth');
@@ -149,6 +152,79 @@ router.delete('/appointments/:id', [
         .withMessage('Cancellation reason cannot exceed 500 characters'),
     handleValidationErrors
 ], cancelAppointment);
+
+// Hospital Profile Management Routes
+
+// @route   GET /api/hospital/profile
+// @desc    Get hospital profile details
+// @access  Private (Hospital Admin only)
+router.get('/profile', getHospitalProfile);
+
+// @route   PUT /api/hospital/profile
+// @desc    Update hospital profile details
+// @access  Private (Hospital Admin only)
+router.put('/profile', [
+    body('closingTime')
+        .optional()
+        .isString()
+        .trim()
+        .withMessage('Closing time must be a string'),
+    
+    body('openingTimes')
+        .optional()
+        .isArray()
+        .withMessage('Opening times must be an array'),
+    
+    body('openingTimes.*.day')
+        .optional()
+        .isIn(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'])
+        .withMessage('Invalid day'),
+    
+    body('openingTimes.*.time')
+        .optional()
+        .isString()
+        .trim()
+        .withMessage('Time must be a string'),
+    
+    body('images')
+        .optional()
+        .isArray()
+        .withMessage('Images must be an array'),
+    
+    body('services')
+        .optional()
+        .isArray()
+        .withMessage('Services must be an array'),
+    
+    body('services.*.category')
+        .optional()
+        .isString()
+        .trim()
+        .withMessage('Service category must be a string'),
+    
+    body('services.*.description')
+        .optional()
+        .isString()
+        .trim()
+        .withMessage('Service description must be a string'),
+    
+    body('location.latitude')
+        .optional()
+        .isFloat({ min: -90, max: 90 })
+        .withMessage('Latitude must be a number between -90 and 90'),
+    
+    body('location.longitude')
+        .optional()
+        .isFloat({ min: -180, max: 180 })
+        .withMessage('Longitude must be a number between -180 and 180'),
+    
+    handleValidationErrors
+], updateHospitalProfile);
+
+// @route   POST /api/hospital/profile/upload-image
+// @desc    Upload hospital image
+// @access  Private (Hospital Admin only)
+router.post('/profile/upload-image', uploadHospitalImage);
 
 // Patient Management Routes
 
