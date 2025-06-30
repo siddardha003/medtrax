@@ -1,11 +1,13 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import "../css/HospitalDetails.css";
 import HospitalMap from "../components/Hospitalmap";
 import { getPublicHospitalDetailsApi } from "../../Api";
 
 const HospitalDetails = () => {
-    const { id } = useParams();
+    // Get id from URL query params
+    const [searchParams] = useSearchParams();
+    const id = searchParams.get('id');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -15,8 +17,24 @@ const HospitalDetails = () => {
         const fetchHospitalDetails = async () => {
             try {
                 setLoading(true);
+                console.log('Fetching hospital details for ID:', id);
+                
+                if (!id) {
+                    setError('No hospital ID provided');
+                    setLoading(false);
+                    return;
+                }
+                
                 const { data } = await getPublicHospitalDetailsApi(id);
+                console.log('Hospital data received:', data);
+                
                 if (data.success) {
+                    console.log('Hospital location:', data.data.hospital.location);
+                    console.log('Hospital address details:', {
+                        address: data.data.hospital.address,
+                        city: data.data.hospital.city,
+                        state: data.data.hospital.state
+                    });
                     setHospitalData(data.data.hospital);
                 } else {
                     setError('Failed to load hospital details');
@@ -31,8 +49,23 @@ const HospitalDetails = () => {
 
         if (id) {
             fetchHospitalDetails();
+        } else {
+            console.warn('No hospital ID found in URL parameters');
+            setLoading(false);
+            setError('No hospital ID provided');
         }
     }, [id]);
+
+    // Update selectedHospital when hospitalData changes
+    useEffect(() => {
+        if (hospitalData) {
+            setSelectedHospital({
+                name: hospitalData.name,
+                latitude: hospitalData.location?.latitude || 17.4065,
+                longitude: hospitalData.location?.longitude || 78.4772,
+            });
+        }
+    }, [hospitalData]);
 
     const openModal = () => {
         setIsModalOpen(true);
@@ -150,7 +183,12 @@ const HospitalDetails = () => {
         rating: hospitalData?.rating || 0,
         reviewsCount: hospitalData?.reviewsCount || 0,
         closingTime: hospitalData?.closingTime || "Not specified",
-        location: `${hospitalData?.address}, ${hospitalData?.city}, ${hospitalData?.state}` || "Location not specified",
+        address: hospitalData?.address || "",
+        city: hospitalData?.city || "",
+        state: hospitalData?.state || "",
+        formattedLocation: hospitalData?.address 
+            ? `${hospitalData.address}, ${hospitalData.city || ''}, ${hospitalData.state || ''}`.replace(/,\s*,/g, ',').replace(/,\s*$/g, '')
+            : "Location not specified",
         directionsLink: "https://maps.google.com",
         images: hospitalData?.images?.length > 0 ? hospitalData.images : [
             "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Hospital-de-Bellvitge.jpg/640px-Hospital-de-Bellvitge.jpg"
@@ -166,7 +204,13 @@ const HospitalDetails = () => {
     };
 
     // Use real data if available, otherwise use fallback data
-    const displayData = hospitalData?.profileComplete ? hospitalData : fallbackHospitalData;
+    const displayData = hospitalData ? {
+        ...fallbackHospitalData,
+        ...hospitalData,
+        formattedLocation: hospitalData.address 
+            ? `${hospitalData.address}, ${hospitalData.city || ''}, ${hospitalData.state || ''}`.replace(/,\s*,/g, ',').replace(/,\s*$/g, '')
+            : fallbackHospitalData.formattedLocation
+    } : fallbackHospitalData;
 
     const [reviews, setReviews] = useState([
         {
@@ -303,10 +347,14 @@ const HospitalDetails = () => {
 
     const [selectedService, setSelectedService] = useState(0); // Default tab
 
+    // Make sure we have valid coordinates for the map
+    const hospitalLatitude = hospitalData?.location?.latitude || 17.4065;
+    const hospitalLongitude = hospitalData?.location?.longitude || 78.4772;
+
     const [selectedHospital, setSelectedHospital] = useState({
         name: displayData.name,
-        latitude: hospitalData?.location?.latitude || 17.4065,
-        longitude: hospitalData?.location?.longitude || 78.4772,
+        latitude: hospitalLatitude,
+        longitude: hospitalLongitude,
     });
 
     const openingTimes = hospitalData?.openingTimes?.length > 0 ? hospitalData.openingTimes : [
@@ -322,11 +370,45 @@ const HospitalDetails = () => {
     const today = new Date().toLocaleString("en-US", { weekday: "long" });
 
     if (loading) {
-        return <div className="loading-spinner">Loading hospital details...</div>;
+        return (
+            <div className="loading-spinner" style={{ 
+                display: 'flex', 
+                justifyContent: 'center', 
+                alignItems: 'center', 
+                height: '100vh',
+                flexDirection: 'column',
+                padding: '20px',
+                textAlign: 'center'
+            }}>
+                <div style={{ fontSize: '24px', marginBottom: '20px' }}>Loading hospital details...</div>
+                <div style={{ width: '50px', height: '50px', border: '5px solid #f3f3f3', borderTop: '5px solid #008b95', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+                <style>{`
+                    @keyframes spin {
+                        0% { transform: rotate(0deg); }
+                        100% { transform: rotate(360deg); }
+                    }
+                `}</style>
+            </div>
+        );
     }
 
     if (error) {
-        return <div className="error-message">{error}</div>;
+        return (
+            <div className="error-message" style={{ 
+                padding: '30px', 
+                textAlign: 'center', 
+                backgroundColor: '#fff1f1', 
+                color: '#e74c3c',
+                margin: '50px auto',
+                maxWidth: '600px',
+                borderRadius: '10px',
+                boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
+            }}>
+                <h2>Error Loading Hospital Details</h2>
+                <p>{error}</p>
+                <p>Please try again later or contact support if the problem persists.</p>
+            </div>
+        );
     }
 
     // Show profile incomplete message if needed
@@ -351,7 +433,8 @@ const HospitalDetails = () => {
                     🕒 Open until {displayData.closingTime}
                 </p>
                 <p className="hospital-location">
-                    📍 {displayData.location}{" "}
+                    📍 {displayData.formattedLocation || `${displayData.address || ''}, ${displayData.city || ''}, ${displayData.state || ''}`.replace(/,\s*,/g, ',').replace(/,\s*$/g, '')}
+                    {" "}
                     <a href={displayData.directionsLink} target="_blank" rel="noreferrer">
                         Get directions
                     </a>
@@ -361,13 +444,37 @@ const HospitalDetails = () => {
             {/* Images Section */}
             <div className="hospital-images">
                 {/* Main Image */}
-                <img src={displayData.images[0] || "https://via.placeholder.com/800x400?text=No+Image+Available"} alt="Main" className="main-image" />
+                <img 
+                  src={displayData.images[0] || "https://via.placeholder.com/800x400?text=No+Image+Available"} 
+                  alt="Main" 
+                  className="main-image"
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = "https://via.placeholder.com/800x400?text=Error+Loading+Image";
+                  }}
+                />
 
                 {/* Image Grid */}
                 <div className="image-grid">
-                    <img src={displayData.images[1] || displayData.images[0] || "https://via.placeholder.com/400x300?text=No+Image"} alt="Secondary 1" className="thumbnail" />
+                    <img 
+                      src={displayData.images[1] || displayData.images[0] || "https://via.placeholder.com/400x300?text=No+Image"} 
+                      alt="Secondary 1" 
+                      className="thumbnail"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = "https://via.placeholder.com/400x300?text=Error+Loading+Image";
+                      }}
+                    />
                     <div className="thumbnail-container">
-                        <img src={displayData.images[2] || displayData.images[0] || "https://via.placeholder.com/400x300?text=No+Image"} alt="Secondary 2" className="thumbnail" />
+                        <img 
+                          src={displayData.images[2] || displayData.images[0] || "https://via.placeholder.com/400x300?text=No+Image"} 
+                          alt="Secondary 2" 
+                          className="thumbnail"
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = "https://via.placeholder.com/400x300?text=Error+Loading+Image";
+                          }}
+                        />
                         <button className="see-all-btn" onClick={openModal}>
                             See All
                         </button>
@@ -406,7 +513,15 @@ const HospitalDetails = () => {
                                         className={`tab-card ${selectedService === index ? "active" : ""}`}
                                         onClick={() => setSelectedService(index)}
                                     >
-                                        <img src={serviceType.image} alt={serviceType.category} className="tab-image" />
+                                        <img 
+                                          src={serviceType.image} 
+                                          alt={serviceType.category} 
+                                          className="tab-image"
+                                          onError={(e) => {
+                                            e.target.onerror = null;
+                                            e.target.src = "https://via.placeholder.com/150?text=Service";
+                                          }}
+                                        />
                                         <h4 className="tab-name">{serviceType.category}</h4>
                                         <p className="tab-description">{serviceType.description}</p>
                                     </div>
@@ -430,7 +545,15 @@ const HospitalDetails = () => {
                                 {displayData.services[selectedService].doctors.map((doctor, index) => (
                                     <div className="team-card" key={index}>
                                         <div className="image-container">
-                                            <img src={doctor.image} alt={doctor.name} className="doctor-image" />
+                                            <img 
+                                              src={doctor.image} 
+                                              alt={doctor.name} 
+                                              className="doctor-image"
+                                              onError={(e) => {
+                                                e.target.onerror = null;
+                                                e.target.src = "https://via.placeholder.com/150?text=Doctor";
+                                              }}
+                                            />
                                         </div>
                                         <h3 className="doctor-name">{doctor.name}</h3>
                                         <p className="doctor-degree">{doctor.degree}</p>
@@ -553,7 +676,8 @@ const HospitalDetails = () => {
                         <button className="book-now-btn">Book now</button>
                         <p>🕒 Open until {displayData.closingTime}</p>
                         <p>
-                            📍 {displayData.location}{" "}
+                            📍 {displayData.formattedLocation || `${displayData.address || ''}, ${displayData.city || ''}, ${displayData.state || ''}`.replace(/,\s*,/g, ',').replace(/,\s*$/g, '')}
+                            {" "}
                             <a href={displayData.directionsLink} target="_blank" rel="noreferrer">
                                 Get directions
                             </a>

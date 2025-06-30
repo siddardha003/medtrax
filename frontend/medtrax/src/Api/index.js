@@ -50,6 +50,27 @@ export const cancelAppointmentApi = (id, formData) => API.put(`/api/hospital/app
 export const getAppointmentStatsApi = () => API.get('/api/hospital/appointments/stats')
 export const searchPatientsApi = (query) => API.get(`/api/hospital/patients/search?q=${query}`)
 
+// Image Upload APIs
+export const uploadHospitalImageApi = (formData) => {
+  return API.post('/api/uploads/hospital-image', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  });
+};
+
+export const uploadServiceImageApi = (formData) => {
+  return API.post('/api/uploads/service-image', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  });
+};
+
+export const uploadDoctorImageApi = (formData) => {
+  return API.post('/api/uploads/doctor-image', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  });
+};
+
+export const deleteImageApi = (publicId) => API.delete(`/api/uploads/${publicId}`);
+
 // Shop Management APIs (Public for listing)
 export const getShopsApi = (params) => API.get('/api/public/shops', { params })
 export const getShopApi = (id) => API.get(`/api/public/shops/${id}`)
@@ -100,7 +121,10 @@ export const deleteAdminShopApi = (id) => API.delete(`/api/admin/shops/${id}`)
 // Public APIs (for frontend hospital/shop listing)
 export const getPublicHospitalsApi = (params) => API.get('/api/public/hospitals', { params })
 export const getPublicShopsApi = (params) => API.get('/api/public/shops', { params })
-export const getPublicHospitalDetailsApi = (id) => API.get(`/api/public/hospitals/${id}`)
+export const getPublicHospitalDetailsApi = (id) => {
+  console.log(`Calling API for hospital details with ID: ${id}`);
+  return API.get(`/api/public/hospitals/${id}`);
+}
 export const getPublicShopDetailsApi = (id) => API.get(`/api/public/shops/${id}`)
 export const getPublicStatsApi = () => API.get('/api/public/stats')
 
@@ -153,12 +177,4 @@ export const getPeriodDataApi = () => API.get('/api/health/period')
 // Hospital Profile Management APIs
 export const getHospitalProfileApi = () => API.get('/api/hospital/profile')
 export const updateHospitalProfileApi = (formData) => API.put('/api/hospital/profile', formData)
-export const uploadHospitalImageApi = (formData) => {
-  const config = {
-    headers: {
-      'Content-Type': 'multipart/form-data'
-    }
-  }
-  return API.post('/api/hospital/profile/upload-image', formData, config)
-}
 

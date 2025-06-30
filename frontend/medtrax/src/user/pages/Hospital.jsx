@@ -279,6 +279,8 @@ const HospitalFinder = () => {
   };
 
   const handleHospitalClick = (hospitalId) => {
+    // Log the hospital ID being clicked
+    console.log('Navigating to hospital with ID:', hospitalId);
     navigate(`/HospitalDetails?id=${hospitalId}`);
   };
 
