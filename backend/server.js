@@ -15,6 +15,8 @@ const hospitalRoutes = require('./src/routes/hospital');
 const shopRoutes = require('./src/routes/shop');
 const publicRoutes = require('./src/routes/public');
 const healthRoutes = require('./src/routes/health');
+const uploadsRoutes = require('./src/routes/uploads');
+const reviewRoutes = require('./src/routes/review');
 
 // Import middleware
 const errorHandler = require('./src/middleware/errorHandler');
@@ -81,6 +83,8 @@ app.use('/api/hospital', hospitalRoutes);
 app.use('/api/shop', shopRoutes);
 app.use('/api/public', publicRoutes);
 app.use('/api/health', healthRoutes);
+app.use('/api/uploads', uploadsRoutes);
+app.use('/api/reviews', reviewRoutes);
 
 // Welcome route
 app.get('/', (req, res) => {

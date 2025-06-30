@@ -3,11 +3,23 @@ import axios from 'axios';
 const API = axios.create({ baseURL: 'http://localhost:5000' })
 
 API.interceptors.request.use(req => {
-  const token = JSON.parse(localStorage.getItem('profile'))?.token;
-  if (token) {
-    req.headers.Authorization = `Bearer ${token}`
+  try {
+    const profileData = localStorage.getItem('profile');
+    if (profileData) {
+      const profile = JSON.parse(profileData);
+      const token = profile?.token; // Redux format
+      
+      if (token) {
+        req.headers.Authorization = `Bearer ${token}`;
+        console.log('Added auth token to request');
+      } else {
+        console.log('No auth token found in profile');
+      }
+    }
+  } catch (error) {
+    console.error('Error adding auth token to request:', error);
   }
-  return req
+  return req;
 })
 
 // Add a response interceptor for better error handling
@@ -124,6 +136,10 @@ export const getLatestWeightApi = () => API.get('/api/health/weight/latest')
 // Hormone Tracker APIs
 export const saveHormoneDataApi = (formData) => API.post('/api/health/hormone', formData)
 export const getHormoneHistoryApi = (params) => API.get('/api/health/hormone/history', { params })
+
+// Review APIs
+export const submitReviewApi = (formData) => API.post('/api/reviews/submit', formData)
+export const getHospitalReviewsApi = (hospitalId) => API.get(`/api/reviews/hospital/${hospitalId}`)
 
 // Sleep Tracker APIs
 export const saveSleepDataApi = (formData) => API.post('/api/health/sleep', formData)
