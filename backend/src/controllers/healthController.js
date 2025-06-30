@@ -422,6 +422,8 @@ const saveMedicineReminder = async (req, res) => {
             // Prepare scheduling for each date/time
             const start = new Date(startDate);
             const end = new Date(endDate);
+            end.setHours(23, 59, 59, 999); // Ensure the end date is inclusive
+
             let current = new Date(start);
 
             console.log(`Scheduling from ${start.toISOString()} to ${end.toISOString()}`);
@@ -442,8 +444,9 @@ const saveMedicineReminder = async (req, res) => {
                         // Only schedule if in the future
                         if (scheduledTime > new Date()) {
                             await ReminderSchedule.create({
-                                title: `Medtrax Medication Reminder`,
+                                title: name,
                                 body: `Time to take your medicine: ${name}`,
+                                icon: '/images/Medtrax-logo.png',
                                 time: scheduledTime,
                                 subscription: pushSub._id,
                                 userId: userId
@@ -569,6 +572,7 @@ const updateMedicineReminder = async (req, res) => {
         if (pushSub) {
             const start = new Date(startDate);
             const end = new Date(endDate);
+            end.setHours(23, 59, 59, 999); // Ensure the end date is inclusive
             let current = new Date(start);
             while (current <= end) {
                 if (!days || days.length === 0 || days.includes(current.toLocaleString('en-US', { weekday: 'short' }))) {
@@ -580,6 +584,7 @@ const updateMedicineReminder = async (req, res) => {
                             await ReminderSchedule.create({
                                 title: updatedReminder.name, // Use the new name
                                 body: `Time to take your medicine: ${updatedReminder.name}`,
+                                icon: '/images/Medtrax-logo.png',
                                 time: scheduledTime,
                                 subscription: pushSub._id,
                                 userId: userId
