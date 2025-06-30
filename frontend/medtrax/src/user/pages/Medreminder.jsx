@@ -3,8 +3,10 @@ import { useAuth } from '../../hooks/useAuth';
 import {
   saveMedicineReminderApi,
   getMedicineRemindersApi,
-  deleteMedicineReminderApi
+  deleteMedicineReminderApi,
+  updateMedicineReminderApi
 } from '../../Api';
+import { scheduleReminder } from '../../notifications';
 import "../css/Medreminder.css";
 
 // Helper: Request browser notification permission
@@ -25,7 +27,9 @@ const showBrowserNotification = (title, options) => {
 
 const MedReminder = () => {
   const { isAuthenticated, user } = useAuth();
-  const [reminders, setReminders] = useState([]); // Store saved reminders
+  const [reminders, setReminders] = useState([]); // Store all reminders
+  const [activeReminders, setActiveReminders] = useState([]);
+  const [completedReminders, setCompletedReminders] = useState([]);
   const [formData, setFormData] = useState({
     name: "",
     image: null,
@@ -36,6 +40,8 @@ const MedReminder = () => {
   });
 
   const [showForm, setShowForm] = useState(false); // Control form visibility
+  const [pushSubscription, setPushSubscription] = useState(null);
+  const [editingReminderId, setEditingReminderId] = useState(null); // Track if editing
 
   // Fetch reminders from the database on component mount
   useEffect(() => {
@@ -45,20 +51,60 @@ const MedReminder = () => {
     requestNotificationPermission();
   }, [isAuthenticated]);
 
+  // Setup push subscription only when the user is authenticated
+  useEffect(() => {
+    async function setupPush() {
+      if (isAuthenticated && 'serviceWorker' in navigator) {
+        try {
+          console.log('[PushDebug] User is authenticated, setting up push subscription process...');
+          const reg = await navigator.serviceWorker.ready;
+
+          // Step 1: Get the subscription from the browser
+          let sub = await reg.pushManager.getSubscription();
+
+          // Step 2: If no subscription, create one
+          if (!sub) {
+            console.log('[PushDebug] No subscription found in browser. Creating one...');
+            const { getVapidPublicKey, subscribeUserToPush } = await import('../../notifications');
+            const publicKey = await getVapidPublicKey();
+            sub = await subscribeUserToPush(reg, publicKey);
+          }
+
+          // Step 3: ALWAYS send the subscription to the backend to ensure it's synced with the userId
+          if (sub) {
+            console.log('[PushDebug] Syncing subscription with backend...');
+            const { sendSubscriptionToBackend } = await import('../../notifications');
+            await sendSubscriptionToBackend(sub);
+          }
+          
+          setPushSubscription(sub);
+        } catch (err) {
+          console.error('[PushDebug] Full push subscription setup failed:', err);
+        }
+      } else if (!isAuthenticated) {
+        console.log('[PushDebug] User not authenticated. Skipping push setup.');
+      }
+    }
+
+    setupPush();
+  }, [isAuthenticated]); // Rerun this effect when authentication state changes
+
   const fetchReminders = async () => {
     try {
       const response = await getMedicineRemindersApi({ active: true });
       console.log('Fetched reminders from backend (full):', JSON.stringify(response.data, null, 2));
       if (response.data.success) {
-        // Map reminders to ensure each has an 'id' property
-        const remindersWithId = response.data.data.map(rem => ({
+        const allReminders = response.data.data.map(rem => ({
           ...rem,
-          id: rem._id || rem.id // Use _id if present, fallback to id
+          id: rem._id || rem.id
         }));
-        setReminders(remindersWithId);
-        console.log('Reminders set in state:', remindersWithId);
-        if (Array.isArray(remindersWithId)) {
-          remindersWithId.forEach((rem, idx) => {
+        setReminders(allReminders);
+        // Filter into active and completed lists
+        setActiveReminders(allReminders.filter(r => r.status === 'active'));
+        setCompletedReminders(allReminders.filter(r => r.status === 'completed'));
+        console.log('Reminders set in state:', allReminders);
+        if (Array.isArray(allReminders)) {
+          allReminders.forEach((rem, idx) => {
             console.log(`Reminder[${idx}] id:`, rem.id);
           });
         }
@@ -92,7 +138,6 @@ const MedReminder = () => {
 
     if (isAuthenticated) {
       try {
-        // Create FormData for image upload if needed
         const reminderData = {
           name: formData.name,
           startDate: formData.startDate,
@@ -101,29 +146,30 @@ const MedReminder = () => {
           days: formData.days,
           notes: ""
         };
+        // The current image URL needs to be preserved if a new one isn't uploaded.
+        if (!formData.image && editingReminderId) {
+            const existingReminder = reminders.find(r => r.id === editingReminderId);
+            reminderData.image = existingReminder.image;
+        }
 
-        // Handle image upload if present
         if (formData.image) {
-          // For now, store image as base64 or handle file upload separately
           const reader = new FileReader();
           reader.onloadend = async () => {
             reminderData.image = reader.result;
-            await saveReminder(reminderData);
+            await saveOrUpdateReminder(reminderData);
           };
           reader.readAsDataURL(formData.image);
         } else {
-          await saveReminder(reminderData);
+          await saveOrUpdateReminder(reminderData);
         }
       } catch (error) {
         console.error('Error saving reminder:', error);
         alert('Error saving reminder. Please try again.');
       }
     } else {
-      // For non-authenticated users, just add to local state
       setReminders((prev) => [...prev, { ...formData, id: Date.now() }]);
       resetForm();
       alert('Please login to save your reminders permanently.');
-      // Show browser notification
       showBrowserNotification('Medicine Reminder Set!', {
         body: `You have set a reminder for ${formData.name}.`,
         icon: '/images/Medtrax-logo.png',
@@ -131,22 +177,40 @@ const MedReminder = () => {
     }
   };
 
-  const saveReminder = async (reminderData) => {
-    try {
-      const response = await saveMedicineReminderApi(reminderData);
-      if (response.data.success) {
-        setReminders((prev) => [...prev, response.data.data]);
-        resetForm();
-        alert('Reminder saved successfully!');
-        // Show browser notification
-        showBrowserNotification('Medicine Reminder Set!', {
-          body: `You have set a reminder for ${reminderData.name}.`,
-          icon: '/images/Medtrax-logo.png', 
-        });
+  const saveOrUpdateReminder = async (reminderData) => {
+    if (editingReminderId) {
+      // Update existing reminder
+      try {
+        const response = await updateMedicineReminderApi(editingReminderId, reminderData);
+        if (response.data.success) {
+          await fetchReminders();
+          resetForm();
+          setEditingReminderId(null);
+          alert('Reminder updated successfully!');
+        }
+      } catch (error) {
+        console.error('Error updating reminder:', error);
+        alert('Error updating reminder. Please try again.');
       }
-    } catch (error) {
-      console.error('Error saving reminder:', error);
-      alert('Error saving reminder. Please try again.');
+    } else {
+      // Save new reminder
+      try {
+        const response = await saveMedicineReminderApi(reminderData);
+        if (response.data.success) {
+          // Instead of just adding, we should refetch to get the proper _id
+          await fetchReminders();
+          resetForm();
+          alert('Reminder saved successfully!');
+          showBrowserNotification('Medicine Reminder Set!', {
+            body: `You have set a reminder for ${reminderData.name}.`,
+            icon: '/images/Medtrax-logo.png',
+          });
+          // Note: The new backend logic handles scheduling, so we can remove the frontend scheduling logic
+        }
+      } catch (error) {
+        console.error('Error saving reminder:', error);
+        alert('Error saving reminder. Please try again.');
+      }
     }
   };
 
@@ -160,9 +224,12 @@ const MedReminder = () => {
       days: [],
     });
     setShowForm(false);
+    setEditingReminderId(null);
   };
 
   const handleAddNew = () => {
+    // Reset form for adding a new reminder
+    resetForm();
     setShowForm(true);
   };
 
@@ -199,7 +266,20 @@ const MedReminder = () => {
       setReminders((prev) => prev.filter((_, i) => i !== index));
     }
   };
-  
+
+  const handleEditReminder = (reminder) => {
+    setFormData({
+      name: reminder.name || '',
+      image: null, // Don't prefill file input
+      startDate: reminder.startDate ? reminder.startDate.slice(0, 10) : '',
+      endDate: reminder.endDate ? reminder.endDate.slice(0, 10) : '',
+      times: reminder.times || [''],
+      days: reminder.days || [],
+    });
+    setEditingReminderId(reminder.id);
+    setShowForm(true);
+  };
+
   return (
     <div className="medical-reminder-container">
       <div className="rembanner">
@@ -271,9 +351,21 @@ const MedReminder = () => {
                   name="image"
                   accept="image/*"
                   onChange={handleInputChange}
-                  required
+                  // `required` is problematic for updates, let's remove it
+                  // required
                 />
               </div>
+
+              {editingReminderId && (
+                <div className="current-image-preview">
+                    <span>Current Image:</span>
+                    <img
+                        src={reminders.find(r => r.id === editingReminderId)?.image}
+                        alt="Current"
+                        style={{ width: '50px', height: '50px', marginLeft: '10px' }}
+                    />
+                </div>
+              )}
 
               <div className="reminderinp-field20">
                 <img
@@ -344,18 +436,25 @@ const MedReminder = () => {
                 ))}
               </div>
             </div>
+            <div className="abc">
             <button type="submit" className="remsav-btn20">
-              Save Reminder
+              {editingReminderId ? 'Update' : 'Save'}
             </button>
+            {editingReminderId && (
+              <button type="button" className="remcancel-btn20" onClick={resetForm}>
+                Cancel
+              </button>
+            )}
+            </div>
           </form>
         </div>
       )}
 
       {reminders.length > 0 && (
         <div className="reminder-display20">
-          <h2>Your Saved Reminders</h2>
+          <h2>Your Reminders</h2>
           {reminders.map((reminder, index) => (
-            <div key={index} className="reminder-section20">
+            <div key={reminder.id || index} className="reminder-section20">
               <h3>{reminder.name}</h3>
               {reminder.image && (
                 (() => {
@@ -394,12 +493,57 @@ const MedReminder = () => {
               <p>
                 <strong>Days:</strong> {reminder.days.join(", ")}
               </p>
-              <button
-                className="rem-delete-btn20"
-                onClick={() => handleDeleteReminder(index, reminder.id)}
-              >
-                Delete
-              </button>
+              <div className="abcd">
+                <button
+                  className="rem-delete-btn20"
+                  onClick={() => handleDeleteReminder(index, reminder.id)}
+                >
+                  Delete
+                </button>
+                {reminder.status === 'active' && (
+                  <button
+                    className="remedit-btn20"
+                    onClick={() => handleEditReminder(reminder)}
+                  >
+                    Edit
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {completedReminders.length > 0 && (
+        <div className="reminder-display20 completed-section">
+          <h2>Completed Reminders</h2>
+          {completedReminders.map((reminder, index) => (
+            <div key={reminder.id || index} className="reminder-section20">
+              <h3>{reminder.name}</h3>
+              {reminder.image && (
+                <img
+                  src={reminder.image}
+                  alt={reminder.name}
+                  className="rem-image-icon20"
+                />
+              )}
+              <p>
+                <strong>Completed On:</strong> {new Date(reminder.endDate).toLocaleDateString()}
+              </p>
+              <p>
+                <strong>Time Slots:</strong> {reminder.times.join(", ")}
+              </p>
+              <p>
+                <strong>Days:</strong> {reminder.days.join(", ")}
+              </p>
+              <div className="abcd">
+                <button
+                  className="rem-delete-btn20"
+                  onClick={() => handleDeleteReminder(index, reminder.id)}
+                >
+                  Delete
+                </button>
+              </div>
             </div>
           ))}
         </div>

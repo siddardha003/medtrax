@@ -125,6 +125,39 @@
     font-size: 18px;
 }
 
+.abc{
+    display: flex;
+    align-items: center;
+    margin-left: 27%;
+    gap: 10px;
+}
+
+.abcd{
+    display: flex;
+    align-items: center;
+    margin-left: 30%;
+    gap: 10px;
+}
+
+.remcancel-btn20 {
+    margin-top: 20px;
+    padding: 5px 20px;
+    background-color: #fff;
+    border: 2px solid #86c2c6;
+    border-radius: 15px;
+    cursor: pointer;
+    font-size: 18px;
+}
+
+.remedit-btn20 {
+    padding: 5px 20px;
+    background-color: #fff;
+    border: 2px solid #86c2c6;
+    border-radius: 15px;
+    cursor: pointer;
+    font-size: 18px;
+}
+
 .reminder-display20 {
     text-align: center;
     width: 530px;

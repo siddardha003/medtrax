@@ -14,7 +14,7 @@ import axios from 'axios';
 
 import 'slick-carousel/slick/slick.css';
 
-axios.defaults.baseURL = 'http://localhost:5003';
+axios.defaults.baseURL = 'http://localhost:5000';
 
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
