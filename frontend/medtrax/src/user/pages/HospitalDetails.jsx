@@ -1,10 +1,38 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import "../css/HospitalDetails.css";
 import HospitalMap from "../components/Hospitalmap";
+import { getPublicHospitalDetailsApi } from "../../Api";
 
 const HospitalDetails = () => {
-    // Dummy hospital data
+    const { id } = useParams();
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [hospitalData, setHospitalData] = useState(null);
+
+    useEffect(() => {
+        const fetchHospitalDetails = async () => {
+            try {
+                setLoading(true);
+                const { data } = await getPublicHospitalDetailsApi(id);
+                if (data.success) {
+                    setHospitalData(data.data.hospital);
+                } else {
+                    setError('Failed to load hospital details');
+                }
+            } catch (err) {
+                console.error('Error fetching hospital details:', err);
+                setError('Failed to load hospital details. Please try again later.');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        if (id) {
+            fetchHospitalDetails();
+        }
+    }, [id]);
 
     const openModal = () => {
         setIsModalOpen(true);
@@ -116,113 +144,29 @@ const HospitalDetails = () => {
             color: "#000",
         },
     };
-    const hospitalData = {
-        name: "City Hospital - Downtown",
-        rating: 4.8,
-        reviewsCount: 259,
-        closingTime: "10:00pm",
-        location: "Downtown, Dubai",
+    // Fallback data if the hospital hasn't completed their profile
+    const fallbackHospitalData = {
+        name: hospitalData?.name || "Hospital",
+        rating: hospitalData?.rating || 0,
+        reviewsCount: hospitalData?.reviewsCount || 0,
+        closingTime: hospitalData?.closingTime || "Not specified",
+        location: `${hospitalData?.address}, ${hospitalData?.city}, ${hospitalData?.state}` || "Location not specified",
         directionsLink: "https://maps.google.com",
-        images: [
-            "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Hospital-de-Bellvitge.jpg/640px-Hospital-de-Bellvitge.jpg", // Main image
-            "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Hospital-de-Bellvitge.jpg/640px-Hospital-de-Bellvitge.jpg", // Secondary image 1
-            "https://c8.alamy.com/comp/H1RWH2/hospital-building-and-department-with-doctors-working-office-surgery-H1RWH2.jpg", // Secondary image 2
-            "https://data1.ibtimes.co.in/en/full/761597/jammu-500-bedded-hospital.jpg?h=450&l=50&t=40", // Secondary image 2
-            "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Hospital-de-Bellvitge.jpg/640px-Hospital-de-Bellvitge.jpg", // Main image
-            "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Hospital-de-Bellvitge.jpg/640px-Hospital-de-Bellvitge.jpg", // Secondary image 1
-            "https://c8.alamy.com/comp/H1RWH2/hospital-building-and-department-with-doctors-working-office-surgery-H1RWH2.jpg", // Secondary image 2
-            "https://data1.ibtimes.co.in/en/full/761597/jammu-500-bedded-hospital.jpg?h=450&l=50&t=40", // Secondary image 2
+        images: hospitalData?.images?.length > 0 ? hospitalData.images : [
+            "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Hospital-de-Bellvitge.jpg/640px-Hospital-de-Bellvitge.jpg"
         ],
-        services: [
+        services: hospitalData?.services?.length > 0 ? hospitalData.services : [
             {
-                category: "General Checkup",
-                image: "https://img.freepik.com/free-vector/charity-logo-hands-supporting-heart-icon-flat-design-vector-illustration_53876-136266.jpg",
-                description: "Regular health checkups",
-                doctors: [
-                    { id: 1, name: "Dr. Alice Smith", degree: "MBBS, MD", image: "https://via.placeholder.com/150" },
-                    { id: 2, name: "Dr. John Doe", degree: "MBBS, MS", image: "https://via.placeholder.com/150" },
-                ],
-            },
-            {
-                category: "Dental Care",
-                image: "https://www.carolinasmilesdentist.com/wp-content/uploads/Tooth1901.jpg",
-                description: "Comprehensive dental care services",
-                doctors: [
-                    { id: 5, name: "Dr. Emily Brown", degree: "BDS, MDS", image: "https://via.placeholder.com/150" },
-                    { id: 6, name: "Dr. David Miller", degree: "BDS", image: "https://via.placeholder.com/150" },
-                ],
-            },
-            {
-                category: "Pediatrics",
-                image: "https://www.eurokidsindia.com/blog/wp-content/uploads/2024/03/observe-children-at-play-870x557.jpg",
-                description: "Best child care services",
-                doctors: [
-                    { id: 7, name: "Dr. Arjun", degree: "BDS, MDS", image: "https://hips.hearstapps.com/hmg-prod/images/portrait-of-a-happy-young-doctor-in-his-clinic-royalty-free-image-1661432441.jpg?crop=0.66698xw:1xh;center,top&resize=1200:*" },
-                    { id: 8, name: "Dr. Smithi", degree: "BDS", image: "https://via.placeholder.com/150" },
-                    { id: 9, name: "Dr. Kranthi", degree: "BDS, MDS", image: "https://via.placeholder.com/150" },
-                    { id: 10, name: "Dr. Viraj", degree: "BDS", image: "https://via.placeholder.com/150" },
-                    { id: 11, name: "Dr. Zara", degree: "BDS, MBBS", image: "https://via.placeholder.com/150" },
-                    { id: 12, name: "Dr. Rakshitha", degree: "BDS", image: "https://via.placeholder.com/150" },
-                    { id: 13, name: "Dr. Laxmi", degree: "BDS, FRCS", image: "https://via.placeholder.com/150" },
-                ],
-            },
-            {
-                category: "Orthopedics",
-                image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTN10PBtPn1zNAxJ5MJZF2hDTw1o6lKXDgm3Q&s",
-                description: "Bone and joint care services",
-                doctors: [
-                    { id: 14, name: "Dr. Henry Adams", degree: "MBBS, MS Ortho", image: "https://desunhospital.com/wp-content/uploads/2023/12/Dr.-Aditya-Varma-2-scaled.jpg" },
-                    { id: 15, name: "Dr. Rachel Green", degree: "MBBS, DNB Ortho", image: "https://www.yourfreecareertest.com/wp-content/uploads/2018/01/how_to_become_a_doctor.jpg" },
-                ],
-            },
-            {
-                category: "Cardiology",
-                image: "https://www.nm.org/-/media/northwestern/healthbeat/images/health%20library/nm-ten-signs-cardiologist_preview.jpg",
-                description: "Heart health and care",
-                doctors: [
-                    { id: 16, name: "Dr. Steve Parker", degree: "MBBS, DM Cardiology", image: "https://via.placeholder.com/150" },
-                    { id: 17, name: "Dr. Mia Clark", degree: "MBBS, MD Cardiology", image: "https://via.placeholder.com/150" },
-                ],
-            },
-            {
-                category: "Dermatology",
-                image: "https://www.renaimedicity.org/wp-content/uploads/2021/03/dermatology-cosmetology-inn.jpg",
-                description: "Skin care and treatments",
-                doctors: [
-                    { id: 18, name: "Dr. Ava Taylor", degree: "MBBS, MD Dermatology", image: "https://via.placeholder.com/150" },
-                    { id: 19, name: "Dr. Noah Williams", degree: "MBBS, DNB Dermatology", image: "https://via.placeholder.com/150" },
-                ],
-            },
-            {
-                category: "Psychiatry",
-                image: "https://tanveernaseer.com/wp-content/uploads/2022/07/Reasons-to-become-psychiatrist.jpg",
-                description: "Mental health and wellness",
-                doctors: [
-                    { id: 20, name: "Dr. Ethan Brown", degree: "MBBS, MD Psychiatry", image: "https://via.placeholder.com/150" },
-                    { id: 21, name: "Dr. Olivia Davis", degree: "MBBS, DM Psychiatry", image: "https://via.placeholder.com/150" },
-                ],
-            },
-            {
-                category: "Physiotherapy",
-                image: "https://www.capitalphysiotherapy.com.au/wp-content/uploads/2017/01/Prevention-Screening-Sports.jpg",
-                description: "Physical therapy and rehabilitation",
-                doctors: [
-                    { id: 22, name: "Dr. Liam Wilson", degree: "BPT, MPT", image: "https://via.placeholder.com/150" },
-                    { id: 23, name: "Dr. Sophia Martinez", degree: "BPT", image: "https://via.placeholder.com/150" },
-                ],
-            },
-            {
-                category: "Gynecology",
-                image: "https://www.khadehospital.com/wp-content/uploads/2021/03/Gynaecology.jpg",
-                description: "Women's health and maternity care",
-                doctors: [
-                    { id: 24, name: "Dr. Emma Moore", degree: "MBBS, MD Gynecology", image: "https://via.placeholder.com/150" },
-                    { id: 25, name: "Dr. Daniel Johnson", degree: "MBBS, DNB Gynecology", image: "https://via.placeholder.com/150" },
-                ],
-            },
-        ],
+                category: "General Services",
+                image: "https://via.placeholder.com/150?text=General+Services",
+                description: "General hospital services",
+                doctors: []
+            }
+        ]
     };
 
+    // Use real data if available, otherwise use fallback data
+    const displayData = hospitalData?.profileComplete ? hospitalData : fallbackHospitalData;
 
     const [reviews, setReviews] = useState([
         {
@@ -360,37 +304,55 @@ const HospitalDetails = () => {
     const [selectedService, setSelectedService] = useState(0); // Default tab
 
     const [selectedHospital, setSelectedHospital] = useState({
-        name: 'City Hospital - Downtown',
-        latitude: 17.4065,
-        longitude: 78.4772,
+        name: displayData.name,
+        latitude: hospitalData?.location?.latitude || 17.4065,
+        longitude: hospitalData?.location?.longitude || 78.4772,
     });
 
-    const openingTimes = [
-        { day: "Monday", time: "12:00 pm - 11:00 pm" },
-        { day: "Tuesday", time: "12:00 pm - 11:00 pm" },
-        { day: "Wednesday", time: "12:00 pm - 11:00 pm" },
-        { day: "Thursday", time: "12:00 pm - 11:00 pm" },
-        { day: "Friday", time: "12:00 pm - 11:00 pm" },
-        { day: "Saturday", time: "12:00 pm - 11:00 pm" },
-        { day: "Sunday", time: "12:00 pm - 11:00 pm" },
+    const openingTimes = hospitalData?.openingTimes?.length > 0 ? hospitalData.openingTimes : [
+        { day: "Monday", time: "9:00 AM - 5:00 PM" },
+        { day: "Tuesday", time: "9:00 AM - 5:00 PM" },
+        { day: "Wednesday", time: "9:00 AM - 5:00 PM" },
+        { day: "Thursday", time: "9:00 AM - 5:00 PM" },
+        { day: "Friday", time: "9:00 AM - 5:00 PM" },
+        { day: "Saturday", time: "9:00 AM - 5:00 PM" },
+        { day: "Sunday", time: "Closed" },
     ];
 
     const today = new Date().toLocaleString("en-US", { weekday: "long" });
 
+    if (loading) {
+        return <div className="loading-spinner">Loading hospital details...</div>;
+    }
+
+    if (error) {
+        return <div className="error-message">{error}</div>;
+    }
+
+    // Show profile incomplete message if needed
+    const profileIncompleteMessage = !hospitalData?.profileComplete && (
+        <div className="profile-incomplete-message">
+            <p>This hospital has not completed their profile yet. Some information may be missing or incomplete.</p>
+        </div>
+    );
+
     return (
         <div className="hospital-ui">
+            {/* Profile incomplete message */}
+            {profileIncompleteMessage}
+            
             {/* Header */}
             <div className="hospital-header">
-                <h1>{hospitalData.name}</h1>
+                <h1>{displayData.name}</h1>
                 <div className="rating">
-                    ⭐⭐⭐⭐⭐ {hospitalData.rating} ({hospitalData.reviewsCount})
+                    ⭐⭐⭐⭐⭐ {displayData.rating} ({displayData.reviewsCount})
                 </div>
                 <p className="hospital-timing">
-                    🕒 Open until {hospitalData.closingTime}
+                    🕒 Open until {displayData.closingTime}
                 </p>
                 <p className="hospital-location">
-                    📍 {hospitalData.location}{" "}
-                    <a href={hospitalData.directionsLink} target="_blank" rel="noreferrer">
+                    📍 {displayData.location}{" "}
+                    <a href={displayData.directionsLink} target="_blank" rel="noreferrer">
                         Get directions
                     </a>
                 </p>
@@ -399,13 +361,13 @@ const HospitalDetails = () => {
             {/* Images Section */}
             <div className="hospital-images">
                 {/* Main Image */}
-                <img src={hospitalData.images[0]} alt="Main" className="main-image" />
+                <img src={displayData.images[0] || "https://via.placeholder.com/800x400?text=No+Image+Available"} alt="Main" className="main-image" />
 
                 {/* Image Grid */}
                 <div className="image-grid">
-                    <img src={hospitalData.images[1]} alt="Secondary 1" className="thumbnail" />
+                    <img src={displayData.images[1] || displayData.images[0] || "https://via.placeholder.com/400x300?text=No+Image"} alt="Secondary 1" className="thumbnail" />
                     <div className="thumbnail-container">
-                        <img src={hospitalData.images[2]} alt="Secondary 2" className="thumbnail" />
+                        <img src={displayData.images[2] || displayData.images[0] || "https://via.placeholder.com/400x300?text=No+Image"} alt="Secondary 2" className="thumbnail" />
                         <button className="see-all-btn" onClick={openModal}>
                             See All
                         </button>
@@ -417,7 +379,7 @@ const HospitalDetails = () => {
                             <button className="close-btn" onClick={closeModal}>
                                 &times;
                             </button>
-                            {hospitalData.images.map((image, index) => (
+                            {displayData.images.map((image, index) => (
                                 <img key={index} src={image} alt={`Image ${index}`} className="modal-image" />
                             ))}
                         </div>
@@ -438,7 +400,7 @@ const HospitalDetails = () => {
                         </button>
                         <div className="service-tabs-container">
                             <div className="service-tabs" ref={tabsContainerRef}>
-                                {hospitalData.services.map((serviceType, index) => (
+                                {displayData.services.map((serviceType, index) => (
                                     <div
                                         key={index}
                                         className={`tab-card ${selectedService === index ? "active" : ""}`}
@@ -463,19 +425,22 @@ const HospitalDetails = () => {
                     {/* Doctors Display */}
                     <div className="team-container">
                         <h2>Meet our Experts</h2>
-                        <div className="team-grid">
-                            {hospitalData.services[selectedService]?.doctors.map((doctor) => (
-                                <div className="team-card" key={doctor.id}>
-                                    <div className="image-container">
-                                        <img src={doctor.image} alt={doctor.name} className="doctor-image" />
+                        {displayData.services[selectedService]?.doctors?.length > 0 ? (
+                            <div className="team-grid">
+                                {displayData.services[selectedService].doctors.map((doctor, index) => (
+                                    <div className="team-card" key={index}>
+                                        <div className="image-container">
+                                            <img src={doctor.image} alt={doctor.name} className="doctor-image" />
+                                        </div>
+                                        <h3 className="doctor-name">{doctor.name}</h3>
+                                        <p className="doctor-degree">{doctor.degree}</p>
                                     </div>
-                                    <h3 className="doctor-name">{doctor.name}</h3>
-                                    <p className="doctor-degree">{doctor.degree}</p>
-                                </div>
-                            ))}
-                        </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="no-doctors-message">No doctors listed for this department yet.</p>
+                        )}
                     </div>
-
 
                     {/* Reviews Section - Moved Below Services */}
                     <div className="reviews-section">
@@ -581,15 +546,15 @@ const HospitalDetails = () => {
                 {/* Booking Section */}
                 <div className="booking-card">
                     <div className="booking-hospital-header">
-                        <h1>{hospitalData.name}</h1>
+                        <h1>{displayData.name}</h1>
                         <div className="booking-rating">
-                            ⭐ {hospitalData.rating} ({hospitalData.reviewsCount})
+                            ⭐ {displayData.rating} ({displayData.reviewsCount})
                         </div>
                         <button className="book-now-btn">Book now</button>
-                        <p>🕒 Open until {hospitalData.closingTime}</p>
+                        <p>🕒 Open until {displayData.closingTime}</p>
                         <p>
-                            📍 {hospitalData.location}{" "}
-                            <a href={hospitalData.directionsLink} target="_blank" rel="noreferrer">
+                            📍 {displayData.location}{" "}
+                            <a href={displayData.directionsLink} target="_blank" rel="noreferrer">
                                 Get directions
                             </a>
                         </p>

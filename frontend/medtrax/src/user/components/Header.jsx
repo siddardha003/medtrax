@@ -126,9 +126,15 @@ const Header = ({ data }) => {
                   className="st-top-header-btn st-smooth-move flex items-center gap-2 mr-2" 
                   onClick={() => setShowProfileDropdown(!showProfileDropdown)}
                 >
-                  <span className="w-8 h-8 rounded-full bg-teal-600 flex items-center justify-center text-white font-medium">
-                    {userInfo.name.charAt(0)}
-                  </span>
+                  {userInfo?.isAdmin ? (
+                    <span className="w-8 h-8 rounded-full bg-blue-700 flex items-center justify-center text-white font-medium" title={`${userInfo.role}`}>
+                      {userInfo?.role?.charAt(0).toUpperCase() || 'A'}
+                    </span>
+                  ) : (
+                    <span className="w-8 h-8 rounded-full bg-teal-600 flex items-center justify-center text-white font-medium">
+                      {userInfo?.name?.charAt(0) || 'U'}
+                    </span>
+                  )}
                 </button>
                 
                 <button 
@@ -140,8 +146,15 @@ const Header = ({ data }) => {
                   {showProfileDropdown && (
                   <div className="absolute right-0 top-10 mt-2 w-64 bg-white rounded-md shadow-lg py-1 z-50">
                     <div className="px-4 py-2 border-b border-gray-100">
-                      <p className="text-sm font-medium text-gray-900">{userInfo.name}</p>
+                      <p className="text-sm font-medium text-gray-900">{userInfo.name || userInfo.email}</p>
                       <p className="text-xs text-gray-500">{userInfo.email}</p>
+                      {userInfo?.isAdmin && (
+                        <p className="text-xs font-semibold text-blue-600 mt-1">
+                          {userInfo.role === 'super_admin' ? 'Super Admin' : 
+                           userInfo.role === 'hospital_admin' ? 'Hospital Admin' : 
+                           userInfo.role === 'shop_admin' ? 'Shop Admin' : 'Admin'}
+                        </p>
+                      )}
                     </div>
                     
                     <button 
@@ -153,7 +166,7 @@ const Header = ({ data }) => {
                           <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                           </svg>
-                          Admin Dashboard
+                          Go to Admin Dashboard
                         </>
                       ) : (
                         <>

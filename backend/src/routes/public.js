@@ -106,37 +106,50 @@ router.get('/hospitals', async (req, res, next) => {
 // @desc    Get hospital details by ID
 // @access  Public
 router.get('/hospitals/:id', async (req, res, next) => {
-    try {        const hospital = await Hospital.findById(req.params.id)
-            .select('name address phone contactPhone contactEmail type facilities website description isActive rating images services');
+    try {        
+        const hospital = await Hospital.findById(req.params.id)
+            .select('name address city state pincode phone email closingTime images services openingTimes location rating reviewsCount profileComplete registrationNumber');
 
-        if (!hospital || !hospital.isActive) {
+        if (!hospital) {
             // Return dummy hospital data if not found
             const dummyHospital = {
                 _id: req.params.id,
                 name: 'Sample Hospital',
-                address: {
-                    street: '123 Hospital Street',
-                    city: 'Mumbai',
-                    state: 'Maharashtra',
-                    zipCode: '400001'
-                },
+                address: '123 Hospital Street',
+                city: 'Mumbai',
+                state: 'Maharashtra',
+                pincode: '400001',
                 phone: '+91-9876543210',
-                contactPhone: '+91-9876543210',
-                contactEmail: 'info@samplehospital.com',
-                type: 'General',
+                email: 'info@samplehospital.com',
                 rating: 4.5,
+                reviewsCount: 120,
+                closingTime: '10:00 PM',
+                profileComplete: false,
                 images: ['https://images.unsplash.com/photo-1551190822-a9333d879b1f?w=400&h=200&fit=crop'],
                 services: [
                     {
                         category: 'General Medicine',
+                        description: 'General medical services',
+                        image: 'https://via.placeholder.com/150?text=General+Medicine',
                         doctors: [
-                            { id: 'dr1', name: 'Dr. Smith' },
-                            { id: 'dr2', name: 'Dr. Johnson' }
+                            { name: 'Dr. Smith', degree: 'MBBS, MD', image: 'https://via.placeholder.com/150' },
+                            { name: 'Dr. Johnson', degree: 'MBBS, MS', image: 'https://via.placeholder.com/150' }
                         ]
                     }
                 ],
-                description: 'A leading healthcare facility providing comprehensive medical services.',
-                facilities: ['Emergency Care', 'ICU', 'Laboratory', 'Pharmacy']
+                openingTimes: [
+                    { day: 'Monday', time: '9:00 AM - 5:00 PM' },
+                    { day: 'Tuesday', time: '9:00 AM - 5:00 PM' },
+                    { day: 'Wednesday', time: '9:00 AM - 5:00 PM' },
+                    { day: 'Thursday', time: '9:00 AM - 5:00 PM' },
+                    { day: 'Friday', time: '9:00 AM - 5:00 PM' },
+                    { day: 'Saturday', time: '9:00 AM - 2:00 PM' },
+                    { day: 'Sunday', time: 'Closed' }
+                ],
+                location: {
+                    latitude: 19.0760,
+                    longitude: 72.8777
+                }
             };
             
             return res.status(200).json({

@@ -436,6 +436,145 @@ const searchPatients = async (req, res) => {
     }
 };
 
+// @desc    Get hospital profile details
+// @route   GET /api/hospital/profile
+// @access  Private (Hospital Admin)
+const getHospitalProfile = async (req, res) => {
+    try {
+        const hospitalId = req.user.hospitalId;
+        console.log(`🏥 Getting profile for hospital: ${hospitalId}`);
+        
+        if (!hospitalId) {
+            console.log(`❌ No hospitalId found in user object: ${req.user._id}`);
+            return res.status(400).json({
+                success: false,
+                error: 'No hospital ID associated with this user'
+            });
+        }
+
+        const hospital = await Hospital.findById(hospitalId).lean();
+        
+        if (!hospital) {
+            console.log(`❌ Hospital not found with ID: ${hospitalId}`);
+            return res.status(404).json({
+                success: false,
+                error: 'Hospital not found'
+            });
+        }
+
+        console.log(`✅ Successfully retrieved hospital profile: ${hospital.name}`);
+        res.status(200).json({
+            success: true,
+            message: 'Hospital profile retrieved successfully',
+            data: { hospital }
+        });
+
+    } catch (error) {
+        console.error('Get hospital profile error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Server error',
+            details: error.message
+        });
+    }
+};
+
+// @desc    Update hospital profile details
+// @route   PUT /api/hospital/profile
+// @access  Private (Hospital Admin)
+const updateHospitalProfile = async (req, res) => {
+    try {
+        const hospitalId = req.user.hospitalId;
+        const { 
+            images, 
+            closingTime, 
+            openingTimes, 
+            services, 
+            location 
+        } = req.body;
+
+        // Find hospital first
+        const hospital = await Hospital.findById(hospitalId);
+        
+        if (!hospital) {
+            return res.status(404).json({
+                success: false,
+                error: 'Hospital not found'
+            });
+        }
+
+        // Update fields if provided
+        if (images) hospital.images = images;
+        if (closingTime) hospital.closingTime = closingTime;
+        if (openingTimes) hospital.openingTimes = openingTimes;
+        if (services) hospital.services = services;
+        if (location) hospital.location = location;
+        
+        // Mark profile as complete if all required fields are filled
+        hospital.profileComplete = Boolean(
+            hospital.images?.length > 0 && 
+            hospital.openingTimes?.length > 0 && 
+            hospital.services?.length > 0 &&
+            hospital.location?.latitude &&
+            hospital.location?.longitude
+        );
+        
+        hospital.updatedBy = req.user.id;
+        
+        // Save updated hospital
+        await hospital.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Hospital profile updated successfully',
+            data: { hospital }
+        });
+
+    } catch (error) {
+        console.error('Update hospital profile error:', error);
+        
+        // Handling validation errors
+        if (error.name === 'ValidationError') {
+            const messages = Object.values(error.errors).map(val => val.message);
+            return res.status(400).json({
+                success: false,
+                error: messages.join(', ')
+            });
+        }
+        
+        res.status(500).json({
+            success: false,
+            error: 'Server error'
+        });
+    }
+};
+
+// @desc    Upload hospital images
+// @route   POST /api/hospital/profile/upload-image
+// @access  Private (Hospital Admin)
+const uploadHospitalImage = async (req, res) => {
+    try {
+        // This function would handle file uploads
+        // For now, just returning a placeholder response
+        // In a real implementation, you would use multer or another upload middleware
+        
+        res.status(200).json({
+            success: true,
+            message: 'Image uploaded successfully',
+            data: { 
+                imageUrl: `https://via.placeholder.com/800x600?text=Hospital+Image+${Date.now()}`
+            }
+        });
+
+    } catch (error) {
+        console.error('Upload hospital image error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Server error'
+        });
+    }
+};
+
 module.exports = {
     getAppointments,
     getAppointment,
@@ -443,5 +582,8 @@ module.exports = {
     updateAppointment,
     cancelAppointment,
     getAppointmentStats,
-    searchPatients
+    searchPatients,
+    getHospitalProfile,
+    updateHospitalProfile,
+    uploadHospitalImage
 };

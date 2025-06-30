@@ -24,6 +24,17 @@ const protect = async (req, res, next) => {
                 });
             }
 
+            // Ensure hospitalId and shopId are set from the token if available
+            if (decoded.hospitalId && !req.user.hospitalId) {
+                req.user.hospitalId = decoded.hospitalId;
+                console.log(`🏥 Added hospitalId from token: ${decoded.hospitalId}`);
+            }
+            
+            if (decoded.shopId && !req.user.shopId) {
+                req.user.shopId = decoded.shopId;
+                console.log(`🏪 Added shopId from token: ${decoded.shopId}`);
+            }
+
             // Check if user is active
             if (!req.user.isActive) {
                 return res.status(401).json({
@@ -145,20 +156,31 @@ const validateUserRole = async (req, res, next) => {
                 console.log(`❌ Hospital admin missing hospitalId`);
                 return res.status(403).json({
                     success: false,
-                    error: 'Hospital admin must be associated with a hospital'
+                    error: 'Hospital admin must be associated with a hospital. Please contact the super admin.'
                 });
             }
             
             console.log(`🔍 Checking hospital: ${user.hospitalId}`);
-            // Optionally verify hospital exists and is active
+            // Verify hospital exists and is active
             const Hospital = require('../models/Hospital');
             const hospital = await Hospital.findById(user.hospitalId);
-            if (!hospital || !hospital.isActive) {
-                console.log(`❌ Hospital not found or inactive: ${user.hospitalId}`);
+            if (!hospital) {
+                console.log(`❌ Hospital not found: ${user.hospitalId}`);
                 return res.status(403).json({
                     success: false,
-                    error: 'Associated hospital not found or inactive'
+                    error: 'Associated hospital not found. Please contact the super admin to resolve this issue.'
                 });
+            }
+            
+            // Check if hospital is inactive and activate it automatically
+            if (hospital.hasOwnProperty('isActive') && !hospital.isActive) {
+                console.log(`⚠️ Hospital was inactive: ${user.hospitalId}. Activating it now.`);
+                
+                // Automatically activate the hospital
+                hospital.isActive = true;
+                await hospital.save();
+                
+                console.log(`✅ Hospital activated: ${hospital.name}`);
             }
             
             console.log(`✅ Hospital validation successful: ${hospital.name}`);

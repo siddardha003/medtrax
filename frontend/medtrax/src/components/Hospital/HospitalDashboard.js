@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { logOut } from '../../Redux/user/actions';
 import { showNotification } from '../../Redux/notification/actions';
 import * as HospitalApi from '../../Api';
+import HospitalProfile from './HospitalProfile';
+import './HospitalDashboard.css';
 
 const HospitalDashboard = () => {
   const dispatch = useDispatch();
@@ -25,6 +27,7 @@ const HospitalDashboard = () => {
     pendingAppointments: 0,
     completedAppointments: 0
   });
+  const [hospitalProfile, setHospitalProfile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -74,6 +77,22 @@ const HospitalDashboard = () => {
     }
   }, [success]);
 
+  // Fetch hospital profile
+  const fetchHospitalProfile = async () => {
+    try {
+      const { data } = await HospitalApi.getHospitalProfileApi();
+      if (data.success) {
+        setHospitalProfile(data.data.hospital);
+      }
+    } catch (error) {
+      console.error('Error fetching hospital profile:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchHospitalProfile();
+  }, []);
+
   useEffect(() => {
     if (activeTab === 'dashboard') {
       fetchStats();
@@ -84,6 +103,8 @@ const HospitalDashboard = () => {
       fetchPatients();
     } else if (activeTab === 'analytics') {
       fetchAnalytics();
+    } else if (activeTab === 'profile') {
+      fetchHospitalProfile();
     }
   }, [activeTab, filters]);
   // Data fetching functions  
@@ -382,8 +403,37 @@ const HospitalDashboard = () => {
         </p>
       </div>
 
+      {/* Profile completion alert */}
+      {hospitalProfile && !hospitalProfile.profileComplete && (
+        <div className="bg-yellow-50 p-4 rounded-lg shadow">
+          <div className="flex items-center">
+            <div className="p-2 bg-yellow-100 rounded-full">
+              <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+            </div>
+            <div className="ml-3">
+              <p className="text-sm font-medium text-gray-900">
+                ⚠️ Your Hospital Profile is Incomplete
+              </p>
+              <p className="text-sm text-gray-600">
+                Please complete your hospital profile to make it visible to patients.
+                Add departments, doctors, images, and operating hours to attract more patients.
+              </p>
+            </div>
+            <button 
+              onClick={() => setActiveTab('profile')}
+              className="ml-auto px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            >
+              Complete Profile Now
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">        <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow duration-200">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow duration-200">
           <div className="flex items-center">
             <div className="p-2 bg-blue-100 rounded-lg">
               <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -404,7 +454,8 @@ const HospitalDashboard = () => {
               )}
             </div>
           </div>
-        </div>        <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow duration-200">
+        </div>
+        <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow duration-200">
           <div className="flex items-center">
             <div className="p-2 bg-green-100 rounded-lg">
               <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -944,6 +995,14 @@ const HospitalDashboard = () => {
     </div>
   );
 
+  // Render Profile Tab
+  const renderProfile = () => (
+    <div className="bg-white rounded-lg shadow p-6">
+      <h3 className="text-lg font-medium text-gray-900 mb-4">Hospital Profile</h3>
+      <HospitalProfile />
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Header */}
@@ -1010,6 +1069,16 @@ const HospitalDashboard = () => {
             >
               Analytics
             </button>
+            <button
+              onClick={() => setActiveTab('profile')}
+              className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'profile'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              Hospital Profile
+            </button>
           </div>
         </div>
       </nav>
@@ -1026,8 +1095,7 @@ const HospitalDashboard = () => {
           {!loading && activeTab === 'appointments' && renderAppointments()}
           {!loading && activeTab === 'patients' && renderPatients()}
           {!loading && activeTab === 'analytics' && renderAnalytics()}
-          {!loading && activeTab === 'patients' && renderPatients()}
-          {!loading && activeTab === 'analytics' && renderAnalytics()}
+          {!loading && activeTab === 'profile' && renderProfile()}
         </div>
       </main>
 

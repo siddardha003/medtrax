@@ -135,7 +135,9 @@ const login = async (req, res, next) => {
         const token = generateToken({ 
             id: user._id,
             role: user.role,
-            email: user.email
+            email: user.email,
+            hospitalId: user.hospitalId,
+            shopId: user.shopId
         });
 
         // Remove password from output

@@ -1,9 +1,11 @@
 const express = require('express');
+const bodyParser = require('body-parser');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 const connectDB = require('./src/config/database');
+const ensureAllHospitalsActive = require('./src/utils/ensureHospitalsActive');
 require('dotenv').config();
 
 // Import routes
@@ -51,8 +53,8 @@ app.use(cors({
 }));
 
 // Body parsing middleware
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(bodyParser.json({ limit: '10mb' }));
+app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
 
 // Logging middleware
 if (process.env.NODE_ENV === 'development') {
@@ -102,11 +104,14 @@ app.use('*', (req, res) => {
 app.use(errorHandler);
 
 // Start server
-app.listen(PORT, () => {
+const server = app.listen(PORT, async () => {
     console.log(`🚀 MedTrax Backend Server running on port ${PORT}`);
     console.log(`🌍 Environment: ${process.env.NODE_ENV}`);
     console.log(`📱 Frontend URL: ${process.env.FRONTEND_URL}`);
     console.log(`🏥 Health Check: http://localhost:${PORT}/health`);
+    
+    // Ensure all hospitals are active
+    await ensureAllHospitalsActive();
 });
 
 // Handle unhandled promise rejections

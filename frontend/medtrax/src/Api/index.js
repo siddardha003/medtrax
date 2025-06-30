@@ -10,6 +10,30 @@ API.interceptors.request.use(req => {
   return req
 })
 
+// Add a response interceptor for better error handling
+API.interceptors.response.use(
+  response => response,
+  error => {
+    // Handle token expiration
+    if (error.response?.status === 401 && 
+        error.response?.data?.error?.includes('Token expired')) {
+      // Clear the expired token
+      localStorage.removeItem('profile');
+      // Redirect to login page if needed
+      window.location.href = '/admin/login';
+    }
+    
+    // Handle inactive hospital errors
+    if (error.response?.status === 403 &&
+        error.response?.data?.error?.includes('inactive') &&
+        error.response?.data?.error?.includes('hospital')) {
+      console.log('❌ Hospital access error detected. This may be due to an inactive hospital.');
+    }
+    
+    return Promise.reject(error);
+  }
+);
+
 // Hospital Management APIs (Public for listing)
 export const getHospitalsApi = (params) => API.get('/api/public/hospitals', { params })
 export const getHospitalApi = (id) => API.get(`/api/public/hospitals/${id}`)
@@ -125,4 +149,16 @@ export const deleteMedicineReminderApi = (id) => API.delete(`/api/health/reminde
 // Period Data APIs
 export const savePeriodDataApi = (formData) => API.post('/api/health/period', formData)
 export const getPeriodDataApi = () => API.get('/api/health/period')
+
+// Hospital Profile Management APIs
+export const getHospitalProfileApi = () => API.get('/api/hospital/profile')
+export const updateHospitalProfileApi = (formData) => API.put('/api/hospital/profile', formData)
+export const uploadHospitalImageApi = (formData) => {
+  const config = {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  }
+  return API.post('/api/hospital/profile/upload-image', formData, config)
+}
 

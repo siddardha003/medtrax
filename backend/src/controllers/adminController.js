@@ -353,6 +353,23 @@ const deleteUser = async (req, res, next) => {
 const registerHospital = async (req, res, next) => {
     try {
         const { name, address, pincode, city, state, phone, email } = req.body;
+        
+        if (!name) {
+            return res.status(400).json({
+                success: false,
+                error: 'Hospital name is required'
+            });
+        }
+        
+        // Generate unique registration number using hospital name and timestamp with random component
+        const timestamp = Date.now().toString();
+        const randomComponent = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+        const namePrefix = name.slice(0, 3).toUpperCase().replace(/\s+/g, '');
+        const uniqueRegistrationNumber = `${namePrefix}-${timestamp.slice(-6)}-${randomComponent}`;
+        
+        // No need to check for uniqueness as we're using timestamp + random component
+        // which makes collision astronomically unlikely
+        
         const hospitalData = {
             name,
             address,
@@ -361,8 +378,11 @@ const registerHospital = async (req, res, next) => {
             state,
             phone,
             email,
+            registrationNumber: uniqueRegistrationNumber,
+            isActive: true, // Explicitly set isActive to true
             createdBy: req.user.id
         };
+        
         const hospital = await Hospital.create(hospitalData);
         res.status(201).json({
             success: true,
@@ -370,6 +390,25 @@ const registerHospital = async (req, res, next) => {
             data: { hospital }
         });
     } catch (error) {
+        console.error('Hospital registration error:', error);
+        
+        // Check if this is a duplicate registration number error
+        if (error.code === 11000 && error.keyPattern && error.keyPattern.registrationNumber) {
+            return res.status(400).json({
+                success: false,
+                error: 'Hospital with this registration number already exists. Please try again.'
+            });
+        }
+        
+        // Check for other validation errors
+        if (error.name === 'ValidationError') {
+            const messages = Object.values(error.errors).map(val => val.message);
+            return res.status(400).json({
+                success: false,
+                error: messages.join(', ')
+            });
+        }
+        
         next(error);
     }
 };
