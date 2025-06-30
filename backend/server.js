@@ -18,10 +18,7 @@ const publicRoutes = require('./src/routes/public');
 const healthRoutes = require('./src/routes/health');
 const uploadsRoutes = require('./src/routes/uploads');
 const reviewRoutes = require('./src/routes/review');
-
 const notificationRoutes = require('./src/routes/notification');
-
-const uploadsRoutes = require('./src/routes/uploads');
 
 // Import middleware
 const errorHandler = require('./src/middleware/errorHandler');

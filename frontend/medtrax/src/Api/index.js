@@ -63,25 +63,20 @@ export const getAppointmentStatsApi = () => API.get('/api/hospital/appointments/
 export const searchPatientsApi = (query) => API.get(`/api/hospital/patients/search?q=${query}`)
 
 // Image Upload APIs
-export const uploadHospitalImageApi = (formData) => {
-  return API.post('/api/uploads/hospital-image', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' }
-  });
-};
-
 export const uploadServiceImageApi = (formData) => {
-  return API.post('/api/uploads/service-image', formData, {
+  return API.post('/api/hospital/service-image', formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
   });
 };
 
 export const uploadDoctorImageApi = (formData) => {
-  return API.post('/api/uploads/doctor-image', formData, {
+  return API.post('/api/hospital/doctor-image', formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
   });
 };
 
-export const deleteImageApi = (publicId) => API.delete(`/api/uploads/${publicId}`);
+// Removed duplicate uploadHospitalImageApi (moved to Hospital Profile section)
+export const deleteImageApi = (publicId) => API.delete(`/api/hospital/images/${publicId}`);
 
 // Shop Management APIs (Public for listing)
 export const getShopsApi = (params) => API.get('/api/public/shops', { params })
