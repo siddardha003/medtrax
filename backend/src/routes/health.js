@@ -30,6 +30,7 @@ const {
     saveMedicineReminder,
     getMedicineReminders,
     deleteMedicineReminder,
+    updateMedicineReminder,
     
     // Period Data
     savePeriodData,
@@ -70,6 +71,7 @@ router.get('/stomach/history', getStomachHistory);
 router.post('/reminder', saveMedicineReminder);
 router.get('/reminder', getMedicineReminders);
 router.delete('/reminder/:id', deleteMedicineReminder);
+router.put('/reminder/:id', updateMedicineReminder);
 
 // Period Data Routes
 router.post('/period', savePeriodData);
