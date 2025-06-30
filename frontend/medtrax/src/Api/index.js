@@ -121,8 +121,11 @@ export const getStomachHistoryApi = (params) => API.get('/api/health/stomach/his
 export const saveMedicineReminderApi = (formData) => API.post('/api/health/reminder', formData)
 export const getMedicineRemindersApi = (params) => API.get('/api/health/reminder', { params })
 export const deleteMedicineReminderApi = (id) => API.delete(`/api/health/reminder/${id}`)
+export const updateMedicineReminderApi = (id, formData) => API.put(`/api/health/reminder/${id}`, formData)
 
 // Period Data APIs
 export const savePeriodDataApi = (formData) => API.post('/api/health/period', formData)
 export const getPeriodDataApi = () => API.get('/api/health/period')
+
+export default API;
 

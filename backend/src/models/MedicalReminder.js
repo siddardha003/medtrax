@@ -33,6 +33,11 @@ const medicineReminderSchema = new mongoose.Schema({
         type: String,
         enum: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
     }],
+    status: {
+        type: String,
+        enum: ['active', 'completed'],
+        default: 'active'
+    },
     isActive: {
         type: Boolean,
         default: true

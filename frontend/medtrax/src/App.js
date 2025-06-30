@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import './App.css';
 import { Routes, Route } from 'react-router-dom';
 import 'leaflet/dist/leaflet.css';
@@ -37,12 +37,25 @@ import Signup from './user/components/Signup.jsx';
 
 import MedReminder from './user/pages/Medreminder';
 import SymptomChecker from './user/pages/SymptomChecker';
-
-
-
-
+// The push setup is now handled within MedReminder.jsx to ensure user is authenticated.
+// We can remove the imports and the useEffect hook from here to prevent duplicate/unauthorized calls.
+// import { registerServiceWorker, getVapidPublicKey, subscribeUserToPush } from './notifications';
 
 function App() {
+  /*
+  useEffect(() => {
+    async function setupPush() {
+      try {
+        const swReg = await registerServiceWorker();
+        const publicKey = await getVapidPublicKey();
+        await subscribeUserToPush(swReg, publicKey);
+      } catch (err) {
+        console.log('Push setup error:', err);
+      }
+    }
+    setupPush();
+  }, []);
+  */
   return (
     <AuthInitializer>
       <div className="App">

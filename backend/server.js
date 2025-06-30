@@ -5,6 +5,7 @@ const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 const connectDB = require('./src/config/database');
 require('dotenv').config();
+const path = require('path');
 
 // Import routes
 const authRoutes = require('./src/routes/auth');
@@ -13,12 +14,13 @@ const hospitalRoutes = require('./src/routes/hospital');
 const shopRoutes = require('./src/routes/shop');
 const publicRoutes = require('./src/routes/public');
 const healthRoutes = require('./src/routes/health');
+const notificationRoutes = require('./src/routes/notification');
 
 // Import middleware
 const errorHandler = require('./src/middleware/errorHandler');
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5003;
 
 // Connect to MongoDB
 connectDB();
@@ -79,6 +81,7 @@ app.use('/api/hospital', hospitalRoutes);
 app.use('/api/shop', shopRoutes);
 app.use('/api/public', publicRoutes);
 app.use('/api/health', healthRoutes);
+app.use('/api/notification', notificationRoutes);
 
 // Welcome route
 app.get('/', (req, res) => {
@@ -88,6 +91,11 @@ app.get('/', (req, res) => {
         documentation: '/api/docs',
         health: '/health'
     });
+});
+
+// Serve service worker from the root
+app.get('/sw.js', (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/medtrax/public/sw.js'));
 });
 
 // Handle 404
