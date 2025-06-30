@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { logOut } from '../../Redux/user/actions';
@@ -53,6 +53,8 @@ const ShopDashboard = () => {
     'diagnostic_kits', 'medical_consumables', 'ayurvedic', 'homeopathic'
   ];
 
+  // Define stock status options for UI display and filtering
+  // eslint-disable-next-line no-unused-vars
   const stockStatuses = [
     { value: 'in_stock', label: 'In Stock', color: 'text-green-600' },
     { value: 'low_stock', label: 'Low Stock', color: 'text-yellow-600' },
@@ -102,17 +104,18 @@ const ShopDashboard = () => {
     } else if (activeTab === 'analytics') {
       fetchAnalytics();
     }
-  }, [activeTab]);
+  }, [activeTab, fetchStats, fetchInventory, fetchAnalytics, fetchInventoryPreview]);
 
   useEffect(() => {
     if (activeTab === 'inventory') {
       fetchInventory();
     }
-  }, [filters, searchQuery]);
+  }, [filters, searchQuery, activeTab, fetchInventory]);
   // Data fetching functions
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     setLoading(true);
-    try {      // Since we might not have a specific stats API, calculate from inventory
+    try {
+      // Since we might not have a specific stats API, calculate from inventory
       const { data } = await ShopApi.getInventoryApi({ limit: 1000 });
       if (data.success) {
         const allItems = data.data.items || [];
@@ -129,17 +132,23 @@ const ShopDashboard = () => {
           contactClicks: Math.floor(Math.random() * 100) + 50 // Simulated data
         });
       } else {
-        dispatch(showNotification('Failed to fetch statistics', 'error'));
+        dispatch(showNotification({
+          message: 'Failed to fetch statistics',
+          messageType: 'error'
+        }));
       }
     } catch (error) {
       console.error('Error fetching stats:', error);
-      dispatch(showNotification('Unable to load shop statistics. Please try again.', 'error'));
+      dispatch(showNotification({
+        message: 'Unable to load shop statistics. Please try again.',
+        messageType: 'error'
+      }));
     } finally {
       setLoading(false);
     }
-  };
+  }, [dispatch, getStockStatus]);
   
-  const fetchInventoryPreview = async () => {
+  const fetchInventoryPreview = useCallback(async () => {
     try {
       const { data } = await ShopApi.getInventoryApi({ limit: 5 });
       if (data.success) {
@@ -148,8 +157,9 @@ const ShopDashboard = () => {
     } catch (error) {
       console.error('Error fetching inventory preview:', error);
     }
-  };
-  const fetchInventory = async () => {
+  }, []);
+  
+  const fetchInventory = useCallback(async () => {
     setLoading(true);
     try {
       const params = {
@@ -171,17 +181,23 @@ const ShopDashboard = () => {
       if (data.success) {
         setInventory(data.data.items || []);
       } else {
-        dispatch(showNotification('Failed to fetch inventory', 'error'));
+        dispatch(showNotification({
+          message: 'Failed to fetch inventory',
+          messageType: 'error'
+        }));
       }
     } catch (error) {
       console.error('Error fetching inventory:', error);
-      dispatch(showNotification('Unable to load inventory. Please try again.', 'error'));
+      dispatch(showNotification({
+        message: 'Unable to load inventory. Please try again.',
+        messageType: 'error'
+      }));
     } finally {
       setLoading(false);
     }
-  };
-
-  const fetchAnalytics = async () => {
+  }, [searchQuery, filters, dispatch]);
+  
+  const fetchAnalytics = useCallback(async () => {
     setLoading(true);
     try {
       // For now, we'll simulate analytics data since the backend might not have detailed analytics
@@ -202,11 +218,14 @@ const ShopDashboard = () => {
         analytics: simulatedAnalytics
       }));    } catch (error) {
       console.error('Error fetching analytics:', error);
-      dispatch(showNotification('Unable to load analytics data', 'error'));
+      dispatch(showNotification({
+        message: 'Unable to load analytics data',
+        messageType: 'error'
+      }));
     } finally {
       setLoading(false);
     }
-  };
+  }, [dispatch]);
   // Form validation
   const validateForm = () => {
     const errors = [];

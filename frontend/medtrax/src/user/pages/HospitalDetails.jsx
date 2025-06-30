@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import "../css/HospitalDetails.css";
+import "../css/Reviews.css";
 import HospitalMap from "../components/Hospitalmap";
-import { getPublicHospitalDetailsApi } from "../../Api";
+import { getPublicHospitalDetailsApi, submitReviewApi, getHospitalReviewsApi } from "../../Api";
 
 const HospitalDetails = () => {
     // Get id from URL query params
@@ -18,16 +19,16 @@ const HospitalDetails = () => {
             try {
                 setLoading(true);
                 console.log('Fetching hospital details for ID:', id);
-                
+
                 if (!id) {
                     setError('No hospital ID provided');
                     setLoading(false);
                     return;
                 }
-                
+
                 const { data } = await getPublicHospitalDetailsApi(id);
                 console.log('Hospital data received:', data);
-                
+
                 if (data.success) {
                     console.log('Hospital location:', data.data.hospital.location);
                     console.log('Hospital address details:', {
@@ -79,7 +80,7 @@ const HospitalDetails = () => {
             maxWidth: "500px",
             margin: "0 auto",
             padding: "20px",
-            border: "1px solid #ccc", 
+            border: "1px solid #ccc",
             borderRadius: "8px",
             backgroundColor: "#f9f9f9",
             boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
@@ -186,7 +187,7 @@ const HospitalDetails = () => {
         address: hospitalData?.address || "",
         city: hospitalData?.city || "",
         state: hospitalData?.state || "",
-        formattedLocation: hospitalData?.address 
+        formattedLocation: hospitalData?.address
             ? `${hospitalData.address}, ${hospitalData.city || ''}, ${hospitalData.state || ''}`.replace(/,\s*,/g, ',').replace(/,\s*$/g, '')
             : "Location not specified",
         directionsLink: "https://maps.google.com",
@@ -207,68 +208,86 @@ const HospitalDetails = () => {
     const displayData = hospitalData ? {
         ...fallbackHospitalData,
         ...hospitalData,
-        formattedLocation: hospitalData.address 
+        formattedLocation: hospitalData.address
             ? `${hospitalData.address}, ${hospitalData.city || ''}, ${hospitalData.state || ''}`.replace(/,\s*,/g, ',').replace(/,\s*$/g, '')
             : fallbackHospitalData.formattedLocation
     } : fallbackHospitalData;
 
-    const [reviews, setReviews] = useState([
-        {
-            name: "Ciara",
-            location: "Los Angeles, USA",
-            text: "Great way to discover new salons. Recently moved to a new city and didn't know any salons. Fresha gave me a whole new list to choose from!",
-            stars: 5,
-        },
-        {
-            name: "Jonny",
-            location: "Melbourne, Australia",
-            text: "Such a sleek and powerful app. I highly recommend booking your appointments on Fresha.",
-            stars: 3,
-        },
-        {
-            name: "Anton",
-            location: "Los Angeles, USA",
-            text: "My clients love booking appointments online with Fresha. The consultation forms and free SMS reminders are so convenient.",
-            stars: 4,
-        },
-        {
-            name: "Susan",
-            location: "Brisbane, Australia",
-            text: "Love this beauty booking app. There are so many great features to explore. The consultation forms and client reminder texts are great – best of all, it's free.",
-            stars: 5,
-        },
-        {
-            name: "Ciara",
-            location: "Los Angeles, USA",
-            text: "Great way to discover new salons. Recently moved to a new city and didn't know any salons. Fresha gave me a whole new list to choose from!",
-            stars: 5,
-        },
-        {
-            name: "Jonny",
-            location: "Melbourne, Australia",
-            text: "Such a sleek and powerful app. I highly recommend booking your appointments on Fresha.",
-            stars: 5,
-        },
-        {
-            name: "Anton",
-            location: "Los Angeles, USA",
-            text: "My clients love booking appointments online with Fresha. The consultation forms and free SMS reminders are so convenient.",
-            stars: 5,
-        },
-        {
-            name: "Susan",
-            location: "Brisbane, Australia",
-            text: "Love this beauty booking app. There are so many great features to explore. The consultation forms and client reminder texts are great – best of all, it's free.",
-            stars: 5,
-        },
+    const [reviews, setReviews] = useState([]);
+    const [loadingReviews, setLoadingReviews] = useState(false);
+    const [reviewError, setReviewError] = useState(null);
 
-    ]);
+    // Fetch reviews when hospital data is loaded
+    useEffect(() => {
+        const fetchReviews = async () => {
+            if (!id) return;
 
-    const [user, setUser] = useState({
-        isLoggedIn: true,
-        name: "John Doe",
-        location: "New York, USA",
-    });
+            try {
+                setLoadingReviews(true);
+                const response = await getHospitalReviewsApi(id);
+                if (response.data.success) {
+                    setReviews(response.data.data.reviews);
+                } else {
+                    setReviewError('Failed to load reviews');
+                }
+            } catch (err) {
+                console.error('Error fetching reviews:', err);
+                setReviewError('Failed to load reviews. Please try again later.');
+            } finally {
+                setLoadingReviews(false);
+            }
+        };
+
+        if (id) {
+            fetchReviews();
+        }
+    }, [id]);
+
+    const [user, setUser] = useState(null);
+
+    // Get logged in user info from localStorage
+    useEffect(() => {
+        try {
+            const profileData = localStorage.getItem('profile');
+            console.log('Profile data from localStorage:', profileData);
+
+            if (profileData) {
+                const profile = JSON.parse(profileData);
+                console.log('Parsed profile:', profile);
+
+                // Check if we have a valid profile with userInfo (Redux format)
+                if (profile && profile.userInfo) {
+                    setUser({
+                        isLoggedIn: true,
+                        id: profile.userInfo.id || '',
+                        name: profile.userInfo.name || 'Anonymous User',
+                        location: profile.userInfo.location || "Location not specified"
+                    });
+                    console.log('User is logged in as:', profile.userInfo.name);
+                }
+                // Backwards compatibility for other profile formats
+                else if (profile && profile.user) {
+                    setUser({
+                        isLoggedIn: true,
+                        id: profile.user.id || '',
+                        name: profile.user.name || 'Anonymous User',
+                        location: profile.user.location || "Location not specified"
+                    });
+                    console.log('User is logged in (legacy format) as:', profile.user.name);
+                }
+                else {
+                    console.log('Profile exists but has invalid format');
+                    setUser({ isLoggedIn: false });
+                }
+            } else {
+                console.log('No profile data found in localStorage');
+                setUser({ isLoggedIn: false });
+            }
+        } catch (error) {
+            console.error('Error parsing user profile:', error);
+            setUser({ isLoggedIn: false });
+        }
+    }, []);
 
 
     const [newReview, setNewReview] = useState({
@@ -291,22 +310,75 @@ const HospitalDetails = () => {
         }));
     };
 
-    const handleReviewSubmit = (e) => {
+    const handleReviewSubmit = async (e) => {
         e.preventDefault();
-        if (!newReview.text || newReview.stars === 0) {
-            alert("Please provide both a rating and a review.");
-            return;
+
+        try {
+            // Check if token is available in localStorage - this is the most definitive check
+            const profileData = localStorage.getItem('profile');
+            const isAuthenticated = profileData && JSON.parse(profileData)?.token;
+
+            // First check: if no token available, user is definitely not logged in
+            if (!isAuthenticated) {
+                console.log('No authentication token found. User needs to log in.');
+                alert("Please log in to submit a review.");
+                return;
+            }
+
+            // Second check: verify our component state is also reflecting the logged-in state
+            // This is a redundant check but helps ensure UI consistency
+            if (!user?.isLoggedIn) {
+                console.log('Token exists but component state shows user not logged in. Refreshing state.');
+                // We could refresh the user state here if needed
+                alert("Please log in to submit a review.");
+                return;
+            }
+
+            // Validate review
+            if (!newReview.text || newReview.stars === 0) {
+                alert("Please provide both a rating and a review.");
+                return;
+            }
+
+            console.log('Submitting review for hospital ID:', id);
+            const reviewData = {
+                hospitalId: id,
+                rating: newReview.stars,
+                text: newReview.text
+            };
+            console.log('Review data being submitted:', reviewData);
+
+            const response = await submitReviewApi(reviewData);
+            console.log('Review submission response:', response);
+
+            if (response.data.success) {
+                // Add the new review to the beginning of the reviews array
+                const newReviewData = response.data.data.review;
+                console.log('New review added:', newReviewData);
+
+                setReviews(prevReviews => [newReviewData, ...prevReviews]);
+
+                // Reset the form
+                setNewReview({ stars: 0, text: "" });
+
+                // Update hospital rating in the UI
+                if (hospitalData) {
+                    setHospitalData(prevData => ({
+                        ...prevData,
+                        rating: parseFloat(response.data.data.review.rating) || prevData.rating,
+                        reviewsCount: (prevData.reviewsCount || 0) + 1
+                    }));
+                }
+
+                alert("Review submitted successfully!");
+            } else {
+                console.error('Review submission failed with error:', response.data.message);
+                alert("Failed to submit review. Please try again.");
+            }
+        } catch (error) {
+            console.error("Error submitting review:", error);
+            alert("Error submitting review. Please try again later.");
         }
-
-        const review = {
-            ...newReview,
-            name: user.name,
-            location: user.location,
-        };
-
-        setReviews((prev) => [review, ...prev]);
-        setNewReview({ stars: 0, text: "" });
-        alert("Review submitted successfully!");
     };
 
 
@@ -371,10 +443,10 @@ const HospitalDetails = () => {
 
     if (loading) {
         return (
-            <div className="loading-spinner" style={{ 
-                display: 'flex', 
-                justifyContent: 'center', 
-                alignItems: 'center', 
+            <div className="loading-spinner" style={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
                 height: '100vh',
                 flexDirection: 'column',
                 padding: '20px',
@@ -394,10 +466,10 @@ const HospitalDetails = () => {
 
     if (error) {
         return (
-            <div className="error-message" style={{ 
-                padding: '30px', 
-                textAlign: 'center', 
-                backgroundColor: '#fff1f1', 
+            <div className="error-message" style={{
+                padding: '30px',
+                textAlign: 'center',
+                backgroundColor: '#fff1f1',
                 color: '#e74c3c',
                 margin: '50px auto',
                 maxWidth: '600px',
@@ -422,7 +494,7 @@ const HospitalDetails = () => {
         <div className="hospital-ui">
             {/* Profile incomplete message */}
             {profileIncompleteMessage}
-            
+
             {/* Header */}
             <div className="hospital-header">
                 <h1>{displayData.name}</h1>
@@ -444,36 +516,36 @@ const HospitalDetails = () => {
             {/* Images Section */}
             <div className="hospital-images">
                 {/* Main Image */}
-                <img 
-                  src={displayData.images[0] || "https://via.placeholder.com/800x400?text=No+Image+Available"} 
-                  alt="Main" 
-                  className="main-image"
-                  onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src = "https://via.placeholder.com/800x400?text=Error+Loading+Image";
-                  }}
+                <img
+                    src={displayData.images[0] || "https://via.placeholder.com/800x400?text=No+Image+Available"}
+                    alt="Main"
+                    className="main-image"
+                    onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = "https://via.placeholder.com/800x400?text=Error+Loading+Image";
+                    }}
                 />
 
                 {/* Image Grid */}
                 <div className="image-grid">
-                    <img 
-                      src={displayData.images[1] || displayData.images[0] || "https://via.placeholder.com/400x300?text=No+Image"} 
-                      alt="Secondary 1" 
-                      className="thumbnail"
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = "https://via.placeholder.com/400x300?text=Error+Loading+Image";
-                      }}
-                    />
-                    <div className="thumbnail-container">
-                        <img 
-                          src={displayData.images[2] || displayData.images[0] || "https://via.placeholder.com/400x300?text=No+Image"} 
-                          alt="Secondary 2" 
-                          className="thumbnail"
-                          onError={(e) => {
+                    <img
+                        src={displayData.images[1] || displayData.images[0] || "https://via.placeholder.com/400x300?text=No+Image"}
+                        alt="Secondary 1"
+                        className="thumbnail"
+                        onError={(e) => {
                             e.target.onerror = null;
                             e.target.src = "https://via.placeholder.com/400x300?text=Error+Loading+Image";
-                          }}
+                        }}
+                    />
+                    <div className="thumbnail-container">
+                        <img
+                            src={displayData.images[2] || displayData.images[0] || "https://via.placeholder.com/400x300?text=No+Image"}
+                            alt="Secondary 2"
+                            className="thumbnail"
+                            onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.src = "https://via.placeholder.com/400x300?text=Error+Loading+Image";
+                            }}
                         />
                         <button className="see-all-btn" onClick={openModal}>
                             See All
@@ -513,14 +585,14 @@ const HospitalDetails = () => {
                                         className={`tab-card ${selectedService === index ? "active" : ""}`}
                                         onClick={() => setSelectedService(index)}
                                     >
-                                        <img 
-                                          src={serviceType.image} 
-                                          alt={serviceType.category} 
-                                          className="tab-image"
-                                          onError={(e) => {
-                                            e.target.onerror = null;
-                                            e.target.src = "https://via.placeholder.com/150?text=Service";
-                                          }}
+                                        <img
+                                            src={serviceType.image}
+                                            alt={serviceType.category}
+                                            className="tab-image"
+                                            onError={(e) => {
+                                                e.target.onerror = null;
+                                                e.target.src = "https://via.placeholder.com/150?text=Service";
+                                            }}
                                         />
                                         <h4 className="tab-name">{serviceType.category}</h4>
                                         <p className="tab-description">{serviceType.description}</p>
@@ -545,14 +617,14 @@ const HospitalDetails = () => {
                                 {displayData.services[selectedService].doctors.map((doctor, index) => (
                                     <div className="team-card" key={index}>
                                         <div className="image-container">
-                                            <img 
-                                              src={doctor.image} 
-                                              alt={doctor.name} 
-                                              className="doctor-image"
-                                              onError={(e) => {
-                                                e.target.onerror = null;
-                                                e.target.src = "https://via.placeholder.com/150?text=Doctor";
-                                              }}
+                                            <img
+                                                src={doctor.image}
+                                                alt={doctor.name}
+                                                className="doctor-image"
+                                                onError={(e) => {
+                                                    e.target.onerror = null;
+                                                    e.target.src = "https://via.placeholder.com/150?text=Doctor";
+                                                }}
                                             />
                                         </div>
                                         <h3 className="doctor-name">{doctor.name}</h3>
@@ -577,16 +649,27 @@ const HospitalDetails = () => {
                                 &#9664;
                             </button>
                             <div className="reviews-container">
-                                <div className="review-tabs" ref={reviewContainerRef}>
-                                    {reviews.map((review, index) => (
-                                        <div key={index} className="review-card">
-                                            <div className="review-stars">{"⭐".repeat(review.stars)}</div>
-                                            <h4>{review.text}</h4>
-                                            <p>{review.name}</p>
-                                            <p>{review.location}</p>
-                                        </div>
-                                    ))}
-                                </div>
+                                {loadingReviews ? (
+                                    <div className="loading-reviews">Loading reviews...</div>
+                                ) : reviewError ? (
+                                    <div className="review-error">{reviewError}</div>
+                                ) : reviews.length === 0 ? (
+                                    <div className="no-reviews">No reviews yet. Be the first to review!</div>
+                                ) : (
+                                    <div className="review-tabs" ref={reviewContainerRef}>
+                                        {reviews.map((review, index) => (
+                                            <div key={index} className="review-card">
+                                                <div className="review-stars">{"⭐".repeat(review.rating || 0)}</div>
+                                                <h4>{review.text || 'No review text provided'}</h4>
+                                                <p>{review.userName || 'Anonymous User'}</p>
+                                                <p>{review.userLocation || 'Location not specified'}</p>
+                                                <p className="review-date">
+                                                    {review.createdAt ? new Date(review.createdAt).toLocaleDateString() : 'Date not available'}
+                                                </p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                             <button
                                 className="scroll-button right-button"
@@ -598,38 +681,65 @@ const HospitalDetails = () => {
 
                         {/* Add Review Section */}
                         <h2>Submit Your Review</h2>
-                        {user.isLoggedIn ? (
-                            <form className="review-form" onSubmit={handleReviewSubmit}>
-                                <label>
-                                    Rating:
-                                </label>
+                        {(() => {
+                            try {
+                                // Most reliable way to check authentication
+                                const profileData = localStorage.getItem('profile');
+                                const profile = profileData ? JSON.parse(profileData) : null;
+                                const isLoggedIn = !!(profile && (profile.token || (profile.userInfo && profile.userInfo.id)));
 
-                                <div className="star-rating">
-                                    {[0, 1, 2, 3, 4].map((index) => (
-                                        <span
-                                            key={index}
-                                            className={`star ${index < newReview.stars ? "filled" : ""}`}
-                                            onClick={() => handleStarClick(index)}
-                                        >
-                                            &#9733;
-                                        </span>
-                                    ))}
-                                </div>
-                                <label>
-                                    Review:
-                                </label>
-                                <textarea
-                                    name="text"
-                                    value={newReview.text}
-                                    onChange={handleReviewChange}
-                                    placeholder="Write your review here..."
-                                    required
-                                ></textarea>
-                                <button type="submit">Submit Review</button>
-                            </form>
-                        ) : (
-                            <p>Please log in to submit a review.</p>
-                        )}
+                                // Debug
+                                console.log('Review form auth check:', {
+                                    profileExists: !!profileData,
+                                    hasToken: !!(profile && profile.token),
+                                    hasUserInfo: !!(profile && profile.userInfo),
+                                    isLoggedInState: user?.isLoggedIn,
+                                    finalDecision: isLoggedIn
+                                });
+
+                                if (isLoggedIn) {
+                                    return (
+                                        <form className="review-form" onSubmit={handleReviewSubmit}>
+                                            <label>
+                                                Rating:
+                                            </label>
+
+                                            <div className="star-rating">
+                                                {[0, 1, 2, 3, 4].map((index) => (
+                                                    <span
+                                                        key={index}
+                                                        className={`star ${index < newReview.stars ? "filled" : ""}`}
+                                                        onClick={() => handleStarClick(index)}
+                                                    >
+                                                        &#9733;
+                                                    </span>
+                                                ))}
+                                            </div>
+                                            <label>
+                                                Review:
+                                            </label>
+                                            <textarea
+                                                name="text"
+                                                value={newReview.text}
+                                                onChange={handleReviewChange}
+                                                placeholder="Write your review here..."
+                                                required
+                                            ></textarea>
+                                            <button type="submit">Submit Review</button>
+                                        </form>
+                                    );
+                                } else {
+                                    return (
+                                        <div className="login-prompt">
+                                            <p>Please <a href="/login" style={{ fontWeight: 'bold', color: '#008b95' }}>log in</a> to submit a review.</p>
+                                        </div>
+                                    );
+                                }
+                            } catch (error) {
+                                console.error('Error rendering review form:', error);
+                                return <p>An error occurred when checking login status. Please refresh the page.</p>;
+                            }
+                        })()}
                     </div>
                     <div style={{ margin: '10px' }}>
                         <h2>{selectedHospital.name}</h2>

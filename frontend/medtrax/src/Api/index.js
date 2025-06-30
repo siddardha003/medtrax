@@ -3,11 +3,23 @@ import axios from 'axios';
 const API = axios.create({ baseURL: 'http://localhost:5000' })
 
 API.interceptors.request.use(req => {
-  const token = JSON.parse(localStorage.getItem('profile'))?.token;
-  if (token) {
-    req.headers.Authorization = `Bearer ${token}`
+  try {
+    const profileData = localStorage.getItem('profile');
+    if (profileData) {
+      const profile = JSON.parse(profileData);
+      const token = profile?.token; // Redux format
+      
+      if (token) {
+        req.headers.Authorization = `Bearer ${token}`;
+        console.log('Added auth token to request');
+      } else {
+        console.log('No auth token found in profile');
+      }
+    }
+  } catch (error) {
+    console.error('Error adding auth token to request:', error);
   }
-  return req
+  return req;
 })
 
 // Add a response interceptor for better error handling
@@ -149,6 +161,10 @@ export const getLatestWeightApi = () => API.get('/api/health/weight/latest')
 export const saveHormoneDataApi = (formData) => API.post('/api/health/hormone', formData)
 export const getHormoneHistoryApi = (params) => API.get('/api/health/hormone/history', { params })
 
+// Review APIs
+export const submitReviewApi = (formData) => API.post('/api/reviews/submit', formData)
+export const getHospitalReviewsApi = (hospitalId) => API.get(`/api/reviews/hospital/${hospitalId}`)
+
 // Sleep Tracker APIs
 export const saveSleepDataApi = (formData) => API.post('/api/health/sleep', formData)
 export const getSleepHistoryApi = (params) => API.get('/api/health/sleep/history', { params })
@@ -169,6 +185,7 @@ export const getStomachHistoryApi = (params) => API.get('/api/health/stomach/his
 export const saveMedicineReminderApi = (formData) => API.post('/api/health/reminder', formData)
 export const getMedicineRemindersApi = (params) => API.get('/api/health/reminder', { params })
 export const deleteMedicineReminderApi = (id) => API.delete(`/api/health/reminder/${id}`)
+export const updateMedicineReminderApi = (id, formData) => API.put(`/api/health/reminder/${id}`, formData)
 
 // Period Data APIs
 export const savePeriodDataApi = (formData) => API.post('/api/health/period', formData)
@@ -177,4 +194,13 @@ export const getPeriodDataApi = () => API.get('/api/health/period')
 // Hospital Profile Management APIs
 export const getHospitalProfileApi = () => API.get('/api/hospital/profile')
 export const updateHospitalProfileApi = (formData) => API.put('/api/hospital/profile', formData)
+export const uploadHospitalImageApi = (formData) => {
+  const config = {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  }
+  return API.post('/api/hospital/profile/upload-image', formData, config)
+}
+export default API;
 

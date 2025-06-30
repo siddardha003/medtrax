@@ -7,6 +7,8 @@ const {
     StomachTracker
 } = require('../models/HealthTracker');
 const { MedicineReminder, PeriodData } = require('../models/MedicalReminder');
+const PushSubscription = require('../models/PushSubscription');
+const ReminderSchedule = require('../models/ReminderSchedule');
 
 // Weight Tracker Controllers
 const saveWeightData = async (req, res) => {
@@ -411,6 +413,55 @@ const saveMedicineReminder = async (req, res) => {
 
         await reminder.save();
 
+        // --- Scheduling logic ---
+        console.log('Attempting to schedule reminders for user:', userId);
+        // Find user's push subscription
+        const pushSub = await PushSubscription.findOne({ userId });
+        if (pushSub) {
+            console.log('Push subscription found. Proceeding to create schedules.');
+            // Prepare scheduling for each date/time
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            let current = new Date(start);
+
+            console.log(`Scheduling from ${start.toISOString()} to ${end.toISOString()}`);
+
+            while (current <= end) {
+                const dayOfWeek = current.toLocaleString('en-US', { weekday: 'short' });
+                // If days are specified, only schedule for matching days
+                if (!days || days.length === 0 || days.includes(dayOfWeek)) {
+                    console.log(`Scheduling for day: ${dayOfWeek}`);
+                    for (const timeStr of times) {
+                        // Parse time string (HH:MM)
+                        const [hour, minute] = timeStr.split(':').map(Number);
+                        const scheduledTime = new Date(current);
+                        scheduledTime.setHours(hour, minute, 0, 0);
+
+                        console.log(`Processing time: ${timeStr}, scheduled for: ${scheduledTime.toISOString()}`);
+
+                        // Only schedule if in the future
+                        if (scheduledTime > new Date()) {
+                            await ReminderSchedule.create({
+                                title: `Medtrax Medication Reminder`,
+                                body: `Time to take your medicine: ${name}`,
+                                time: scheduledTime,
+                                subscription: pushSub._id,
+                                userId: userId
+                            });
+                            console.log(`SUCCESS: Created schedule for ${scheduledTime.toISOString()}`);
+                        } else {
+                            console.log(`SKIPPED: Scheduled time ${scheduledTime.toISOString()} is in the past.`);
+                        }
+                    }
+                }
+                // Move to next day
+                current.setDate(current.getDate() + 1);
+            }
+        } else {
+            console.warn(`No push subscription found for user ${userId}. Skipping reminder scheduling.`);
+        }
+        // --- End scheduling logic ---
+
         res.status(201).json({
             success: true,
             message: 'Medicine reminder saved successfully',
@@ -428,12 +479,8 @@ const saveMedicineReminder = async (req, res) => {
 const getMedicineReminders = async (req, res) => {
     try {
         const userId = req.user.id;
-        const { active = true } = req.query;
-
-        const reminders = await MedicineReminder.find({ 
-            userId, 
-            isActive: active === 'true' 
-        }).sort({ createdAt: -1 });
+        // Fetch all reminders for the user, regardless of status, so the frontend can sort them.
+        const reminders = await MedicineReminder.find({ userId }).sort({ createdAt: -1 });
 
         res.status(200).json({
             success: true,
@@ -453,9 +500,9 @@ const deleteMedicineReminder = async (req, res) => {
         const { id } = req.params;
         const userId = req.user.id;
 
-        const reminder = await MedicineReminder.findOneAndDelete({ 
-            _id: id, 
-            userId 
+        const reminder = await MedicineReminder.findOneAndDelete({
+            _id: id,
+            userId
         });
 
         if (!reminder) {
@@ -465,14 +512,94 @@ const deleteMedicineReminder = async (req, res) => {
             });
         }
 
+        // --- Delete all schedules for this reminder (any time, sent or not) ---
+        const deleted = await ReminderSchedule.deleteMany({
+            userId: userId,
+            title: reminder.name
+        });
+        // --- End schedule cleanup ---
+
         res.status(200).json({
             success: true,
-            message: 'Reminder deleted successfully'
+            message: 'Reminder deleted successfully',
+            deletedSchedules: deleted.deletedCount
         });
     } catch (error) {
         res.status(400).json({
             success: false,
             message: 'Error deleting reminder',
+            error: error.message
+        });
+    }
+};
+
+const updateMedicineReminder = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const userId = req.user.id;
+        const { name, image, startDate, endDate, times, days, notes } = req.body;
+
+        // Step 1: Find the original reminder to get the old name for cleanup
+        const originalReminder = await MedicineReminder.findOne({ _id: id, userId });
+
+        if (!originalReminder) {
+            return res.status(404).json({
+                success: false,
+                message: 'Reminder not found'
+            });
+        }
+
+        // Step 2: Delete future, unsent schedules using the ORIGINAL name
+        await ReminderSchedule.deleteMany({
+            userId: userId,
+            title: originalReminder.name, // Use the old name for cleanup
+            sent: false,
+            time: { $gt: new Date() }
+        });
+
+        // Step 3: Update the reminder document with the new data
+        const updatedReminder = await MedicineReminder.findByIdAndUpdate(
+            id,
+            { name, image, startDate: new Date(startDate), endDate: new Date(endDate), times, days, notes },
+            { new: true }
+        );
+
+        // Step 4: Re-create schedules with the new info
+        const pushSub = await PushSubscription.findOne({ userId });
+        if (pushSub) {
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            let current = new Date(start);
+            while (current <= end) {
+                if (!days || days.length === 0 || days.includes(current.toLocaleString('en-US', { weekday: 'short' }))) {
+                    for (const timeStr of times) {
+                        const [hour, minute] = timeStr.split(':').map(Number);
+                        const scheduledTime = new Date(current);
+                        scheduledTime.setHours(hour, minute, 0, 0);
+                        if (scheduledTime > new Date()) {
+                            await ReminderSchedule.create({
+                                title: updatedReminder.name, // Use the new name
+                                body: `Time to take your medicine: ${updatedReminder.name}`,
+                                time: scheduledTime,
+                                subscription: pushSub._id,
+                                userId: userId
+                            });
+                        }
+                    }
+                }
+                current.setDate(current.getDate() + 1);
+            }
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Reminder updated successfully',
+            data: updatedReminder
+        });
+    } catch (error) {
+        res.status(400).json({
+            success: false,
+            message: 'Error updating reminder',
             error: error.message
         });
     }
@@ -571,6 +698,7 @@ module.exports = {
     saveMedicineReminder,
     getMedicineReminders,
     deleteMedicineReminder,
+    updateMedicineReminder,
     
     // Period Data
     savePeriodData,
