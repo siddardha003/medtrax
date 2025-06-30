@@ -78,6 +78,14 @@
     width: 285px;
 }
 
+.current-image-preview{
+    display: flex;
+    align-items: center;
+    /* justify-content: space-between; */
+    margin-left: -10px;
+    width: 285px;
+}
+
 .reminderinp-section20 {
     text-align: center;
     border: 2px solid #86c2c6;
@@ -147,6 +155,7 @@
     border-radius: 15px;
     cursor: pointer;
     font-size: 18px;
+    margin-left: 10px;
 }
 
 .remedit-btn20 {

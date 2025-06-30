@@ -76,7 +76,7 @@ const MedReminder = () => {
             const { sendSubscriptionToBackend } = await import('../../notifications');
             await sendSubscriptionToBackend(sub);
           }
-          
+
           setPushSubscription(sub);
         } catch (err) {
           console.error('[PushDebug] Full push subscription setup failed:', err);
@@ -148,8 +148,8 @@ const MedReminder = () => {
         };
         // The current image URL needs to be preserved if a new one isn't uploaded.
         if (!formData.image && editingReminderId) {
-            const existingReminder = reminders.find(r => r.id === editingReminderId);
-            reminderData.image = existingReminder.image;
+          const existingReminder = reminders.find(r => r.id === editingReminderId);
+          reminderData.image = existingReminder.image;
         }
 
         if (formData.image) {
@@ -351,28 +351,25 @@ const MedReminder = () => {
                   name="image"
                   accept="image/*"
                   onChange={handleInputChange}
-                  // `required` is problematic for updates, let's remove it
-                  // required
+                // `required` is problematic for updates, let's remove it
+                // required
                 />
               </div>
 
               {editingReminderId && (
                 <div className="current-image-preview">
-                    <span>Current Image:</span>
-                    <img
-                        src={reminders.find(r => r.id === editingReminderId)?.image}
-                        alt="Current"
-                        style={{ width: '50px', height: '50px', marginLeft: '10px' }}
-                    />
+                  <span>Current Image:</span>
+                  <img
+                    src={reminders.find(r => r.id === editingReminderId)?.image}
+                    alt="Current"
+                    style={{ width: '50px', height: '50px', marginLeft: '10px' }}
+                  />
                 </div>
               )}
 
               <div className="reminderinp-field20">
-                <img
-                  src="https://cdn.storehippo.com/s/6123687a0e3882eabaee1e6e/ms.files/2%2075.png"
-                  alt="Calendar"
-                  className="image-icon20"
-                />
+
+                <label htmlFor="startDate">Start Date: </label>
                 <input
                   type="date"
                   id="startDate"
@@ -384,6 +381,7 @@ const MedReminder = () => {
               </div>
 
               <div className="reminderinp-field20">
+
                 <label htmlFor="endDate">End Date: </label>
                 <input
                   type="date"
@@ -426,9 +424,8 @@ const MedReminder = () => {
                   <button
                     key={index}
                     type="button"
-                    className={`day-circle ${
-                      formData.days.includes(day) ? "selected" : ""
-                    }`}
+                    className={`day-circle ${formData.days.includes(day) ? "selected" : ""
+                      }`}
                     onClick={() => handleDaySelection(day)}
                   >
                     {day}
@@ -436,7 +433,6 @@ const MedReminder = () => {
                 ))}
               </div>
             </div>
-            <div className="abc">
             <button type="submit" className="remsav-btn20">
               {editingReminderId ? 'Update' : 'Save'}
             </button>
@@ -445,47 +441,28 @@ const MedReminder = () => {
                 Cancel
               </button>
             )}
-            </div>
           </form>
         </div>
       )}
 
-      {reminders.length > 0 && (
+      {activeReminders.length > 0 && (
         <div className="reminder-display20">
           <h2>Your Reminders</h2>
-          {reminders.map((reminder, index) => (
+          {activeReminders.map((reminder, index) => (
             <div key={reminder.id || index} className="reminder-section20">
               <h3>{reminder.name}</h3>
               {reminder.image && (
-                (() => {
-                  if (typeof reminder.image === 'string') {
-                    // If it's a base64 string or URL, use directly
-                    return (
-                      <img
-                        src={reminder.image}
-                        alt={reminder.name}
-                        className="rem-image-icon20"
-                      />
-                    );
-                  } else if (reminder.image instanceof File || reminder.image instanceof Blob) {
-                    // If it's a File/Blob, use createObjectURL
-                    return (
-                      <img
-                        src={URL.createObjectURL(reminder.image)}
-                        alt={reminder.name}
-                        className="rem-image-icon20"
-                      />
-                    );
-                  } else {
-                    return null;
-                  }
-                })()
+                <img
+                  src={reminder.image}
+                  alt={reminder.name}
+                  className="rem-image-icon20"
+                />
               )}
               <p>
-                <strong>Start Date:</strong> {reminder.startDate}
+                <strong>Start Date:</strong> {new Date(reminder.startDate).toLocaleDateString()}
               </p>
               <p>
-                <strong>End Date:</strong> {reminder.endDate}
+                <strong>End Date:</strong> {new Date(reminder.endDate).toLocaleDateString()}
               </p>
               <p>
                 <strong>Time Slots:</strong> {reminder.times.join(", ")}
@@ -500,14 +477,12 @@ const MedReminder = () => {
                 >
                   Delete
                 </button>
-                {reminder.status === 'active' && (
-                  <button
-                    className="remedit-btn20"
-                    onClick={() => handleEditReminder(reminder)}
-                  >
-                    Edit
-                  </button>
-                )}
+                <button
+                  className="remedit-btn20"
+                  onClick={() => handleEditReminder(reminder)}
+                >
+                  Edit
+                </button>
               </div>
             </div>
           ))}
@@ -530,20 +505,12 @@ const MedReminder = () => {
               <p>
                 <strong>Completed On:</strong> {new Date(reminder.endDate).toLocaleDateString()}
               </p>
-              <p>
-                <strong>Time Slots:</strong> {reminder.times.join(", ")}
-              </p>
-              <p>
-                <strong>Days:</strong> {reminder.days.join(", ")}
-              </p>
-              <div className="abcd">
-                <button
-                  className="rem-delete-btn20"
-                  onClick={() => handleDeleteReminder(index, reminder.id)}
-                >
-                  Delete
-                </button>
-              </div>
+              <button
+                className="rem-delete-btn20"
+                onClick={() => handleDeleteReminder(index, reminder.id)}
+              >
+                Delete
+              </button>
             </div>
           ))}
         </div>

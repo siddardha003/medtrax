@@ -31,8 +31,9 @@ async function processReminders() {
       }
       
       await sendPushNotification(reminder.subscription, {
-        title: reminder.title,
-        body: reminder.body
+        title: 'Medtrax Medical Reminder',
+        body: `Time to take your medicine - ${reminder.title}.`,
+        icon: '/images/Medtrax-logo.png',
       });
       // Mark the schedule as sent instead of deleting
       await ReminderSchedule.findByIdAndUpdate(reminder._id, { sent: true });

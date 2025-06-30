@@ -4,8 +4,8 @@ self.addEventListener('push', function(event) {
   const title = data.title || 'MedTrax Reminder';
   const options = {
     body: data.body || 'You have a scheduled reminder!',
-    icon: '/icons/icon-192x192.png',
-    badge: '/icons/icon-192x192.png',
+    icon: '/images/Medtrax-logo.png',
+    badge: '/images/Medtrax-logo.png',
   };
   event.waitUntil(self.registration.showNotification(title, options));
 });
