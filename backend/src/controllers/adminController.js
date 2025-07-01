@@ -598,6 +598,7 @@ const getDashboardStats = async (req, res, next) => {
         const recentHospitals = await Hospital.countDocuments({ createdAt: { $gte: thirtyDaysAgo } });
         const recentShops = await Shop.countDocuments({ createdAt: { $gte: thirtyDaysAgo } });
 
+        // Create both a detailed stats object and a simple stats format that matches the frontend expectations
         const stats = {
             users: {
                 total: totalUsers,
@@ -620,11 +621,17 @@ const getDashboardStats = async (req, res, next) => {
             }
         };
 
+        // This format matches what the frontend AdminPanel.js is expecting
+        const simplifiedStats = {
+            totalUsers,
+            totalHospitals,
+            totalShops,
+            thisMonth: recentUsers + recentHospitals + recentShops
+        };
+
         res.status(200).json({
             success: true,
-            data: {
-                stats
-            }
+            data: simplifiedStats
         });
 
     } catch (error) {
