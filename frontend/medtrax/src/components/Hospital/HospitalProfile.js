@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { showNotification } from '../../Redux/notification/actions';
-import { getHospitalProfileApi, updateHospitalProfileApi, uploadHospitalImageApi, uploadServiceImageApi, uploadDoctorImageApi } from '../../Api';
+import { getHospitalProfileApi, updateHospitalProfileApi, uploadHospitalImageApi } from '../../Api';
 import './HospitalProfile.css';
 
 const HospitalProfile = () => {
@@ -203,10 +203,13 @@ const HospitalProfile = () => {
     setUploadingImage(true);
     setError('');
     try {
-      const { data } = await uploadHospitalImageApi(formData);
-      if (data.success) {
-        // Store the Cloudinary URL from the response
-        // Check for all possible URL properties
+      console.log('Uploading image:', file.name);
+      const response = await uploadHospitalImageApi(formData);
+      console.log('Upload response:', response);
+      
+      const { data } = response;
+      if (data && data.success) {
+        // Get the secure_url from Cloudinary
         const cloudinaryUrl = data.data.secure_url || data.data.url || data.data.imageUrl;
         
         if (!cloudinaryUrl) {
@@ -215,14 +218,27 @@ const HospitalProfile = () => {
           return;
         }
         
+        // Ensure the URL has a proper protocol
+        let finalUrl = cloudinaryUrl;
+        if (!finalUrl.startsWith('http://') && !finalUrl.startsWith('https://')) {
+          // If it's a relative URL from our server, make it absolute
+          const baseUrl = window.location.origin;
+          finalUrl = baseUrl + (finalUrl.startsWith('/') ? '' : '/') + finalUrl;
+        }
+        
+        console.log('Image uploaded with URL:', finalUrl);
+        
         setBasicInfo(prev => ({
           ...prev,
-          images: [...prev.images, cloudinaryUrl]
+          images: [...prev.images, finalUrl]
         }));
         setSuccess('Image uploaded successfully');
         
         // Log success with the URL for verification
-        console.log('Image uploaded successfully to Cloudinary:', cloudinaryUrl);
+        console.log('Image URL after processing:', finalUrl);
+      } else {
+        console.error('Upload response was not successful:', data);
+        setError('Server response indicates upload was not successful. Please try again.');
       }
     } catch (error) {
       console.error('Error uploading image:', error);
@@ -239,86 +255,6 @@ const HospitalProfile = () => {
       ...prev,
       images: prev.images.filter((_, i) => i !== index)
     }));
-  };
-
-  // Upload service image to Cloudinary
-  const uploadServiceImage = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    // Create form data
-    const formData = new FormData();
-    formData.append('image', file);
-
-    setUploadingImage(true);
-    setError('');
-    try {
-      const { data } = await uploadServiceImageApi(formData);
-      if (data.success) {
-        // Store the Cloudinary URL
-        const cloudinaryUrl = data.data.secure_url || data.data.url || data.data.imageUrl;
-        
-        if (!cloudinaryUrl) {
-          console.error('No URL found in response:', data.data);
-          setError('Failed to get image URL from server. Please try again.');
-          return;
-        }
-        
-        // Update service with the image URL
-        setNewService(prev => ({
-          ...prev,
-          image: cloudinaryUrl
-        }));
-        setSuccess('Service image uploaded successfully');
-        console.log('Service image uploaded successfully:', cloudinaryUrl);
-      }
-    } catch (error) {
-      console.error('Error uploading service image:', error);
-      console.error('Error details:', error.response?.data || 'No error details available');
-      setError('Failed to upload service image. Please try again.');
-    } finally {
-      setUploadingImage(false);
-    }
-  };
-
-  // Upload doctor image to Cloudinary
-  const uploadDoctorImage = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    // Create form data
-    const formData = new FormData();
-    formData.append('image', file);
-
-    setUploadingImage(true);
-    setError('');
-    try {
-      const { data } = await uploadDoctorImageApi(formData);
-      if (data.success) {
-        // Store the Cloudinary URL
-        const cloudinaryUrl = data.data.secure_url || data.data.url || data.data.imageUrl;
-        
-        if (!cloudinaryUrl) {
-          console.error('No URL found in response:', data.data);
-          setError('Failed to get image URL from server. Please try again.');
-          return;
-        }
-        
-        // Update doctor with the image URL
-        setNewDoctor(prev => ({
-          ...prev,
-          image: cloudinaryUrl
-        }));
-        setSuccess('Doctor image uploaded successfully');
-        console.log('Doctor image uploaded successfully:', cloudinaryUrl);
-      }
-    } catch (error) {
-      console.error('Error uploading doctor image:', error);
-      console.error('Error details:', error.response?.data || 'No error details available');
-      setError('Failed to upload doctor image. Please try again.');
-    } finally {
-      setUploadingImage(false);
-    }
   };
 
   const saveChanges = async () => {
@@ -629,7 +565,7 @@ const HospitalProfile = () => {
                   </div>
                   <input 
                     type="text"
-                    placeholder="Image URL (optional)"
+                    placeholder="Image URL for the doctor"
                     name="image"
                     value={newDoctor.image}
                     onChange={handleNewDoctorChange}
@@ -637,16 +573,14 @@ const HospitalProfile = () => {
                   />
                   <div className="mb-3">
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Upload Doctor Image
+                      Doctor Image URL
                     </label>
-                    <input 
-                      type="file"
-                      onChange={uploadDoctorImage}
-                      className="w-full p-2 border rounded" 
-                      accept="image/*"
-                      disabled={uploadingImage}
-                    />
-                    {uploadingImage && <p className="text-sm text-gray-500 mt-1">Uploading image...</p>}
+                    <p className="text-xs text-gray-500 mb-2">
+                      Please enter a direct URL to an image. For best results, use images that are 400x400 pixels.
+                    </p>
+                    <p className="text-xs text-gray-500 italic mb-2">
+                      Example: https://example.com/doctor-image.jpg
+                    </p>
                   </div>
                   <button 
                     type="button"
@@ -681,7 +615,7 @@ const HospitalProfile = () => {
               />
               <input 
                 type="text"
-                placeholder="Image URL (optional)"
+                placeholder="Image URL for the service"
                 name="image"
                 value={newService.image}
                 onChange={handleNewServiceChange}
@@ -689,16 +623,14 @@ const HospitalProfile = () => {
               />
               <div className="mb-3">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Upload Service Image
+                  Service Image URL
                 </label>
-                <input 
-                  type="file"
-                  onChange={uploadServiceImage}
-                  className="w-full p-2 border rounded" 
-                  accept="image/*"
-                  disabled={uploadingImage}
-                />
-                {uploadingImage && <p className="text-sm text-gray-500 mt-1">Uploading image...</p>}
+                <p className="text-xs text-gray-500 mb-2">
+                  Please enter a direct URL to an image. For best results, use images that are 400x300 pixels.
+                </p>
+                <p className="text-xs text-gray-500 italic mb-2">
+                  Example: https://example.com/service-image.jpg
+                </p>
               </div>
             </div>
             <button 
