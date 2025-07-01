@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { logOut } from '../../Redux/user/actions';
 import { showNotification } from '../../Redux/notification/actions';
 import * as ShopApi from '../../Api/index';
+import ShopProfileEnhanced from './ShopProfileEnhanced';
 
 const ShopDashboard = () => {
   const dispatch = useDispatch();
@@ -1013,6 +1014,15 @@ const ShopDashboard = () => {
                 </div>
               )}
             </div>
+
+            {/* Enhanced Profile Component */}
+            <ShopProfileEnhanced 
+              shopProfile={shopProfile}
+              onProfileUpdate={(updatedProfile) => {
+                setShopProfile(updatedProfile);
+                fetchShopProfile(); // Refresh the profile data
+              }}
+            />
           </div>
         )}
 

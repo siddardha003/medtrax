@@ -188,6 +188,8 @@ export const getHormoneHistoryApi = (params) => API.get('/api/health/hormone/his
 // Review APIs
 export const submitReviewApi = (formData) => API.post('/api/reviews/submit', formData)
 export const getHospitalReviewsApi = (hospitalId) => API.get(`/api/reviews/hospital/${hospitalId}`)
+export const getShopReviewsApi = (shopId) => API.get(`/api/reviews/shop/${shopId}`)
+export const submitShopReviewApi = (formData) => API.post('/api/reviews/shop/submit', formData)
 
 // Sleep Tracker APIs
 export const saveSleepDataApi = (formData) => API.post('/api/health/sleep', formData)

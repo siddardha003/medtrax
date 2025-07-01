@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
-import { getPublicShopDetailsApi } from "../../Api";
+import { getPublicShopDetailsApi, getShopReviewsApi, submitShopReviewApi } from "../../Api";
 import "../css/MedicalshopDetails.css";
 import MedicalshopMap from "../components/Medicalshopmap";
 
@@ -138,38 +138,11 @@ const MedicalshopDetails = () => {
     };
 
     const [selectedService, setSelectedService] = useState(0);
-    const [reviews, setReviews] = useState([
-        {
-            name: "Rahul Sharma",
-            location: "Hyderabad, India",
-            text: "Great pharmacy with all medicines available. Staff is very helpful and knowledgeable.",
-            stars: 5,
-        },
-        {
-            name: "Priya Patel",
-            location: "Mumbai, India",
-            text: "Always find what I need here. Good prices and genuine medicines.",
-            stars: 4,
-        },
-        {
-            name: "Anil Kumar",
-            location: "Delhi, India",
-            text: "Late night availability is a lifesaver. Delivered medicines when my child was sick at midnight.",
-            stars: 5,
-        },
-        {
-            name: "Sunita Reddy",
-            location: "Bangalore, India",
-            text: "Professional service and quick delivery. Their online ordering system works perfectly.",
-            stars: 4,
-        }
-    ]);
+    const [reviews, setReviews] = useState([]);
+    const [loadingReviews, setLoadingReviews] = useState(false);
+    const [reviewError, setReviewError] = useState(null);
 
-    const [user, setUser] = useState({
-        isLoggedIn: true,
-        name: "John Doe",
-        location: "New York, USA",
-    });
+    const [user, setUser] = useState(null);
 
     const [newReview, setNewReview] = useState({
         stars: 0,
@@ -191,22 +164,64 @@ const MedicalshopDetails = () => {
         }));
     };
 
-    const handleReviewSubmit = (e) => {
+    const handleReviewSubmit = async (e) => {
         e.preventDefault();
-        if (!newReview.text || newReview.stars === 0) {
-            alert("Please provide both a rating and a review.");
-            return;
+
+        try {
+            // Check if token is available in localStorage - this is the most definitive check
+            const profileData = localStorage.getItem('profile');
+            const isAuthenticated = profileData && JSON.parse(profileData)?.token;
+
+            // First check: if no token available, user is definitely not logged in
+            if (!isAuthenticated) {
+                console.log('No authentication token found. User needs to log in.');
+                alert("Please log in to submit a review.");
+                return;
+            }
+
+            // Second check: verify our component state is also reflecting the logged-in state
+            if (!user?.isLoggedIn) {
+                console.log('Token exists but component state shows user not logged in. Refreshing state.');
+                alert("Please log in to submit a review.");
+                return;
+            }
+
+            // Validate review
+            if (!newReview.text || newReview.stars === 0) {
+                alert("Please provide both a rating and a review.");
+                return;
+            }
+
+            console.log('Submitting review for shop ID:', shopId);
+            const reviewData = {
+                shopId: shopId,
+                rating: newReview.stars,
+                text: newReview.text
+            };
+            console.log('Review data being submitted:', reviewData);
+
+            const response = await submitShopReviewApi(reviewData);
+            console.log('Review submission response:', response);
+
+            if (response.data.success) {
+                // Add the new review to the beginning of the reviews array
+                const newReviewData = response.data.data.review;
+                console.log('New review added:', newReviewData);
+
+                setReviews(prevReviews => [newReviewData, ...prevReviews]);
+
+                // Reset the form
+                setNewReview({ stars: 0, text: "" });
+
+                alert("Review submitted successfully!");
+            } else {
+                console.error('Review submission failed with error:', response.data.message);
+                alert("Failed to submit review. Please try again.");
+            }
+        } catch (error) {
+            console.error("Error submitting review:", error);
+            alert("Error submitting review. Please try again later.");
         }
-
-        const review = {
-            ...newReview,
-            name: user.name,
-            location: user.location,
-        };
-
-        setReviews((prev) => [review, ...prev]);
-        setNewReview({ stars: 0, text: "" });
-        alert("Review submitted successfully!");
     };
 
     const reviewContainerRef = useRef(null);
@@ -344,6 +359,76 @@ const MedicalshopDetails = () => {
         return transformedServices.length > 0 ? transformedServices : fallbackShopData.services;
     };
 
+    // Get logged in user info from localStorage
+    useEffect(() => {
+        try {
+            const profileData = localStorage.getItem('profile');
+            console.log('Profile data from localStorage:', profileData);
+
+            if (profileData) {
+                const profile = JSON.parse(profileData);
+                console.log('Parsed profile:', profile);
+
+                // Check if we have a valid profile with userInfo (Redux format)
+                if (profile && profile.userInfo) {
+                    setUser({
+                        isLoggedIn: true,
+                        id: profile.userInfo.id || '',
+                        name: profile.userInfo.name || 'Anonymous User',
+                        location: profile.userInfo.location || "Location not specified"
+                    });
+                    console.log('User is logged in as:', profile.userInfo.name);
+                }
+                // Backwards compatibility for other profile formats
+                else if (profile && profile.user) {
+                    setUser({
+                        isLoggedIn: true,
+                        id: profile.user.id || '',
+                        name: profile.user.name || 'Anonymous User',
+                        location: profile.user.location || "Location not specified"
+                    });
+                    console.log('User is logged in (legacy format) as:', profile.user.name);
+                }
+                else {
+                    console.log('Profile exists but has invalid format');
+                    setUser({ isLoggedIn: false });
+                }
+            } else {
+                console.log('No profile data found in localStorage');
+                setUser({ isLoggedIn: false });
+            }
+        } catch (error) {
+            console.error('Error parsing user profile:', error);
+            setUser({ isLoggedIn: false });
+        }
+    }, []);
+
+    // Fetch reviews when shop data is loaded
+    useEffect(() => {
+        const fetchReviews = async () => {
+            if (!shopId) return;
+
+            try {
+                setLoadingReviews(true);
+                const response = await getShopReviewsApi(shopId);
+                if (response.data.success) {
+                    setReviews(response.data.data.reviews);
+                } else {
+                    setReviewError('Failed to load reviews');
+                }
+            } catch (err) {
+                console.error('Error fetching reviews:', err);
+                setReviewError('Failed to load reviews. Please try again later.');
+            } finally {
+                setLoadingReviews(false);
+            }
+        };
+
+        if (shopId) {
+            fetchReviews();
+        }
+    }, [shopId]);
+
     // Use effect to fetch shop data
     useEffect(() => {
         const fetchShopDetails = async () => {
@@ -361,9 +446,7 @@ const MedicalshopDetails = () => {
                 const transformedShopData = {
                     ...shopData,
                     services: transformServices(shopData.services),
-                    // Add other fallback properties if missing
-                    rating: shopData.rating || 4.4,
-                    reviewsCount: shopData.reviewsCount || 0,
+                    // Add other fallback properties if missing (excluding rating/reviewsCount - handled by frontend)
                     closingTime: shopData.closingTime || '10:00 PM',
                     location: shopData.fullAddress || shopData.address ? 
                         `${shopData.address.street}, ${shopData.address.city}, ${shopData.address.state}` : 
@@ -386,7 +469,33 @@ const MedicalshopDetails = () => {
         fetchShopDetails();
     }, [shopId]);
 
-    const displayData = shopData || fallbackShopData;
+    // Calculate rating and reviewsCount dynamically from reviews (frontend-only)
+    const calculateRatingAndCount = () => {
+        if (reviews.length === 0) {
+            return { rating: 0, reviewsCount: 0 };
+        }
+        
+        const totalRating = reviews.reduce((sum, review) => sum + (review.rating || 0), 0);
+        const averageRating = totalRating / reviews.length;
+        
+        return {
+            rating: parseFloat(averageRating.toFixed(1)),
+            reviewsCount: reviews.length
+        };
+    };
+
+    const { rating: calculatedRating, reviewsCount: calculatedReviewsCount } = calculateRatingAndCount();
+
+    const displayData = shopData ? {
+        ...shopData,
+        // Override with frontend-calculated values
+        rating: calculatedRating || 4.4, // fallback to 4.4 if no reviews
+        reviewsCount: calculatedReviewsCount || 0
+    } : {
+        ...fallbackShopData,
+        rating: calculatedRating || 4.4,
+        reviewsCount: calculatedReviewsCount || 0
+    };
 
     if (loading) {
         return <div className="loading-spinner">Loading...</div>;
@@ -552,19 +661,25 @@ const MedicalshopDetails = () => {
                                 &#9664;
                             </button>
                             <div className="reviews-container">
-                                <div className="review-tabs" ref={reviewContainerRef}>
-                                    {reviews.map((review, index) => (
-                                        <div key={index} className="review-card">
-                                            <div className="review-stars">
-                                                {"⭐".repeat(review.stars)}
-                                                {review.stars < 5 && "☆".repeat(5 - review.stars)}
+                                {loadingReviews ? (
+                                    <div className="loading-reviews">Loading reviews...</div>
+                                ) : reviewError ? (
+                                    <div className="error-reviews">Error loading reviews: {reviewError}</div>
+                                ) : (
+                                    <div className="review-tabs" ref={reviewContainerRef}>
+                                        {reviews.map((review, index) => (
+                                            <div key={index} className="review-card">
+                                                <div className="review-stars">{"⭐".repeat(review.rating || 0)}</div>
+                                                <h4>{review.text || 'No review text provided'}</h4>
+                                                <p className="review-author">{review.userName || 'Anonymous User'}</p>
+                                                <p className="review-location">{review.userLocation || 'Location not specified'}</p>
+                                                <p className="review-date">
+                                                    {review.createdAt ? new Date(review.createdAt).toLocaleDateString() : 'Date not available'}
+                                                </p>
                                             </div>
-                                            <h4>{review.text}</h4>
-                                            <p className="review-author">{review.name}</p>
-                                            <p className="review-location">{review.location}</p>
-                                        </div>
-                                    ))}
-                                </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                             <button
                                 className="scroll-button right-button"
@@ -576,33 +691,60 @@ const MedicalshopDetails = () => {
 
                         {/* Add Review Section */}
                         <h2>Share Your Experience</h2>
-                        {user.isLoggedIn ? (
-                            <form className="review-form" onSubmit={handleReviewSubmit}>
-                                <label>Rating:</label>
-                                <div className="star-rating">
-                                    {[0, 1, 2, 3, 4].map((index) => (
-                                        <span
-                                            key={index}
-                                            className={`star ${index < newReview.stars ? "filled" : ""}`}
-                                            onClick={() => handleStarClick(index)}
-                                        >
-                                            &#9733;
-                                        </span>
-                                    ))}
-                                </div>
-                                <label>Review:</label>
-                                <textarea
-                                    name="text"
-                                    value={newReview.text}
-                                    onChange={handleReviewChange}
-                                    placeholder="How was your experience with this pharmacy?"
-                                    required
-                                ></textarea>
-                                <button type="submit">Submit Review</button>
-                            </form>
-                        ) : (
-                            <p>Please log in to submit a review.</p>
-                        )}
+                        {(() => {
+                            try {
+                                // Most reliable way to check authentication
+                                const profileData = localStorage.getItem('profile');
+                                const profile = profileData ? JSON.parse(profileData) : null;
+                                const isLoggedIn = !!(profile && (profile.token || (profile.userInfo && profile.userInfo.id)));
+
+                                // Debug
+                                console.log('Review form auth check:', {
+                                    profileExists: !!profileData,
+                                    hasToken: !!(profile && profile.token),
+                                    hasUserInfo: !!(profile && profile.userInfo),
+                                    isLoggedInState: user?.isLoggedIn,
+                                    finalDecision: isLoggedIn
+                                });
+
+                                if (isLoggedIn) {
+                                    return (
+                                        <form className="review-form" onSubmit={handleReviewSubmit}>
+                                            <label>Rating:</label>
+                                            <div className="star-rating">
+                                                {[0, 1, 2, 3, 4].map((index) => (
+                                                    <span
+                                                        key={index}
+                                                        className={`star ${index < newReview.stars ? "filled" : ""}`}
+                                                        onClick={() => handleStarClick(index)}
+                                                    >
+                                                        &#9733;
+                                                    </span>
+                                                ))}
+                                            </div>
+                                            <label>Review:</label>
+                                            <textarea
+                                                name="text"
+                                                value={newReview.text}
+                                                onChange={handleReviewChange}
+                                                placeholder="How was your experience with this pharmacy?"
+                                                required
+                                            ></textarea>
+                                            <button type="submit">Submit Review</button>
+                                        </form>
+                                    );
+                                } else {
+                                    return (
+                                        <div className="login-prompt">
+                                            <p>Please <a href="/login" style={{ fontWeight: 'bold', color: '#008b95' }}>log in</a> to submit a review.</p>
+                                        </div>
+                                    );
+                                }
+                            } catch (error) {
+                                console.error('Error rendering review form:', error);
+                                return <p>An error occurred when checking login status. Please refresh the page.</p>;
+                            }
+                        })()}
                     </div>
                     
                     {/* Location Map */}

@@ -47,6 +47,70 @@ const shopSchema = new mongoose.Schema({
         trim: true,
         lowercase: true
     },
+    // Additional profile fields
+    closingTime: {
+        type: String,
+        trim: true
+    },
+    location: {
+        type: String,
+        trim: true
+    },
+    directionsLink: {
+        type: String,
+        trim: true
+    },
+    images: [{
+        type: String,
+        trim: true
+    }],
+    services: [{
+        category: {
+            type: String,
+            required: true,
+            trim: true
+        },
+        items: [{
+            name: {
+                type: String,
+                required: true,
+                trim: true
+            },
+            price: {
+                type: Number,
+                min: 0
+            },
+            availability: {
+                type: String,
+                enum: ['In Stock', 'Limited Stock', 'Out of Stock', 'Available', '24/7 Available'],
+                default: 'In Stock'
+            }
+        }]
+    }],
+    openingTimes: [{
+        day: {
+            type: String,
+            required: true,
+            enum: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+        },
+        time: {
+            type: String,
+            required: true,
+            trim: true
+        }
+    }],
+    selectedMedicalshop: {
+        name: {
+            type: String,
+            trim: true
+        },
+        latitude: {
+            type: Number
+        },
+        longitude: {
+            type: Number
+        }
+    },
     adminId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
