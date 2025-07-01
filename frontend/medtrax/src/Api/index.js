@@ -109,6 +109,11 @@ export const createShopApi = (formData) => API.post('/api/admin/shops', formData
 export const updateShopApi = (id, formData) => API.put(`/api/admin/shops/${id}`, formData)
 export const deleteShopApi = (id) => API.delete(`/api/admin/shops/${id}`)
 
+// Shop Profile APIs
+export const getShopProfileApi = () => API.get('/api/shop/profile')
+export const updateShopProfileApi = (formData) => API.put('/api/shop/profile', formData)
+export const updateShopStatusApi = (isActive) => API.patch('/api/shop/status', { isActive })
+
 // Shop Inventory APIs
 export const getInventoryApi = (params) => API.get('/api/shop/inventory', { params })
 export const getInventoryItemApi = (id) => API.get(`/api/shop/inventory/${id}`)

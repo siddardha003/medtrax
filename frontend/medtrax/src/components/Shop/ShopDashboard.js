@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { logOut } from '../../Redux/user/actions';
 import { showNotification } from '../../Redux/notification/actions';
-import * as ShopApi from '../../Api';
+import * as ShopApi from '../../Api/index';
 
 const ShopDashboard = () => {
   const dispatch = useDispatch();
@@ -28,7 +28,37 @@ const ShopDashboard = () => {
   const [filters, setFilters] = useState({
     category: '',
     stockStatus: '',
-    prescriptionRequired: ''  });
+    prescriptionRequired: ''
+  });
+
+  // Shop profile state
+  const [shopProfile, setShopProfile] = useState(null);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [profileFormData, setProfileFormData] = useState({
+    name: '',
+    description: '',
+    ownerName: '',
+    phone: '',
+    email: '',
+    address: '',
+    city: '',
+    state: '',
+    pincode: '',
+    website: '',
+    establishedYear: '',
+    services: [],
+    specialties: [],
+    facilities: [],
+    operatingHours: {
+      monday: '',
+      tuesday: '',
+      wednesday: '',
+      thursday: '',
+      friday: '',
+      saturday: '',
+      sunday: ''
+    }
+  });
 
   // Form data for inventory items
   const [formData, setFormData] = useState({
@@ -61,14 +91,14 @@ const ShopDashboard = () => {
     { value: 'out_of_stock', label: 'Out of Stock', color: 'text-red-600' }
   ];
   // Helper functions
-  const getStockStatus = (item) => {
+  const getStockStatus = useCallback((item) => {
     const currentStock = item.quantity?.current || item.stock || 0;
     const minStock = item.quantity?.minimum || item.minStockLevel || 0;
     
     if (currentStock === 0) return 'out_of_stock';
     if (currentStock <= minStock) return 'low_stock';
     return 'in_stock';
-  };
+  }, []);
 
   const getStockColor = (status) => {
     switch (status) {
@@ -95,22 +125,6 @@ const ShopDashboard = () => {
     const price = item.pricing?.sellingPrice || item.price || 0;
     return sum + (price * currentStock);  }, 0);
 
-  useEffect(() => {
-    if (activeTab === 'dashboard') {
-      fetchStats();
-      fetchInventoryPreview();
-    } else if (activeTab === 'inventory') {
-      fetchInventory();
-    } else if (activeTab === 'analytics') {
-      fetchAnalytics();
-    }
-  }, [activeTab, fetchStats, fetchInventory, fetchAnalytics, fetchInventoryPreview]);
-
-  useEffect(() => {
-    if (activeTab === 'inventory') {
-      fetchInventory();
-    }
-  }, [filters, searchQuery, activeTab, fetchInventory]);
   // Data fetching functions
   const fetchStats = useCallback(async () => {
     setLoading(true);
@@ -226,6 +240,141 @@ const ShopDashboard = () => {
       setLoading(false);
     }
   }, [dispatch]);
+
+  // Shop profile management functions
+  const fetchShopProfile = useCallback(async () => {
+    try {
+      const { data } = await ShopApi.getShopProfileApi();
+      if (data.success) {
+        setShopProfile(data.data.shop);
+        setProfileFormData({
+          name: data.data.shop.name || '',
+          description: data.data.shop.description || '',
+          ownerName: data.data.shop.ownerName || '',
+          phone: data.data.shop.phone || '',
+          email: data.data.shop.email || '',
+          address: data.data.shop.address || '',
+          city: data.data.shop.city || '',
+          state: data.data.shop.state || '',
+          pincode: data.data.shop.pincode || '',
+          website: data.data.shop.website || '',
+          establishedYear: data.data.shop.establishedYear || '',
+          services: data.data.shop.services || [],
+          specialties: data.data.shop.specialties || [],
+          facilities: data.data.shop.facilities || [],
+          operatingHours: data.data.shop.operatingHours || {
+            monday: '',
+            tuesday: '',
+            wednesday: '',
+            thursday: '',
+            friday: '',
+            saturday: '',
+            sunday: ''
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching shop profile:', error);
+      dispatch(showNotification({
+        message: 'Unable to load shop profile',
+        messageType: 'error'
+      }));
+    }
+  }, [dispatch]);
+
+  const toggleShopStatus = async () => {
+    if (!shopProfile) {
+      dispatch(showNotification({
+        message: 'Shop profile not loaded',
+        messageType: 'error'
+      }));
+      return;
+    }
+
+    const newStatus = !shopProfile.isActive;
+    const confirmMessage = `Are you sure you want to ${newStatus ? 'activate' : 'deactivate'} your shop?`;
+    
+    if (!window.confirm(confirmMessage)) return;
+
+    setLoading(true);
+    try {
+      const { data } = await ShopApi.updateShopStatusApi({ isActive: newStatus });
+      if (data.success) {
+        setShopProfile(prev => ({ ...prev, isActive: newStatus }));
+        dispatch(showNotification({
+          message: `Shop ${newStatus ? 'activated' : 'deactivated'} successfully!`,
+          messageType: 'success'
+        }));
+      } else {
+        dispatch(showNotification({
+          message: data.error || 'Failed to update shop status',
+          messageType: 'error'
+        }));
+      }
+    } catch (error) {
+      console.error('Error updating shop status:', error);
+      dispatch(showNotification({
+        message: 'Failed to update shop status',
+        messageType: 'error'
+      }));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleProfileSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const { data } = await ShopApi.updateShopProfileApi(profileFormData);
+      if (data.success) {
+        setShopProfile(data.data.shop);
+        setShowProfileModal(false);
+        dispatch(showNotification({
+          message: 'Shop profile updated successfully!',
+          messageType: 'success'
+        }));
+      } else {
+        dispatch(showNotification({
+          message: data.error || 'Failed to update profile',
+          messageType: 'error'
+        }));
+      }
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      dispatch(showNotification({
+        message: 'Failed to update profile',
+        messageType: 'error'
+      }));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleProfileInputChange = (e) => {
+    const { name, value } = e.target;
+    if (name.startsWith('operatingHours.')) {
+      const day = name.split('.')[1];
+      setProfileFormData(prev => ({
+        ...prev,
+        operatingHours: {
+          ...prev.operatingHours,
+          [day]: value
+        }
+      }));
+    } else if (name === 'services' || name === 'specialties' || name === 'facilities') {
+      // Handle comma-separated arrays
+      setProfileFormData(prev => ({
+        ...prev,
+        [name]: value.split(',').map(item => item.trim()).filter(item => item)
+      }));
+    } else {
+      setProfileFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
+  };
   // Form validation
   const validateForm = () => {
     const errors = [];
@@ -387,7 +536,8 @@ const ShopDashboard = () => {
           minimum: product.quantity?.minimum || product.minStockLevel || 0,
           maximum: product.quantity?.maximum || product.maxStockLevel || newStock * 2
         }
-      };const { data } = await ShopApi.updateInventoryItemApi(productId, updatedData);
+      }
+      const { data } = await ShopApi.updateInventoryItemApi(productId, updatedData);
       if (data.success) {
         setInventory(inventory.map(item => 
           item._id === productId ? data.data.item : item
@@ -423,7 +573,9 @@ const ShopDashboard = () => {
     });
     setEditingProduct(null);
     setShowAddForm(false);
-  };  const handleLogout = async () => {
+  };
+
+  const handleLogout = async () => {
     console.log('Shop admin logout clicked');
     try {
       const result = await dispatch(logOut());
@@ -456,6 +608,25 @@ const ShopDashboard = () => {
       [filterType]: value
     }));
   };
+
+  // useEffects for data fetching
+  useEffect(() => {
+    if (activeTab === 'dashboard') {
+      fetchStats();
+      fetchInventoryPreview();
+      fetchShopProfile();
+    } else if (activeTab === 'inventory') {
+      fetchInventory();
+    } else if (activeTab === 'analytics') {
+      fetchAnalytics();
+    }
+  }, [activeTab, fetchStats, fetchInventory, fetchAnalytics, fetchInventoryPreview, fetchShopProfile]);
+
+  useEffect(() => {
+    if (activeTab === 'inventory') {
+      fetchInventory();
+    }
+  }, [filters, searchQuery, activeTab, fetchInventory]);
 
   // Filter inventory based on search and filters
   const filteredInventory = inventory.filter(item => {
@@ -505,6 +676,7 @@ const ShopDashboard = () => {
           <nav className="-mb-px flex space-x-8" aria-label="Tabs">
             {[
               { id: 'dashboard', name: 'Dashboard', icon: '📊' },
+              { id: 'profile', name: 'Profile', icon: '🏪' },
               { id: 'inventory', name: 'Inventory', icon: '📦' },
               { id: 'analytics', name: 'Analytics', icon: '📈' }
             ].map((tab) => (
@@ -668,6 +840,178 @@ const ShopDashboard = () => {
                   </div>
                 )}
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Profile Tab */}
+        {activeTab === 'profile' && (
+          <div className="space-y-8">
+            {/* Shop Status Card */}
+            <div className="bg-white shadow rounded-lg p-6">
+              <div className="flex justify-between items-center mb-4">
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-900">Shop Status</h2>
+                  <p className="text-gray-600">Manage your shop's availability to customers</p>
+                </div>
+                <div className="flex items-center space-x-4">
+                  <span className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${
+                    shopProfile?.isActive 
+                      ? 'bg-green-100 text-green-800' 
+                      : 'bg-red-100 text-red-800'
+                  }`}>
+                    {shopProfile?.isActive ? 'Active' : 'Inactive'}
+                  </span>
+                  <button
+                    onClick={toggleShopStatus}
+                    disabled={loading || !shopProfile}
+                    className={`px-4 py-2 rounded-lg font-medium text-white ${
+                      shopProfile?.isActive
+                        ? 'bg-red-600 hover:bg-red-700'
+                        : 'bg-green-600 hover:bg-green-700'
+                    } disabled:opacity-50`}
+                  >
+                    {shopProfile?.isActive ? 'Deactivate Shop' : 'Activate Shop'}
+                  </button>
+                </div>
+              </div>
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <p className="text-sm text-gray-700">
+                  {shopProfile?.isActive 
+                    ? '✅ Your shop is currently visible to customers and accepting orders.'
+                    : '❌ Your shop is currently hidden from customers. Activate to start receiving orders.'
+                  }
+                </p>
+              </div>
+            </div>
+
+            {/* Shop Profile Information */}
+            <div className="bg-white shadow rounded-lg">
+              <div className="px-6 py-4 border-b border-gray-200">
+                <div className="flex justify-between items-center">
+                  <h2 className="text-lg font-medium text-gray-900">Shop Profile</h2>
+                  <button
+                    onClick={() => setShowProfileModal(true)}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium"
+                  >
+                    Edit Profile
+                  </button>
+                </div>
+              </div>
+              
+              {shopProfile ? (
+                <div className="p-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <h3 className="text-sm font-medium text-gray-500 mb-1">Shop Name</h3>
+                      <p className="text-lg font-semibold text-gray-900">{shopProfile.name}</p>
+                    </div>
+                    
+                    <div>
+                      <h3 className="text-sm font-medium text-gray-500 mb-1">Owner Name</h3>
+                      <p className="text-lg text-gray-900">{shopProfile.ownerName || 'Not specified'}</p>
+                    </div>
+                    
+                    <div>
+                      <h3 className="text-sm font-medium text-gray-500 mb-1">Phone</h3>
+                      <p className="text-lg text-gray-900">{shopProfile.phone}</p>
+                    </div>
+                    
+                    <div>
+                      <h3 className="text-sm font-medium text-gray-500 mb-1">Email</h3>
+                      <p className="text-lg text-gray-900">{shopProfile.email}</p>
+                    </div>
+                    
+                    <div className="md:col-span-2">
+                      <h3 className="text-sm font-medium text-gray-500 mb-1">Address</h3>
+                      <p className="text-lg text-gray-900">
+                        {shopProfile.address}, {shopProfile.city}, {shopProfile.state} - {shopProfile.pincode}
+                      </p>
+                    </div>
+                    
+                    {shopProfile.description && (
+                      <div className="md:col-span-2">
+                        <h3 className="text-sm font-medium text-gray-500 mb-1">Description</h3>
+                        <p className="text-lg text-gray-900">{shopProfile.description}</p>
+                      </div>
+                    )}
+                    
+                    {shopProfile.website && (
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-500 mb-1">Website</h3>
+                        <a 
+                          href={shopProfile.website} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-lg text-blue-600 hover:text-blue-800"
+                        >
+                          {shopProfile.website}
+                        </a>
+                      </div>
+                    )}
+                    
+                    {shopProfile.establishedYear && (
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-500 mb-1">Established Year</h3>
+                        <p className="text-lg text-gray-900">{shopProfile.establishedYear}</p>
+                      </div>
+                    )}
+                    
+                    {shopProfile.services && shopProfile.services.length > 0 && (
+                      <div className="md:col-span-2">
+                        <h3 className="text-sm font-medium text-gray-500 mb-2">Services</h3>
+                        <div className="flex flex-wrap gap-2">
+                          {shopProfile.services.map((service, index) => (
+                            <span 
+                              key={index}
+                              className="inline-flex px-3 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full"
+                            >
+                              {service}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {shopProfile.specialties && shopProfile.specialties.length > 0 && (
+                      <div className="md:col-span-2">
+                        <h3 className="text-sm font-medium text-gray-500 mb-2">Specialties</h3>
+                        <div className="flex flex-wrap gap-2">
+                          {shopProfile.specialties.map((specialty, index) => (
+                            <span 
+                              key={index}
+                              className="inline-flex px-3 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full"
+                            >
+                              {specialty}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {shopProfile.facilities && shopProfile.facilities.length > 0 && (
+                      <div className="md:col-span-2">
+                        <h3 className="text-sm font-medium text-gray-500 mb-2">Facilities</h3>
+                        <div className="flex flex-wrap gap-2">
+                          {shopProfile.facilities.map((facility, index) => (
+                            <span 
+                              key={index}
+                              className="inline-flex px-3 py-1 text-xs font-medium bg-purple-100 text-purple-800 rounded-full"
+                            >
+                              {facility}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className="p-6 text-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                  <p className="mt-2 text-gray-600">Loading shop profile...</p>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -1217,6 +1561,231 @@ const ShopDashboard = () => {
                     className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50"
                   >
                     {loading ? 'Saving...' : (editingProduct ? 'Update Item' : 'Add Item')}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Profile Edit Modal */}
+      {showProfileModal && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-10 mx-auto p-5 border w-full max-w-4xl shadow-lg rounded-md bg-white">
+            <div className="mt-3">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-medium text-gray-900">Edit Shop Profile</h3>
+                <button
+                  onClick={() => setShowProfileModal(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  ✕
+                </button>
+              </div>
+              
+              <form onSubmit={handleProfileSubmit} className="grid grid-cols-2 gap-4">
+                <div className="col-span-2 md:col-span-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Shop Name *</label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={profileFormData.name}
+                    onChange={handleProfileInputChange}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                    required
+                  />
+                </div>
+                
+                <div className="col-span-2 md:col-span-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Owner Name</label>
+                  <input
+                    type="text"
+                    name="ownerName"
+                    value={profileFormData.ownerName}
+                    onChange={handleProfileInputChange}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                
+                <div className="col-span-2 md:col-span-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone *</label>
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={profileFormData.phone}
+                    onChange={handleProfileInputChange}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                    required
+                  />
+                </div>
+                
+                <div className="col-span-2 md:col-span-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={profileFormData.email}
+                    onChange={handleProfileInputChange}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                    required
+                  />
+                </div>
+                
+                <div className="col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Address *</label>
+                  <input
+                    type="text"
+                    name="address"
+                    value={profileFormData.address}
+                    onChange={handleProfileInputChange}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                    required
+                  />
+                </div>
+                
+                <div className="col-span-2 md:col-span-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">City *</label>
+                  <input
+                    type="text"
+                    name="city"
+                    value={profileFormData.city}
+                    onChange={handleProfileInputChange}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                    required
+                  />
+                </div>
+                
+                <div className="col-span-2 md:col-span-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">State *</label>
+                  <input
+                    type="text"
+                    name="state"
+                    value={profileFormData.state}
+                    onChange={handleProfileInputChange}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                    required
+                  />
+                </div>
+                
+                <div className="col-span-2 md:col-span-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Pincode *</label>
+                  <input
+                    type="text"
+                    name="pincode"
+                    value={profileFormData.pincode}
+                    onChange={handleProfileInputChange}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                    required
+                  />
+                </div>
+                
+                <div className="col-span-2 md:col-span-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Website</label>
+                  <input
+                    type="url"
+                    name="website"
+                    value={profileFormData.website}
+                    onChange={handleProfileInputChange}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="https://example.com"
+                  />
+                </div>
+                
+                <div className="col-span-2 md:col-span-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Established Year</label>
+                  <input
+                    type="number"
+                    name="establishedYear"
+                    value={profileFormData.establishedYear}
+                    onChange={handleProfileInputChange}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                    min="1900"
+                    max={new Date().getFullYear()}
+                  />
+                </div>
+                
+                <div className="col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                  <textarea
+                    name="description"
+                    value={profileFormData.description}
+                    onChange={handleProfileInputChange}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                    rows="3"
+                    placeholder="Describe your shop and services..."
+                  />
+                </div>
+                
+                <div className="col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Services (comma-separated)</label>
+                  <input
+                    type="text"
+                    name="services"
+                    value={profileFormData.services.join(', ')}
+                    onChange={handleProfileInputChange}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Prescription Medicines, OTC Medicines, Medical Devices, etc."
+                  />
+                </div>
+                
+                <div className="col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Specialties (comma-separated)</label>
+                  <input
+                    type="text"
+                    name="specialties"
+                    value={profileFormData.specialties.join(', ')}
+                    onChange={handleProfileInputChange}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Chronic Disease Management, Pediatric Care, Elderly Care, etc."
+                  />
+                </div>
+                
+                <div className="col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Facilities (comma-separated)</label>
+                  <input
+                    type="text"
+                    name="facilities"
+                    value={profileFormData.facilities.join(', ')}
+                    onChange={handleProfileInputChange}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Air Conditioned, Wheelchair Accessible, Parking Available, etc."
+                  />
+                </div>
+                
+                <div className="col-span-2">
+                  <h4 className="text-sm font-medium text-gray-700 mb-2">Operating Hours</h4>
+                  <div className="grid grid-cols-2 gap-2">
+                    {['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map(day => (
+                      <div key={day}>
+                        <label className="block text-xs font-medium text-gray-600 mb-1 capitalize">{day}</label>
+                        <input
+                          type="text"
+                          name={`operatingHours.${day}`}
+                          value={profileFormData.operatingHours[day]}
+                          onChange={handleProfileInputChange}
+                          className="w-full p-2 text-sm border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="8:00 AM - 10:00 PM"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                <div className="col-span-2 flex justify-end space-x-2 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowProfileModal(false)}
+                    className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                  >
+                    {loading ? 'Saving...' : 'Update Profile'}
                   </button>
                 </div>
               </form>

@@ -724,6 +724,152 @@ const getShopStats = async (req, res) => {
     }
 };
 
+// @desc    Get shop profile
+// @route   GET /api/shop/profile
+// @access  Private (Shop Admin)
+const getShopProfile = async (req, res) => {
+    try {
+        const shopId = req.user.shopId;
+        
+        if (!shopId) {
+            return res.status(400).json({
+                success: false,
+                error: 'User is not associated with any shop'
+            });
+        }
+        
+        const shop = await Shop.findById(shopId);
+        
+        if (!shop) {
+            return res.status(404).json({
+                success: false,
+                error: 'Shop not found'
+            });
+        }
+        
+        res.status(200).json({
+            success: true,
+            data: { shop }
+        });
+        
+    } catch (error) {
+        console.error('Get shop profile error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Server error'
+        });
+    }
+};
+
+// @desc    Update shop profile
+// @route   PUT /api/shop/profile
+// @access  Private (Shop Admin)
+const updateShopProfile = async (req, res) => {
+    try {
+        const shopId = req.user.shopId;
+        
+        if (!shopId) {
+            return res.status(400).json({
+                success: false,
+                error: 'User is not associated with any shop'
+            });
+        }
+        
+        const shop = await Shop.findById(shopId);
+        
+        if (!shop) {
+            return res.status(404).json({
+                success: false,
+                error: 'Shop not found'
+            });
+        }
+        
+        // Update shop data
+        const updatedShop = await Shop.findByIdAndUpdate(
+            shopId, 
+            { 
+                ...req.body,
+                updatedBy: req.user._id
+            },
+            { new: true, runValidators: true }
+        );
+        
+        res.status(200).json({
+            success: true,
+            message: 'Shop profile updated successfully',
+            data: { shop: updatedShop }
+        });
+        
+    } catch (error) {
+        console.error('Update shop profile error:', error);
+        
+        // Handle validation errors
+        if (error.name === 'ValidationError') {
+            const validationErrors = Object.values(error.errors).map(err => err.message);
+            return res.status(400).json({
+                success: false,
+                error: `Validation failed: ${validationErrors.join(', ')}`
+            });
+        }
+        
+        res.status(500).json({
+            success: false,
+            error: 'Server error'
+        });
+    }
+};
+
+// @desc    Update shop status (active/inactive)
+// @route   PATCH /api/shop/status
+// @access  Private (Shop Admin)
+const updateShopStatus = async (req, res) => {
+    try {
+        const shopId = req.user.shopId;
+        const { isActive } = req.body;
+        
+        if (!shopId) {
+            return res.status(400).json({
+                success: false,
+                error: 'User is not associated with any shop'
+            });
+        }
+        
+        if (isActive === undefined) {
+            return res.status(400).json({
+                success: false,
+                error: 'Status is required'
+            });
+        }
+        
+        const shop = await Shop.findById(shopId);
+        
+        if (!shop) {
+            return res.status(404).json({
+                success: false,
+                error: 'Shop not found'
+            });
+        }
+        
+        // Update shop status
+        shop.isActive = isActive;
+        shop.updatedBy = req.user._id;
+        await shop.save();
+        
+        res.status(200).json({
+            success: true,
+            message: `Shop ${isActive ? 'activated' : 'deactivated'} successfully`,
+            data: { shop }
+        });
+        
+    } catch (error) {
+        console.error('Update shop status error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Server error'
+        });
+    }
+};
+
 // Debug route to check shop admin access (remove in production)
 const debugShopAccess = async (req, res) => {
     try {
@@ -788,5 +934,8 @@ module.exports = {
     getOrder,
     updateOrderStatus,
     getShopStats,
+    getShopProfile,
+    updateShopProfile,
+    updateShopStatus,
     debugShopAccess
 };

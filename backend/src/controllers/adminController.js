@@ -483,6 +483,30 @@ const getHospitals = async (req, res, next) => {
 const registerShop = async (req, res, next) => {
     try {
         const { name, address, pincode, city, state, phone, email } = req.body;
+        
+        // Generate a license number (DL + 12 digits)
+        const generateLicenseNumber = () => {
+            const prefix = 'DL';
+            const digits = '0123456789';
+            let licenseNumber = prefix;
+            
+            for (let i = 0; i < 12; i++) {
+                licenseNumber += digits.charAt(Math.floor(Math.random() * digits.length));
+            }
+            
+            return licenseNumber;
+        };
+        
+        // Generate a unique license number
+        let licenseNumber = generateLicenseNumber();
+        let licenseExists = await Shop.findOne({ licenseNumber });
+        
+        // Keep generating until we find a unique one
+        while (licenseExists) {
+            licenseNumber = generateLicenseNumber();
+            licenseExists = await Shop.findOne({ licenseNumber });
+        }
+        
         const shopData = {
             name,
             address,
@@ -491,9 +515,13 @@ const registerShop = async (req, res, next) => {
             state,
             phone,
             email,
+            licenseNumber,
+            isActive: true, // Set status as active by default
             createdBy: req.user.id
         };
+        
         const shop = await Shop.create(shopData);
+        
         res.status(201).json({
             success: true,
             message: 'Medical shop registered successfully',

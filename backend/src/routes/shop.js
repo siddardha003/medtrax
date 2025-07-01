@@ -13,6 +13,9 @@ const {
     getOrder,
     updateOrderStatus,
     getShopStats,
+    getShopProfile,
+    updateShopProfile,
+    updateShopStatus,
     debugShopAccess
 } = require('../controllers/shopController');
 
@@ -224,5 +227,65 @@ router.get('/stats', [
         .withMessage('Invalid period'),
     handleValidationErrors
 ], getShopStats);
+
+// Shop Profile Routes
+
+// @route   GET /api/shop/profile
+// @desc    Get shop profile
+// @access  Private (Shop Admin only)
+router.get('/profile', getShopProfile);
+
+// @route   PUT /api/shop/profile
+// @desc    Update shop profile
+// @access  Private (Shop Admin only)
+router.put('/profile', [
+    body('name')
+        .optional()
+        .isLength({ min: 2, max: 100 })
+        .trim()
+        .withMessage('Name must be between 2 and 100 characters'),
+    body('address')
+        .optional()
+        .isLength({ min: 5, max: 200 })
+        .trim()
+        .withMessage('Address must be between 5 and 200 characters'),
+    body('pincode')
+        .optional()
+        .isLength({ min: 5, max: 10 })
+        .trim()
+        .withMessage('Pincode must be between 5 and 10 characters'),
+    body('city')
+        .optional()
+        .isLength({ min: 2, max: 50 })
+        .trim()
+        .withMessage('City must be between 2 and 50 characters'),
+    body('state')
+        .optional()
+        .isLength({ min: 2, max: 50 })
+        .trim()
+        .withMessage('State must be between 2 and 50 characters'),
+    body('phone')
+        .optional()
+        .isLength({ min: 10, max: 15 })
+        .trim()
+        .withMessage('Phone must be between 10 and 15 characters'),
+    body('email')
+        .optional()
+        .isEmail()
+        .trim()
+        .normalizeEmail()
+        .withMessage('Invalid email format'),
+    handleValidationErrors
+], updateShopProfile);
+
+// @route   PATCH /api/shop/status
+// @desc    Update shop status (active/inactive)
+// @access  Private (Shop Admin only)
+router.patch('/status', [
+    body('isActive')
+        .isBoolean()
+        .withMessage('isActive must be a boolean'),
+    handleValidationErrors
+], updateShopStatus);
 
 module.exports = router;

@@ -7,6 +7,15 @@ const shopSchema = new mongoose.Schema({
         trim: true,
         maxlength: [100, 'Shop name cannot exceed 100 characters']
     },
+    licenseNumber: {
+        type: String,
+        unique: true,
+        trim: true
+    },
+    isActive: {
+        type: Boolean,
+        default: true
+    },
     address: {
         type: String,
         required: [true, 'Address is required'],
