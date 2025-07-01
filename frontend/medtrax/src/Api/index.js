@@ -26,6 +26,15 @@ API.interceptors.request.use(req => {
 API.interceptors.response.use(
   response => response,
   error => {
+    // Log all API errors for debugging
+    console.error('API Error:', {
+      status: error.response?.status,
+      url: error.config?.url,
+      method: error.config?.method?.toUpperCase(),
+      message: error.response?.data?.message || error.message,
+      error: error.response?.data?.error
+    });
+    
     // Handle token expiration
     if (error.response?.status === 401 && 
         error.response?.data?.error?.includes('Token expired')) {
@@ -40,6 +49,21 @@ API.interceptors.response.use(
         error.response?.data?.error?.includes('inactive') &&
         error.response?.data?.error?.includes('hospital')) {
       console.log('❌ Hospital access error detected. This may be due to an inactive hospital.');
+    }
+    
+    // Enhance generic error messages
+    if (error.response?.status === 401 && !error.response.data?.message) {
+      error.response.data = {
+        ...error.response.data,
+        message: 'Authentication failed. Please check your credentials or register if you don\'t have an account.'
+      };
+    }
+    
+    if (error.response?.status === 403 && !error.response.data?.message) {
+      error.response.data = {
+        ...error.response.data,
+        message: 'Access denied. You don\'t have permission to perform this action.'
+      };
     }
     
     return Promise.reject(error);

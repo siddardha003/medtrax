@@ -105,7 +105,8 @@ const UserLogin = () => {
     try {
       const loginData = {
         email,
-        password
+        password,
+        role: 'user' // Explicitly specify user role for validation
       };
       
       console.log('User login attempt with data:', loginData);
@@ -118,12 +119,55 @@ const UserLogin = () => {
         }));
       }
     } catch (err) {
-      const errorMessage = err?.response?.data?.message || err?.message || 'Login failed. Please check your credentials and try again.';
-      setError(errorMessage);
-      dispatch(showNotification({
-        message: errorMessage,
-        messageType: 'error'
-      }));
+      console.error('Login error:', err);
+      
+      // Check for special case of admin trying to use user login
+      if (err?.response?.status === 401 && 
+          err?.response?.data?.message?.includes('Admin accounts must use the admin login')) {
+        const userFriendlyMessage = 'User not found. If you are an admin, please use the admin login page.';
+        setError(userFriendlyMessage);
+        dispatch(showNotification({
+          message: userFriendlyMessage,
+          messageType: 'error'
+        }));
+      } 
+      // Check for unknown email (regular user not found)
+      else if (err?.response?.status === 401 && 
+               err?.response?.data?.message?.includes('User not found')) {
+        const userFriendlyMessage = 'User not found. Please check your email or register if you don\'t have an account.';
+        setError(userFriendlyMessage);
+        dispatch(showNotification({
+          message: userFriendlyMessage,
+          messageType: 'error'
+        }));
+      }
+      else if (err?.response?.status === 403 && 
+                 err?.response?.data?.message?.includes('use the correct login page')) {
+        const userFriendlyMessage = 'Access denied. Please use the correct login page for your account type.';
+        setError(userFriendlyMessage);
+        dispatch(showNotification({
+          message: userFriendlyMessage,
+          messageType: 'error'
+        }));
+      } 
+      // Generic 401 errors (invalid credentials)
+      else if (err?.response?.status === 401) {
+        const userFriendlyMessage = 'Invalid email or password. Please try again or register if you don\'t have an account.';
+        setError(userFriendlyMessage);
+        dispatch(showNotification({
+          message: userFriendlyMessage,
+          messageType: 'error'
+        }));
+      }
+      else {
+        // Handle other errors
+        const errorMessage = err?.response?.data?.message || err?.message || 'Login failed. Please check your credentials and try again.';
+        setError(errorMessage);
+        dispatch(showNotification({
+          message: errorMessage,
+          messageType: 'error'
+        }));
+      }
     } finally {
       setLoading(false);
     }
