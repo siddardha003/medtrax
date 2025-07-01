@@ -145,12 +145,55 @@ const AdminLogin = () => {
         }));
       }
     } catch (err) {
-      const errorMessage = err?.response?.data?.message || err?.message || 'Login failed. Please check your credentials and try again.';
-      setError(errorMessage);
-      dispatch(showNotification({
-        message: errorMessage,
-        messageType: 'error'
-      }));
+      console.error('Admin login error:', err);
+      
+      // Check for special case of user trying to use admin login
+      if (err?.response?.status === 401 && 
+          err?.response?.data?.message?.includes('Invalid credentials')) {
+        const userFriendlyMessage = 'Admin not found. Please check your credentials or use the regular user login if you have a user account.';
+        setError(userFriendlyMessage);
+        dispatch(showNotification({
+          message: userFriendlyMessage,
+          messageType: 'error'
+        }));
+      } 
+      // Check for unknown email
+      else if (err?.response?.status === 401 && 
+              err?.response?.data?.message?.includes('User not found')) {
+        const userFriendlyMessage = 'Admin not found. Please check your email or contact system administrator.';
+        setError(userFriendlyMessage);
+        dispatch(showNotification({
+          message: userFriendlyMessage,
+          messageType: 'error'
+        }));
+      }
+      else if (err?.response?.status === 403 && 
+                 err?.response?.data?.message?.includes('use the correct login page')) {
+        const userFriendlyMessage = 'Access denied. Please use the correct login page for your account type.';
+        setError(userFriendlyMessage);
+        dispatch(showNotification({
+          message: userFriendlyMessage,
+          messageType: 'error'
+        }));
+      } 
+      // Generic 401 errors (invalid credentials)
+      else if (err?.response?.status === 401) {
+        const userFriendlyMessage = 'Invalid email or password. Please check your credentials and try again.';
+        setError(userFriendlyMessage);
+        dispatch(showNotification({
+          message: userFriendlyMessage,
+          messageType: 'error'
+        }));
+      }
+      else {
+        // Handle other errors
+        const errorMessage = err?.response?.data?.message || err?.message || 'Login failed. Please check your credentials and try again.';
+        setError(errorMessage);
+        dispatch(showNotification({
+          message: errorMessage,
+          messageType: 'error'
+        }));
+      }
     } finally {
       setLoading(false);
     }

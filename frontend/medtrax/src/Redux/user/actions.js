@@ -30,7 +30,7 @@ export const loginUserAccount = (formData, navigate) => async (dispatch) => {
     // Ensure we're explicitly marking this as a regular user login
     const userFormData = {
       ...formData,
-      role: 'user'  // Explicitly set role to 'user' for regular user login
+      role: 'user'  // Explicitly set role to 'user' for regular user login - required for backend validation
     };
     
     const { data } = await loginUserApi(userFormData);
@@ -82,7 +82,13 @@ export const loginAdminAccount = (formData, navigate) => async (dispatch) => {
       throw new Error("Valid admin role is required");
     }
     
-    const { data } = await loginUserApi(formData);
+    // Ensure the role is properly set in the form data for backend validation
+    const adminFormData = {
+      ...formData,
+      role: formData.role // Make sure role is included for backend validation
+    };
+    
+    const { data } = await loginUserApi(adminFormData); // Use adminFormData with role properly set
     console.log("Admin login response:", data);
     
     // Backend sends: { success: true, message: "Login successful", data: { token, user } }

@@ -70,11 +70,12 @@ const trackLoginSession = (req, res, next) => {
 // @access  Public
 const login = async (req, res, next) => {
     try {
-        const { email, password } = req.body;
+        const { email, password, role } = req.body;
         const sessionId = req.loginSessionId;
         
         console.log(`🔍 Processing login for: ${email} (Session: ${sessionId})`);
         console.log(`🔑 Password provided: ${password ? 'YES' : 'NO'} (Length: ${password ? password.length : 0})`);
+        console.log(`👤 Requested role: ${role || 'Not specified'}`);
 
         // Check for user
         const user = await User.findOne({ email }).select('+password');
@@ -83,8 +84,28 @@ const login = async (req, res, next) => {
             console.log(`❌ User not found: ${email}`);
             return res.status(401).json({
                 success: false,
-                error: 'Invalid credentials'
+                error: 'Invalid credentials',
+                message: 'User not found. Please check your email or register if you don\'t have an account.'
             });
+        }
+        
+        // Validate role if specified in the request
+        if (role && user.role !== role) {
+            console.log(`❌ Role mismatch: User has role ${user.role}, but tried to login as ${role}`);
+            // Special case for regular user login attempts by admins
+            if (role === 'user' && ['super_admin', 'hospital_admin', 'shop_admin'].includes(user.role)) {
+                return res.status(401).json({
+                    success: false,
+                    message: 'User not found. Admin accounts must use the admin login page.',
+                    error: 'Invalid credentials'
+                });
+            } else {
+                return res.status(403).json({
+                    success: false,
+                    message: 'Access denied. Please use the correct login page for your account type.',
+                    error: 'Invalid role for this account.'
+                });
+            }
         }
 
         console.log(`👤 User found: ${email}`);
