@@ -2,6 +2,7 @@ const Appointment = require('../models/Appointment');
 const Hospital = require('../models/Hospital');
 const { getPaginationInfo } = require('../utils/helpers');
 const { sendAppointmentConfirmation } = require('../utils/email');
+const { localUpload, uploadToCloudinary } = require('../utils/fileUpload');
 
 // @desc    Get all appointments for a hospital
 // @route   GET /api/hospital/appointments
@@ -554,23 +555,64 @@ const updateHospitalProfile = async (req, res) => {
 // @access  Private (Hospital Admin)
 const uploadHospitalImage = async (req, res) => {
     try {
-        // This function would handle file uploads
-        // For now, just returning a placeholder response
-        // In a real implementation, you would use multer or another upload middleware
+        const { upload } = require('../utils/cloudinary');
         
-        res.status(200).json({
-            success: true,
-            message: 'Image uploaded successfully',
-            data: { 
-                imageUrl: `https://via.placeholder.com/800x600?text=Hospital+Image+${Date.now()}`
+        upload.single('image')(req, res, async function(err) {
+            if (err) {
+                console.error('Cloudinary upload middleware error:', err);
+                return res.status(400).json({
+                    success: false,
+                    error: err.message || 'Error uploading image'
+                });
+            }
+            
+            try {
+                if (!req.file) {
+                    return res.status(400).json({
+                        success: false,
+                        error: 'No image file provided'
+                    });
+                }
+                
+                // Access Cloudinary upload result directly
+                console.log('File uploaded to Cloudinary:', req.file);
+                
+                if (!req.file.path && !req.file.secure_url) {
+                    return res.status(500).json({
+                        success: false,
+                        error: 'Failed to get a valid URL from Cloudinary'
+                    });
+                }
+                
+                // Use secure_url from Cloudinary
+                const imageUrl = req.file.secure_url || req.file.path;
+                
+                // Return success response with Cloudinary URL
+                return res.status(200).json({
+                    success: true,
+                    data: {
+                        imageUrl: imageUrl,
+                        url: imageUrl,
+                        secure_url: imageUrl,
+                        originalFilename: req.file.originalname,
+                        size: req.file.size,
+                        public_id: req.file.public_id
+                    }
+                });
+                
+            } catch (error) {
+                console.error('Error in image processing:', error);
+                return res.status(500).json({
+                    success: false,
+                    error: 'Error processing image'
+                });
             }
         });
-
-    } catch (error) {
-        console.error('Upload hospital image error:', error);
-        res.status(500).json({
+    } catch (outerError) {
+        console.error('Outer error in upload handler:', outerError);
+        return res.status(500).json({
             success: false,
-            error: 'Server error'
+            error: 'Server error during upload process'
         });
     }
 };

@@ -88,7 +88,6 @@ app.use('/api/health', healthRoutes);
 app.use('/api/uploads', uploadsRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/notification', notificationRoutes);
-app.use('/api/uploads', uploadsRoutes);
 
 // Welcome route
 app.get('/', (req, res) => {
