@@ -1,9 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../css/SymptomChecker.css";
 import axios from "axios";
+import Autocomplete from "@mui/material/Autocomplete";
+import TextField from "@mui/material/TextField";
 
 const SymptomChecker = () => {
-    const [symptoms, setSymptoms] = useState("");
+    const [symptomOptions, setSymptomOptions] = useState([]);
+    const [selectedSymptoms, setSelectedSymptoms] = useState([]);
     const [days, setDays] = useState(1);
     const [age, setAge] = useState("");
     const [severity, setSeverity] = useState(null);
@@ -12,6 +15,12 @@ const SymptomChecker = () => {
     const [showForm, setShowForm] = useState(false);
     const severityLevels = ["Low", "Moderate", "High"];
 
+    useEffect(() => {
+        axios.get("http://localhost:5001/symptoms")
+            .then(res => setSymptomOptions(res.data.symptoms))
+            .catch(err => console.error(err));
+    }, []);
+
     const handlePredictPrescription = async () => {
         setIsLoading(true);
         // Map severity to match backend expectations
@@ -19,7 +28,7 @@ const SymptomChecker = () => {
         const mappedSeverity = severityMap[severity] || (severity ? severity.toLowerCase() : undefined);
         try {
             const response = await axios.post("/api/prescription/predict", {
-                symptoms,
+                symptoms: selectedSymptoms, // send as array
                 age,
                 duration: days, // send as 'duration'
                 severity: mappedSeverity,
@@ -40,12 +49,12 @@ const SymptomChecker = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        if (!symptoms || !severity || !age) return alert("Please fill all fields!");
+        if (!selectedSymptoms.length || !severity || !age) return alert("Please fill all fields!");
         handlePredictPrescription();
     };
 
     const resetForm = () => {
-        setSymptoms("");
+        setSelectedSymptoms([]);
         setDays(1);
         setAge("");
         setSeverity(null);
@@ -91,6 +100,14 @@ const SymptomChecker = () => {
                             </button>
                         </div>
                     )}
+                    {diagnosis && (
+                        <button
+                            className="prescription-delete-btn20"
+                            onClick={resetForm}
+                        >
+                            Check Again
+                        </button>
+                    )}
                 </div>
             </div>
 
@@ -102,12 +119,15 @@ const SymptomChecker = () => {
                             <div className="prescriptioninp-group20">
                                 <div className="prescriptioninp-field20">
                                     <label htmlFor="symptoms">Symptoms: </label>
-                                    <textarea
-                                        id="symptoms"
-                                        value={symptoms}
-                                        onChange={(e) => setSymptoms(e.target.value)}
-                                        placeholder="E.g., Fever, headache, cough..."
-                                        required
+                                    <Autocomplete
+                                        multiple
+                                        options={symptomOptions}
+                                        value={selectedSymptoms}
+                                        className="prescriptioninp-field20-Autocomplete"
+                                        onChange={(event, newValue) => setSelectedSymptoms(newValue)}
+                                        renderInput={(params) => (
+                                            <TextField {...params} label="Type or select" placeholder="Symptoms" />
+                                        )}
                                     />
                                 </div>
 
@@ -126,7 +146,7 @@ const SymptomChecker = () => {
                                 </div>
 
                                 <div className="prescriptioninp-field20">
-                                    <label htmlFor="days">Duration:<br/>(days) </label>
+                                    <label htmlFor="days">Duration:<br />(days) </label>
                                     <input
                                         type="number"
                                         id="days"
@@ -169,9 +189,9 @@ const SymptomChecker = () => {
             {/* Diagnosis Result */}
             {diagnosis && (
                 <div className="prescription-display20">
-                    <div className="prescription-section20">
+                    <div className="prescription-section20-results">
                         <h3 style={{ textAlign: "center" }}>Recommended Medications</h3>
-                        <ul style={{ paddingLeft: "20px", fontSize: "18px" }}>
+                        <ul className="prescription-result-list">
                             {diagnosis.prescriptions.length > 0 ? (
                                 diagnosis.prescriptions.map((med, idx) => (
                                     <li key={idx}>{med}</li>
@@ -180,9 +200,11 @@ const SymptomChecker = () => {
                                 <li>No prescriptions found.</li>
                             )}
                         </ul>
+                    </div>
 
-                        <h3 style={{ textAlign: "center", marginTop: "20px" }}>Recommended Precautions</h3>
-                        <ul style={{ paddingLeft: "20px", fontSize: "18px" }}>
+                    <div className="prescription-section20-results">
+                        <h3 style={{ textAlign: "center"}}>Recommended Precautions</h3>
+                        <ul className="prescription-result-list">
                             {diagnosis.precautions.length > 0 ? (
                                 diagnosis.precautions.map((prec, idx) => (
                                     <li key={idx}>{prec}</li>
@@ -191,18 +213,12 @@ const SymptomChecker = () => {
                                 <li>No precautions found.</li>
                             )}
                         </ul>
+                    </div>
+                    <div className="prescription-section20">
+                        <small style={{ color: '#666' }}>
+                            Note: Please consult a healthcare professional before taking any medication.
+                        </small>
 
-                        <div style={{ marginTop: '20px' }}>
-                            <small style={{ color: '#666' }}>
-                                Note: Please consult a healthcare professional before taking any medication.
-                            </small>
-                        </div>
-                        <button
-                            className="prescription-delete-btn20"
-                            onClick={resetForm}
-                        >
-                            Check Again
-                        </button>
                     </div>
                 </div>
             )}
