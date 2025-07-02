@@ -47,14 +47,36 @@ const shopSchema = new mongoose.Schema({
         trim: true,
         lowercase: true
     },
+    // Owner/Manager Contact Information
+    ownerName: {
+        type: String,
+        trim: true
+    },
+    ownerPhone: {
+        type: String,
+        trim: true
+    },
+    ownerEmail: {
+        type: String,
+        trim: true,
+        lowercase: true
+    },
     // Additional profile fields
     closingTime: {
         type: String,
         trim: true
     },
     location: {
-        type: String,
-        trim: true
+        type: {
+            type: String,
+            enum: ['Point'],
+            required: true,
+            default: 'Point'
+        },
+        coordinates: {
+            type: [Number], // [longitude, latitude]
+            required: true
+        }
     },
     directionsLink: {
         type: String,
@@ -84,6 +106,30 @@ const shopSchema = new mongoose.Schema({
                 type: String,
                 enum: ['In Stock', 'Limited Stock', 'Out of Stock', 'Available', '24/7 Available'],
                 default: 'In Stock'
+            },
+            stockCount: {
+                type: Number,
+                min: 0,
+                default: 0
+            },
+            expiryDate: {
+                type: Date
+            },
+            description: {
+                type: String,
+                trim: true
+            },
+            brand: {
+                type: String,
+                trim: true
+            },
+            category: {
+                type: String,
+                trim: true
+            },
+            image: {
+                type: String,
+                trim: true
             }
         }]
     }],
@@ -116,6 +162,27 @@ const shopSchema = new mongoose.Schema({
         ref: 'User',
         default: null
     },
+    // Profile completion tracking
+    profileComplete: {
+        type: Boolean,
+        default: false
+    },
+    // Additional profile fields
+    description: {
+        type: String,
+        trim: true
+    },
+    // Fields for better compatibility
+    latitude: {
+        type: Number
+    },
+    longitude: {
+        type: Number
+    },
+    fullAddress: {
+        type: String,
+        trim: true
+    },
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
@@ -129,5 +196,8 @@ const shopSchema = new mongoose.Schema({
 }, {
     timestamps: true
 });
+
+// Add 2dsphere index for location
+shopSchema.index({ location: '2dsphere' });
 
 module.exports = mongoose.model('Shop', shopSchema);

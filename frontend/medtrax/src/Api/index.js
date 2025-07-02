@@ -113,6 +113,14 @@ export const deleteShopApi = (id) => API.delete(`/api/admin/shops/${id}`)
 export const getShopProfileApi = () => API.get('/api/shop/profile')
 export const updateShopProfileApi = (formData) => API.put('/api/shop/profile', formData)
 export const updateShopStatusApi = (isActive) => API.patch('/api/shop/status', { isActive })
+export const uploadShopImageApi = (formData) => {
+  const config = {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  }
+  return API.post('/api/shop/profile/upload-image', formData, config)
+}
 
 // Shop Inventory APIs
 export const getInventoryApi = (params) => API.get('/api/shop/inventory', { params })
@@ -161,7 +169,7 @@ export const getPublicHospitalDetailsApi = (id) => {
   console.log(`Calling API for hospital details with ID: ${id}`);
   return API.get(`/api/public/hospitals/${id}`);
 }
-export const getPublicShopDetailsApi = (id) => API.get(`/api/public/shops/${id}`)
+export const getPublicShopDetailsApi = (id) => API.get(`/api/public/shops/${id}?t=${Date.now()}`)
 export const getPublicStatsApi = () => API.get('/api/public/stats')
 
 // Auth APIs (updating existing)

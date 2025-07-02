@@ -16,6 +16,7 @@ const {
     getShopProfile,
     updateShopProfile,
     updateShopStatus,
+    uploadShopImage,
     debugShopAccess
 } = require('../controllers/shopController');
 
@@ -229,6 +230,11 @@ router.get('/stats', [
 ], getShopStats);
 
 // Shop Profile Routes
+
+// @route   POST /api/shop/profile/upload-image
+// @desc    Upload shop image
+// @access  Private (Shop Admin only)
+router.post('/profile/upload-image', uploadShopImage);
 
 // @route   GET /api/shop/profile
 // @desc    Get shop profile

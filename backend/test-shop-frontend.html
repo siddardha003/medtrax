@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop API Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .shop-card { border: 1px solid #ccc; margin: 10px 0; padding: 15px; border-radius: 8px; }
+        .shop-name { font-size: 1.2em; font-weight: bold; color: #333; }
+        .shop-owner { color: #666; margin: 5px 0; }
+        .shop-services { color: #888; margin: 5px 0; }
+        .shop-location { color: #555; margin: 5px 0; }
+        button { margin: 5px; padding: 10px 15px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        #results { margin-top: 20px; }
+        .loading { text-align: center; color: #666; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h1>Shop API Test</h1>
+    <p>This page tests the shop API endpoints to verify different shops return different data.</p>
+    
+    <div>
+        <button onclick="testAllShops()">Test All Shops</button>
+        <button onclick="testSpecificShop('68584d885013d3b43cd842c8')">Test Apollo</button>
+        <button onclick="testSpecificShop('68584d885013d3b43cd842cd')">Test MedPlus</button>
+        <button onclick="testSpecificShop('68584d885013d3b43cd842d2')">Test Guardian</button>
+        <button onclick="clearResults()">Clear Results</button>
+    </div>
+
+    <div id="results"></div>
+
+    <script>
+        const shopIds = [
+            { name: 'Apollo Pharmacy', id: '68584d885013d3b43cd842c8' },
+            { name: 'MedPlus Pharmacy', id: '68584d885013d3b43cd842cd' },
+            { name: 'Guardian Pharmacy', id: '68584d885013d3b43cd842d2' },
+            { name: 'Netmeds Pharmacy', id: '68584d895013d3b43cd842dc' },
+            { name: 'Wellness Forever', id: '68584d895013d3b43cd842d7' }
+        ];
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+
+        async function testSpecificShop(shopId) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<div class="loading">Loading shop data...</div>';
+            
+            try {
+                const response = await fetch(`http://localhost:5000/api/public/shops/${shopId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const shop = data.data;
+                    resultsDiv.innerHTML = `
+                        <div class="shop-card">
+                            <div class="shop-name">🏪 ${shop.name}</div>
+                            <div class="shop-owner">👤 Owner: ${shop.ownerName || 'Not set'}</div>
+                            <div class="shop-owner">📞 Phone: ${shop.ownerPhone || shop.phone || 'Not set'}</div>
+                            <div class="shop-owner">📧 Email: ${shop.ownerEmail || 'Not set'}</div>
+                            <div class="shop-location">📍 Location: ${shop.location?.coordinates || 'Not set'}</div>
+                            <div class="shop-services">🏥 Services: ${shop.services?.length || 0} categories</div>
+                            <div class="shop-services">🖼️ Images: ${shop.images?.length || 0} images</div>
+                            ${shop.services && shop.services.length > 0 ? `
+                                <div style="margin-top: 10px;">
+                                    <strong>First Service Category:</strong> ${shop.services[0].category}<br>
+                                    <strong>Items:</strong> ${shop.services[0].items?.length || 0}
+                                    ${shop.services[0].items && shop.services[0].items.length > 0 ? 
+                                        `<br><strong>First Item:</strong> ${shop.services[0].items[0].name} - $${shop.services[0].items[0].price}` : ''}
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                } else {
+                    resultsDiv.innerHTML = `<div class="error">❌ Error: ${data.message}</div>`;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="error">❌ Network Error: ${error.message}</div>`;
+            }
+        }
+
+        async function testAllShops() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<div class="loading">Loading all shops...</div>';
+            
+            let html = '<h2>All Shops Test Results:</h2>';
+            
+            for (const shop of shopIds) {
+                try {
+                    const response = await fetch(`http://localhost:5000/api/public/shops/${shop.id}`);
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        const shopData = data.data;
+                        html += `
+                            <div class="shop-card">
+                                <div class="shop-name">🏪 ${shopData.name}</div>
+                                <div class="shop-owner">👤 Owner: ${shopData.ownerName || 'Not set'}</div>
+                                <div class="shop-owner">📞 Phone: ${shopData.ownerPhone || shopData.phone || 'Not set'}</div>
+                                <div class="shop-location">📍 Location: ${shopData.location?.coordinates || 'Not set'}</div>
+                                <div class="shop-services">🏥 Services: ${shopData.services?.length || 0} categories</div>
+                                <div class="shop-services">🖼️ Images: ${shopData.images?.length || 0} images</div>
+                                ${shopData.services && shopData.services.length > 0 ? `
+                                    <div style="margin-top: 5px; font-size: 0.9em; color: #666;">
+                                        <strong>Sample Service:</strong> ${shopData.services[0].category}
+                                        ${shopData.services[0].items && shopData.services[0].items.length > 0 ? 
+                                            ` - ${shopData.services[0].items[0].name}` : ''}
+                                    </div>
+                                ` : ''}
+                            </div>
+                        `;
+                    } else {
+                        html += `<div class="error">❌ ${shop.name}: ${data.message}</div>`;
+                    }
+                } catch (error) {
+                    html += `<div class="error">❌ ${shop.name}: ${error.message}</div>`;
+                }
+            }
+            
+            resultsDiv.innerHTML = html;
+        }
+
+        // Auto-run test on page load
+        window.onload = function() {
+            console.log('Shop API Test Page Loaded');
+            console.log('Backend should be running on http://localhost:5000');
+        };
+    </script>
+</body>
+</html>
