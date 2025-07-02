@@ -1,12 +1,12 @@
 # backend/src/ml_model/api.py
-
+from flask_cors import CORS
 from flask import Flask, request, jsonify
 import joblib
 import numpy as np
 import re
 
 app = Flask(__name__)
-
+CORS(app)
 # Load model and encoders
 model = joblib.load('prescription_model.pkl')
 symptom_encoder = joblib.load('symptom_encoder.pkl')
@@ -59,6 +59,13 @@ def predict():
         'prescriptions': list(presc_pred),
         'precautions': list(prec_pred)
     })
+
+@app.route('/symptoms', methods=['GET'])
+def get_symptoms():
+    # Clean and deduplicate symptoms
+    raw_symptoms = list(symptom_encoder.classes_)
+    clean_symptoms = sorted(set(s.strip() for s in raw_symptoms if s.strip()))
+    return jsonify({'symptoms': clean_symptoms})
 
 if __name__ == '__main__':
     app.run(port=5001, debug=True)
