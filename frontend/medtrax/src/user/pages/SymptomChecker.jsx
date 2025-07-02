@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import "../css/SymptomChecker.css";
+import axios from "axios";
 
 const SymptomChecker = () => {
     const [symptoms, setSymptoms] = useState("");
@@ -11,41 +12,36 @@ const SymptomChecker = () => {
     const [showForm, setShowForm] = useState(false);
     const severityLevels = ["Low", "Moderate", "High"];
 
-    const predictDisease = () => {
+    const handlePredictPrescription = async () => {
         setIsLoading(true);
-        setTimeout(() => {
-            const symptomLower = symptoms.toLowerCase();
-            let recommendedMedication = "";
-
-            if (symptomLower.includes("fever") && symptomLower.includes("cough")) {
-                recommendedMedication = "- Paracetamol 500mg tablet\n- Dextromethorphan 30mg (cough suppressant)\n- Cetirizine 10mg for congestion";
-            }
-            else if (symptomLower.includes("headache") && symptomLower.includes("nausea")) {
-                recommendedMedication = "- Ibuprofen 400mg tablet\n- Sumatriptan 50mg for migraine\n- Ondansetron 4mg for nausea";
-            }
-            else if (symptomLower.includes("stomach pain") && symptomLower.includes("diarrhea")) {
-                recommendedMedication = "- Loperamide 2mg tablet\n- Omeprazole 20mg\n- Oral Rehydration Salts (ORS)";
-            }
-            else if (symptomLower.includes("allergy") || symptomLower.includes("sneezing")) {
-                recommendedMedication = "- Cetirizine 10mg tablet\n- Montelukast 10mg\n- Loratadine 10mg";
-            }
-            else if (symptomLower.includes("joint pain") || symptomLower.includes("muscle pain")) {
-                recommendedMedication = "- Diclofenac 50mg tablet\n- Acetaminophen 650mg\n- Naproxen 250mg";
-            }
-            else {
-                recommendedMedication = "- Paracetamol 500mg tablet\n- Vitamin C 500mg\n- Multivitamin supplement";
-            }
+        // Map severity to match backend expectations
+        const severityMap = { Low: "mild", Moderate: "moderate", High: "severe" };
+        const mappedSeverity = severityMap[severity] || (severity ? severity.toLowerCase() : undefined);
+        try {
+            const response = await axios.post("/api/prescription/predict", {
+                symptoms,
+                age,
+                duration: days, // send as 'duration'
+                severity: mappedSeverity,
+            });
 
             setDiagnosis({
-                recommendedMedication
+                prescriptions: response.data.prescriptions || [],
+                precautions: response.data.precautions || [],
             });
-            setIsLoading(false);
-        }, 1500);
+        } catch (error) {
+            setDiagnosis({
+                prescriptions: ["Prediction failed. Please try again later."],
+                precautions: [],
+            });
+        }
+        setIsLoading(false);
     };
+
     const handleSubmit = (e) => {
         e.preventDefault();
         if (!symptoms || !severity || !age) return alert("Please fill all fields!");
-        predictDisease();
+        handlePredictPrescription();
     };
 
     const resetForm = () => {
@@ -175,16 +171,34 @@ const SymptomChecker = () => {
                 <div className="prescription-display20">
                     <div className="prescription-section20">
                         <h3 style={{ textAlign: "center" }}>Recommended Medications</h3>
-                        <div style={{ whiteSpace: 'pre-line', margin: '15px 0', fontFamily: 'serif', fontSize: '20px' }}>
-                            {diagnosis.recommendedMedication}
-                        </div>
+                        <ul style={{ paddingLeft: "20px", fontSize: "18px" }}>
+                            {diagnosis.prescriptions.length > 0 ? (
+                                diagnosis.prescriptions.map((med, idx) => (
+                                    <li key={idx}>{med}</li>
+                                ))
+                            ) : (
+                                <li>No prescriptions found.</li>
+                            )}
+                        </ul>
+
+                        <h3 style={{ textAlign: "center", marginTop: "20px" }}>Recommended Precautions</h3>
+                        <ul style={{ paddingLeft: "20px", fontSize: "18px" }}>
+                            {diagnosis.precautions.length > 0 ? (
+                                diagnosis.precautions.map((prec, idx) => (
+                                    <li key={idx}>{prec}</li>
+                                ))
+                            ) : (
+                                <li>No precautions found.</li>
+                            )}
+                        </ul>
+
                         <div style={{ marginTop: '20px' }}>
                             <small style={{ color: '#666' }}>
                                 Note: Please consult a healthcare professional before taking any medication.
                             </small>
                         </div>
                         <button
-                            className="prescription-delete-btn20 "
+                            className="prescription-delete-btn20"
                             onClick={resetForm}
                         >
                             Check Again
