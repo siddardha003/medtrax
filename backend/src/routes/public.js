@@ -261,56 +261,17 @@ router.get('/shops', async (req, res, next) => {
 // @desc    Get shop details by ID
 // @access  Public
 router.get('/shops/:id', async (req, res, next) => {
-    try {        const shop = await Shop.findById(req.params.id)
-            .select('name address city state pincode contactPhone contactEmail ownerName services description');
+    try {
+        const shop = await Shop.findById(req.params.id)
+            .select('name address city state pincode phone contactPhone contactEmail ownerName ownerPhone ownerEmail services description closingTime location directionsLink images openingTimes selectedMedicalshop latitude longitude fullAddress');
 
         if (!shop) {
-            // Return dummy shop data if not found
-            const dummyShop = {
-                _id: req.params.id,
-                name: 'Sample Medical Store',
-                address: {
-                    street: '123 Pharmacy Lane',
-                    city: 'Mumbai',
-                    state: 'Maharashtra',
-                    zipCode: '400002'
-                },
-                contactPhone: '+91-9876543220',
-                contactEmail: 'info@samplestore.com',
-                ownerName: 'Dr. Sample',
-                phone: '+91-9876543220',
-                rating: 4.5,
-                reviewsCount: 125,
-                closingTime: '10:00 PM',
-                location: 'Mumbai, Maharashtra',
-                directionsLink: '#',
-                images: [
-                    'https://images.unsplash.com/photo-1631549916768-4119b2e5f926?w=400&h=300&fit=crop',
-                    'https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?w=400&h=300&fit=crop',
-                    'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&h=300&fit=crop'
-                ],
-                services: [
-                    {
-                        category: "Medicines",
-                        items: [
-                            { name: "Paracetamol", duration: "As needed", price: 25 },
-                            { name: "Cough Syrup", duration: "Daily", price: 85 }
-                        ]
-                    },
-                    {
-                        category: "Health Checkup",
-                        items: [
-                            { name: "Blood Pressure Check", duration: "15 mins", price: 50 },
-                            { name: "Blood Sugar Test", duration: "10 mins", price: 30 }
-                        ]
-                    }
-                ],
-                description: 'A trusted pharmacy providing quality medicines and healthcare products.'
-            };
-            
+            // Return a special response indicating not set up yet
             return res.status(200).json({
-                success: true,
-                data: dummyShop
+                success: false,
+                notSetUp: true,
+                message: 'This shop has not been set up by the owner yet.',
+                data: null
             });
         }
 

@@ -109,6 +109,19 @@ export const createShopApi = (formData) => API.post('/api/admin/shops', formData
 export const updateShopApi = (id, formData) => API.put(`/api/admin/shops/${id}`, formData)
 export const deleteShopApi = (id) => API.delete(`/api/admin/shops/${id}`)
 
+// Shop Profile APIs
+export const getShopProfileApi = () => API.get('/api/shop/profile')
+export const updateShopProfileApi = (formData) => API.put('/api/shop/profile', formData)
+export const updateShopStatusApi = (isActive) => API.patch('/api/shop/status', { isActive })
+export const uploadShopImageApi = (formData) => {
+  const config = {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  }
+  return API.post('/api/shop/profile/upload-image', formData, config)
+}
+
 // Shop Inventory APIs
 export const getInventoryApi = (params) => API.get('/api/shop/inventory', { params })
 export const getInventoryItemApi = (id) => API.get(`/api/shop/inventory/${id}`)
@@ -156,7 +169,7 @@ export const getPublicHospitalDetailsApi = (id) => {
   console.log(`Calling API for hospital details with ID: ${id}`);
   return API.get(`/api/public/hospitals/${id}`);
 }
-export const getPublicShopDetailsApi = (id) => API.get(`/api/public/shops/${id}`)
+export const getPublicShopDetailsApi = (id) => API.get(`/api/public/shops/${id}?t=${Date.now()}`)
 export const getPublicStatsApi = () => API.get('/api/public/stats')
 
 // Auth APIs (updating existing)
@@ -183,6 +196,8 @@ export const getHormoneHistoryApi = (params) => API.get('/api/health/hormone/his
 // Review APIs
 export const submitReviewApi = (formData) => API.post('/api/reviews/submit', formData)
 export const getHospitalReviewsApi = (hospitalId) => API.get(`/api/reviews/hospital/${hospitalId}`)
+export const getShopReviewsApi = (shopId) => API.get(`/api/reviews/shop/${shopId}`)
+export const submitShopReviewApi = (formData) => API.post('/api/reviews/shop/submit', formData)
 
 // Sleep Tracker APIs
 export const saveSleepDataApi = (formData) => API.post('/api/health/sleep', formData)

@@ -724,6 +724,348 @@ const getShopStats = async (req, res) => {
     }
 };
 
+// @desc    Get shop profile
+// @route   GET /api/shop/profile
+// @access  Private (Shop Admin)
+const getShopProfile = async (req, res) => {
+    try {
+        const shopId = req.user.shopId;
+        
+        if (!shopId) {
+            return res.status(400).json({
+                success: false,
+                error: 'User is not associated with any shop'
+            });
+        }
+        
+        const shop = await Shop.findById(shopId);
+        
+        if (!shop) {
+            return res.status(404).json({
+                success: false,
+                error: 'Shop not found'
+            });
+        }
+        
+        res.status(200).json({
+            success: true,
+            data: { shop }
+        });
+        
+    } catch (error) {
+        console.error('Get shop profile error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Server error'
+        });
+    }
+};
+
+// @desc    Update shop profile
+// @route   PUT /api/shop/profile
+// @access  Private (Shop Admin)
+const updateShopProfile = async (req, res) => {
+    try {
+        console.log('🔄 UPDATE SHOP PROFILE - START');
+        console.log('📨 Full request body:', JSON.stringify(req.body, null, 2));
+        
+        const shopId = req.user.shopId;
+        
+        if (!shopId) {
+            return res.status(400).json({
+                success: false,
+                error: 'User is not associated with any shop'
+            });
+        }
+        
+        const shop = await Shop.findById(shopId);
+        
+        if (!shop) {
+            return res.status(404).json({
+                success: false,
+                error: 'Shop not found'
+            });
+        }
+
+        console.log('🏪 Current shop before update:', {
+            name: shop.name,
+            ownerName: shop.ownerName,
+            ownerPhone: shop.ownerPhone,
+            ownerEmail: shop.ownerEmail,
+            services: shop.services,
+            location: shop.location
+        });
+
+        // Extract specific fields from request body
+        const { 
+            images, 
+            closingTime, 
+            openingTimes, 
+            services, 
+            location,
+            ownerName,
+            ownerPhone,
+            ownerEmail,
+            directionsLink,
+            description
+        } = req.body;
+
+        console.log('📋 Extracted fields:', {
+            images: images ? `Array of ${images.length} items` : 'undefined',
+            closingTime,
+            openingTimes,
+            services: services ? `Type: ${typeof services}, Length: ${Array.isArray(services) ? services.length : 'N/A'}, Content: ${JSON.stringify(services)}` : 'undefined',
+            location: location ? JSON.stringify(location) : 'undefined',
+            ownerName,
+            ownerPhone,
+            ownerEmail,
+            directionsLink,
+            description
+        });
+
+        // Update fields if provided
+        if (images) {
+            console.log('✅ Updating images:', images);
+            shop.images = images;
+        }
+        if (closingTime) {
+            console.log('✅ Updating closingTime:', closingTime);
+            shop.closingTime = closingTime;
+        }
+        if (openingTimes) {
+            console.log('✅ Updating openingTimes:', openingTimes);
+            shop.openingTimes = openingTimes;
+        }
+        if (services) {
+            console.log('✅ Updating services - Before:', typeof services, services);
+            // Fix: Handle different service formats
+            if (Array.isArray(services)) {
+                // Check if it's already in the correct format (array of objects with category and items)
+                if (services.length > 0 && services[0].category && Array.isArray(services[0].items)) {
+                    console.log('Services are already in correct format');
+                    shop.services = services;
+                } else {
+                    console.log('Services are simple strings, converting to object format');
+                    // Convert simple string array to object format expected by schema
+                    const convertedServices = services.map(serviceKey => ({
+                        category: serviceKey.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+                        items: [] // Empty for now, can be populated later
+                    }));
+                    shop.services = convertedServices;
+                }
+            } else if (typeof services === 'string') {
+                console.log('Single service string, converting to object format');
+                shop.services = [{
+                    category: services.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+                    items: []
+                }];
+            }
+            console.log('✅ Services after processing:', shop.services);
+        }
+        if (location) {
+            console.log('✅ Updating location:', location);
+            shop.location = location;
+        }
+        if (ownerName !== undefined) {
+            console.log('✅ Updating ownerName:', ownerName);
+            shop.ownerName = ownerName;
+        }
+        if (ownerPhone !== undefined) {
+            console.log('✅ Updating ownerPhone:', ownerPhone);
+            shop.ownerPhone = ownerPhone;
+        }
+        if (ownerEmail !== undefined) {
+            console.log('✅ Updating ownerEmail:', ownerEmail);
+            shop.ownerEmail = ownerEmail;
+        }
+        if (directionsLink !== undefined) {
+            console.log('✅ Updating directionsLink:', directionsLink);
+            shop.directionsLink = directionsLink;
+        }
+        if (description !== undefined) {
+            console.log('✅ Updating description:', description);
+            shop.description = description;
+        }
+        
+        console.log('🏪 Shop after field updates:', {
+            name: shop.name,
+            ownerName: shop.ownerName,
+            ownerPhone: shop.ownerPhone,
+            ownerEmail: shop.ownerEmail,
+            services: shop.services,
+            location: shop.location
+        });
+        
+        // Mark profile as complete if all required fields are filled
+        shop.profileComplete = Boolean(
+            shop.images?.length > 0 && 
+            shop.services?.length > 0 &&
+            shop.location?.coordinates?.length === 2 &&
+            shop.closingTime &&
+            shop.ownerName &&
+            shop.ownerPhone
+        );
+        
+        console.log('✅ Profile complete check:', {
+            hasImages: shop.images?.length > 0,
+            hasServices: shop.services?.length > 0,
+            hasLocation: shop.location?.coordinates?.length === 2,
+            hasClosingTime: !!shop.closingTime,
+            hasOwnerName: !!shop.ownerName,
+            hasOwnerPhone: !!shop.ownerPhone,
+            profileComplete: shop.profileComplete
+        });
+        
+        shop.updatedBy = req.user._id;
+        
+        // Save updated shop
+        console.log('💾 Saving shop...');
+        await shop.save();
+        console.log('✅ Shop saved successfully');
+
+        res.status(200).json({
+            success: true,
+            message: 'Shop profile updated successfully',
+            data: { shop }
+        });
+        
+    } catch (error) {
+        console.error('Update shop profile error:', error);
+        
+        // Handle validation errors
+        if (error.name === 'ValidationError') {
+            const validationErrors = Object.values(error.errors).map(err => err.message);
+            return res.status(400).json({
+                success: false,
+                error: `Validation failed: ${validationErrors.join(', ')}`
+            });
+        }
+        
+        res.status(500).json({
+            success: false,
+            error: 'Server error'
+        });
+    }
+};
+
+// @desc    Update shop status (active/inactive)
+// @route   PATCH /api/shop/status
+// @access  Private (Shop Admin)
+const updateShopStatus = async (req, res) => {
+    try {
+        const shopId = req.user.shopId;
+        const { isActive } = req.body;
+        
+        if (!shopId) {
+            return res.status(400).json({
+                success: false,
+                error: 'User is not associated with any shop'
+            });
+        }
+        
+        if (isActive === undefined) {
+            return res.status(400).json({
+                success: false,
+                error: 'Status is required'
+            });
+        }
+        
+        const shop = await Shop.findById(shopId);
+        
+        if (!shop) {
+            return res.status(404).json({
+                success: false,
+                error: 'Shop not found'
+            });
+        }
+        
+        // Update shop status
+        shop.isActive = isActive;
+        shop.updatedBy = req.user._id;
+        await shop.save();
+        
+        res.status(200).json({
+            success: true,
+            message: `Shop ${isActive ? 'activated' : 'deactivated'} successfully`,
+            data: { shop }
+        });
+        
+    } catch (error) {
+        console.error('Update shop status error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Server error'
+        });
+    }
+};
+
+// @desc    Upload shop images
+// @route   POST /api/shop/profile/upload-image
+// @access  Private (Shop Admin)
+const uploadShopImage = async (req, res) => {
+    try {
+        const { upload } = require('../utils/cloudinary');
+        
+        upload.single('image')(req, res, async function(err) {
+            if (err) {
+                console.error('Cloudinary upload middleware error:', err);
+                return res.status(400).json({
+                    success: false,
+                    error: err.message || 'Error uploading image'
+                });
+            }
+            
+            try {
+                if (!req.file) {
+                    return res.status(400).json({
+                        success: false,
+                        error: 'No image file provided'
+                    });
+                }
+                
+                // Access Cloudinary upload result directly
+                console.log('File uploaded to Cloudinary:', req.file);
+                
+                if (!req.file.path && !req.file.secure_url) {
+                    return res.status(500).json({
+                        success: false,
+                        error: 'Failed to get a valid URL from Cloudinary'
+                    });
+                }
+                
+                // Use secure_url from Cloudinary
+                const imageUrl = req.file.secure_url || req.file.path;
+                
+                // Return success response with Cloudinary URL
+                return res.status(200).json({
+                    success: true,
+                    data: {
+                        imageUrl: imageUrl,
+                        url: imageUrl,
+                        secure_url: imageUrl,
+                        originalFilename: req.file.originalname,
+                        size: req.file.size,
+                        public_id: req.file.public_id
+                    }
+                });
+                
+            } catch (error) {
+                console.error('Error in image processing:', error);
+                return res.status(500).json({
+                    success: false,
+                    error: 'Error processing image'
+                });
+            }
+        });
+    } catch (outerError) {
+        console.error('Outer error in upload handler:', outerError);
+        return res.status(500).json({
+            success: false,
+            error: 'Server error during upload process'
+        });
+    }
+};
+
 // Debug route to check shop admin access (remove in production)
 const debugShopAccess = async (req, res) => {
     try {
@@ -788,5 +1130,9 @@ module.exports = {
     getOrder,
     updateOrderStatus,
     getShopStats,
+    getShopProfile,
+    updateShopProfile,
+    updateShopStatus,
+    uploadShopImage,
     debugShopAccess
 };
