@@ -70,12 +70,13 @@ const shopSchema = new mongoose.Schema({
         type: {
             type: String,
             enum: ['Point'],
-            required: true,
+            required: false,
             default: 'Point'
         },
         coordinates: {
             type: [Number], // [longitude, latitude]
-            required: true
+            required: false,
+            default: [0, 0] // Default coordinates if not provided
         }
     },
     directionsLink: {
