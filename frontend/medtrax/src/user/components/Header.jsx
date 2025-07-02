@@ -208,26 +208,26 @@ const Header = ({ data }) => {
               <div className="st-nav">
                 <ul className={`st-nav-list st-onepage-nav ${mobileToggle ? "d-block" : "none"}`}>
                   <li>
-                    <Link to="/" spy={true} duration={500} onClick={() => setMobileToggle(false)} >Home</Link>
+                    <Link to="/" spy="true" duration={500} onClick={() => setMobileToggle(false)} >Home</Link>
                   </li>
             
                   <li>
-                    <Link to="/Hospital" spy={true} duration={500} onClick={() => setMobileToggle(false)} >Hospitals</Link>
+                    <Link to="/Hospital" spy="true" duration={500} onClick={() => setMobileToggle(false)} >Hospitals</Link>
                   </li>
                   <li>
-                    <Link to="/Appointments" spy={true} duration={500} onClick={() => setMobileToggle(false)} >Appointment</Link>
+                    <Link to="/Appointments" spy="true" duration={500} onClick={() => setMobileToggle(false)} >Appointment</Link>
                   </li>
                   <li>
-                    <Link to="/Medicines" spy={true} duration={500} onClick={() => setMobileToggle(false)} >Medicines</Link>
+                    <Link to="/Medicines" spy="true" duration={500} onClick={() => setMobileToggle(false)} >Medicines</Link>
                   </li>
                   <li>
-                    <Link to="/MedicalCare" spy={true} duration={500} onClick={() => setMobileToggle(false)} >Medical Care</Link>
+                    <Link to="/MedicalCare" spy="true" duration={500} onClick={() => setMobileToggle(false)} >Medical Care</Link>
                   </li>
                   <li>
-                    <Link to="/About" spy={true} duration={500} onClick={() => setMobileToggle(false)} >About</Link>
+                    <Link to="/About" spy="true" duration={500} onClick={() => setMobileToggle(false)} >About</Link>
                   </li>
                   <li>
-                    <Link to="/Contact" spy={true} duration={500} onClick={() => setMobileToggle(false)} >Contact</Link>
+                    <Link to="/Contact" spy="true" duration={500} onClick={() => setMobileToggle(false)} >Contact</Link>
                   </li>
                 </ul>
                 <div className={`st-munu-toggle ${mobileToggle ? "st-toggle-active" : ""} `} onClick={handleMobileToggle}>
