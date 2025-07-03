@@ -72,10 +72,7 @@ const getWeightHistory = async (req, res) => {
 const getLatestWeight = async (req, res) => {
     try {
         const userId = req.user.id;
-
-        const latestWeight = await WeightTracker.findOne({ userId })
-            .sort({ date: -1 });
-
+        const latestWeight = await WeightTracker.findOne({ userId }).sort({ date: -1, _id: -1 });
         res.status(200).json({
             success: true,
             data: latestWeight
@@ -152,6 +149,20 @@ const getHormoneHistory = async (req, res) => {
     }
 };
 
+// Latest entry for Hormone Tracker
+const getLatestHormone = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const latest = await HormoneTracker.findOne({ userId }).sort({ date: -1, _id: -1 });
+        if (!latest) {
+            return res.status(404).json({ success: false, message: 'No hormone data found' });
+        }
+        res.status(200).json({ success: true, data: latest });
+    } catch (error) {
+        res.status(400).json({ success: false, message: 'Error fetching latest hormone data', error: error.message });
+    }
+};
+
 // Sleep Tracker Controllers
 const saveSleepData = async (req, res) => {
     try {
@@ -208,6 +219,20 @@ const getSleepHistory = async (req, res) => {
             message: 'Error fetching sleep history',
             error: error.message
         });
+    }
+};
+
+// Latest entry for Sleep Tracker
+const getLatestSleep = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const latest = await SleepTracker.findOne({ userId }).sort({ date: -1, _id: -1 });
+        if (!latest) {
+            return res.status(404).json({ success: false, message: 'No sleep data found' });
+        }
+        res.status(200).json({ success: true, data: latest });
+    } catch (error) {
+        res.status(400).json({ success: false, message: 'Error fetching latest sleep data', error: error.message });
     }
 };
 
@@ -272,6 +297,20 @@ const getHeadacheHistory = async (req, res) => {
     }
 };
 
+// Latest entry for Headache Tracker
+const getLatestHeadache = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const latest = await HeadacheTracker.findOne({ userId }).sort({ date: -1, _id: -1 });
+        if (!latest) {
+            return res.status(404).json({ success: false, message: 'No headache data found' });
+        }
+        res.status(200).json({ success: true, data: latest });
+    } catch (error) {
+        res.status(400).json({ success: false, message: 'Error fetching latest headache data', error: error.message });
+    }
+};
+
 // Stress Tracker Controllers
 const saveStressData = async (req, res) => {
     try {
@@ -333,6 +372,20 @@ const getStressHistory = async (req, res) => {
     }
 };
 
+// Latest entry for Stress Tracker
+const getLatestStress = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const latest = await StressTracker.findOne({ userId }).sort({ date: -1, _id: -1 });
+        if (!latest) {
+            return res.status(404).json({ success: false, message: 'No stress data found' });
+        }
+        res.status(200).json({ success: true, data: latest });
+    } catch (error) {
+        res.status(400).json({ success: false, message: 'Error fetching latest stress data', error: error.message });
+    }
+};
+
 // Stomach Tracker Controllers
 const saveStomachData = async (req, res) => {
     try {
@@ -391,6 +444,20 @@ const getStomachHistory = async (req, res) => {
             message: 'Error fetching stomach history',
             error: error.message
         });
+    }
+};
+
+// Latest entry for Stomach Tracker
+const getLatestStomach = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const latest = await StomachTracker.findOne({ userId }).sort({ date: -1, _id: -1 });
+        if (!latest) {
+            return res.status(404).json({ success: false, message: 'No stomach data found' });
+        }
+        res.status(200).json({ success: true, data: latest });
+    } catch (error) {
+        res.status(400).json({ success: false, message: 'Error fetching latest stomach data', error: error.message });
     }
 };
 
@@ -682,22 +749,27 @@ module.exports = {
     // Hormone Tracker
     saveHormoneData,
     getHormoneHistory,
+    getLatestHormone,
     
     // Sleep Tracker
     saveSleepData,
     getSleepHistory,
+    getLatestSleep,
     
     // Headache Tracker
     saveHeadacheData,
     getHeadacheHistory,
+    getLatestHeadache,
     
     // Stress Tracker
     saveStressData,
     getStressHistory,
+    getLatestStress,
     
     // Stomach Tracker
     saveStomachData,
     getStomachHistory,
+    getLatestStomach,
     
     // Medicine Reminder
     saveMedicineReminder,
