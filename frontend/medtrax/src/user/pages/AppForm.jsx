@@ -4,15 +4,17 @@ import 'react-datepicker/dist/react-datepicker.css';
 import { getPublicHospitalDetailsApi, createAppointmentApi } from '../../Api';
 import { useSelector } from 'react-redux';
 import '../css/AppForm.css';
+import useAuth from '../../hooks/useAuth';
 
 export default function AppForm() {
+    const { isAuthenticated, user } = useAuth();
     const [searchParams] = useSearchParams();
     const { id } = useParams();
     const location = useLocation();
     const hospitalId = id || searchParams.get('hospitalId');
     const passedHospital = location.state?.hospital;
-    
-    const user = useSelector(state => state.user.user);
+
+    // const user = useSelector(state => state.user.user);
     const [hospital, setHospital] = useState(passedHospital || null);
     const [selectedDate, setSelectedDate] = useState(null);
     const [department, setDepartment] = useState('');
@@ -41,7 +43,7 @@ export default function AppForm() {
                 }
             }
         };
-        
+
         fetchHospital();
     }, [hospitalId, hospital]);
 
@@ -53,10 +55,10 @@ export default function AppForm() {
 
     const fetchDoctors = async () => {
         try {
-            const serviceData = hospital.services?.find(service => 
+            const serviceData = hospital.services?.find(service =>
                 service.category.toLowerCase() === department.toLowerCase()
             );
-            
+
             if (serviceData && serviceData.doctors) {
                 setDoctors(serviceData.doctors);
             } else {
@@ -94,24 +96,30 @@ export default function AppForm() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
+
         if (!user) {
             setError('Please login to book an appointment');
             return;
         }
 
-        if (!hospitalId || !selectedDate || !department || !selectedDoctor || !formData.time) {
+        if (!hospitalId || !selectedDate || !department || !selectedDoctor) {
             setError('Please fill in all required fields');
             return;
         }
 
         setLoading(true);
         try {
+            const dateObj = new Date(selectedDate);
+            if (isNaN(dateObj.getTime())) {
+                setError('Please select a valid date');
+                setLoading(false);
+                return;
+            }
             const appointmentData = {
                 hospitalId,
                 doctorId: selectedDoctor,
                 department,
-                appointmentDate: selectedDate.toISOString(),
+                appointmentDate: dateObj.toISOString(),
                 appointmentTime: formData.time,
                 patientName: formData.name,
                 patientPhone: formData.phone,
@@ -122,7 +130,7 @@ export default function AppForm() {
 
             await createAppointmentApi(appointmentData);
             alert('Appointment booked successfully!');
-            
+
             setFormData({
                 name: user?.name || '',
                 email: user?.email || '',
@@ -133,8 +141,7 @@ export default function AppForm() {
             setSelectedDate(null);
             setDepartment('');
             setSelectedDoctor('');
-            setTimeSlots([]);
-            
+
         } catch (err) {
             console.error('Error booking appointment:', err);
             setError('Failed to book appointment. Please try again.');
@@ -144,159 +151,198 @@ export default function AppForm() {
     };
 
     return (
-        <div className="appointment-form-container">
-            <div className="form-header">
-                <h1 className="form-main-heading">Book an</h1>
-                <h2 className="form-sub-heading">Appointment</h2>
+        <div>
+            {/* User Status Indicator */}
+            <div className="container">
+                <div className="user-status-indicator" style={{
+                    textAlign: 'center',
+                    padding: '10px',
+                    marginBottom: '20px',
+                    backgroundColor: isAuthenticated ? '#e8f5e8' : '#fff3cd',
+                    border: `1px solid ${isAuthenticated ? '#d4edda' : '#ffeaa7'}`,
+                    borderRadius: '5px',
+                    fontSize: '14px'
+                }}>
+                    {isAuthenticated ? (
+                        <span style={{ color: '#155724' }}>
+                            ✓ Logged in as {user?.name || 'User'} - Your health data will be saved permanently
+                        </span>
+                    ) : (
+                        <span style={{ color: '#856404' }}>
+                            ⚠️ You're browsing as a guest - Please log in to save your health data permanently
+                        </span>
+                    )}
+                </div>
             </div>
-            
-            <form onSubmit={handleSubmit} className="form-card">
-                <div className="form-grid">
-                    {/* Name Field */}
-                    <div className="form-group">
-                        <label className="form-label">Name</label>
-                        <input
-                            type="text"
-                            className="form-input"
-                            placeholder="David John"
-                            value={formData.name}
-                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                            required
-                        />
-                    </div>
+            <div className="appointment-form-container">
+                <div className="form-header">
+                    <h1 className="form-main-heading">Book an</h1>
+                    <h2 className="form-sub-heading">Appointment</h2>
+                </div>
 
-                    {/* Phone Number Field */}
-                    <div className="form-group">
-                        <label className="form-label">Phone Number</label>
-                        <input
-                            type="text"
-                            className="form-input"
-                            placeholder="(123) 456 - 789"
-                            value={formData.phone}
-                            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                            required
-                        />
-                    </div>
-
-                    {/* Email Field */}
-                    <div className="form-group">
-                        <label className="form-label">E-Mail</label>
-                        <input
-                            type="email"
-                            className="form-input"
-                            placeholder="example@gmail.com"
-                            value={formData.email}
-                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                            required
-                        />
-                    </div>
-
-                    {/* Hospital Field */}
-                    <div className="form-group">
-                        <label className="form-label">Hospital</label>
-                        <input
-                            type="text"
-                            className="form-input"
-                            value={hospital ? hospital.name : 'Loading...'}
-                            disabled={true}
-                            style={{ 
-                                backgroundColor: '#f5f5f5', 
-                                color: '#666',
-                                cursor: 'not-allowed' 
-                            }}
-                        />
-                    </div>
-
-                    {/* Preferred Date Field */}
-                    <div className="form-group">
-                        <label className="form-label">Preferred Date</label>
-                        <div className="date-picker-container">
+                <form onSubmit={handleSubmit} className="form-card">
+                    <div className="form-grid">
+                        {/* Name Field */}
+                        <div className="form-group">
+                            <label className="form-label">Name</label>
                             <input
-                                type="date"
-                                selected={selectedDate}
-                                onChange={(date) => setSelectedDate(date)}
-                                dateFormat="dd/MM/yyyy"
-                                minDate={new Date()}
-                                isClearable
-                                placeholderText="dd/mm/yyyy"
+                                type="text"
                                 className="form-input"
+                                placeholder="David John"
+                                value={formData.name}
+                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                 required
                             />
                         </div>
-                    </div>
 
-
-                    {/* Department Dropdown */}
-                    <div className="form-group">
-                        <label className="form-label">Department</label>
-                        <select
-                            className="form-input form-select"
-                            name="department"
-                            value={department}
-                            onChange={(e) => setDepartment(e.target.value)}
-                            required
-                        >
-                            <option value="" disabled>Select Department</option>
-                            {hospital?.services?.map((service, index) => (
-                                <option key={index} value={service.category}>{service.category}</option>
-                            )) || (
-                                <>
-                                    <option value="Pediatrics">Pediatrics</option>
-                                    <option value="Obstetrics and Gynecology">Obstetrics and Gynecology</option>
-                                    <option value="Cardiology">Cardiology</option>
-                                    <option value="Neurology">Neurology</option>
-                                </>
-                            )}
-                        </select>
-                    </div>
-
-                    {/* Doctor Dropdown */}
-                    {department && (
+                        {/* Phone Number Field */}
                         <div className="form-group">
-                            <label className="form-label">Choose a Doctor</label>
+                            <label className="form-label">Phone Number</label>
+                            <input
+                                type="text"
+                                className="form-input"
+                                placeholder="(123) 456 - 789"
+                                value={formData.phone}
+                                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                required
+                            />
+                        </div>
+
+                        {/* Email Field */}
+                        <div className="form-group">
+                            <label className="form-label">E-Mail</label>
+                            <input
+                                type="email"
+                                className="form-input"
+                                placeholder="example@gmail.com"
+                                value={formData.email}
+                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                required
+                            />
+                        </div>
+
+                        {/* Hospital Field */}
+                        <div className="form-group">
+                            <label className="form-label">Hospital</label>
+                            <input
+                                type="text"
+                                className="form-input"
+                                value={hospital ? hospital.name : 'Loading...'}
+                                disabled={true}
+                                style={{
+                                    backgroundColor: '#f5f5f5',
+                                    color: '#666',
+                                    cursor: 'not-allowed'
+                                }}
+                            />
+                        </div>
+
+                        {/* Preferred Date Field */}
+                        <div className="form-group">
+                            <label className="form-label">Preferred Date</label>
+                            <div className="date-picker-container">
+                                <input
+                                    type="date"
+                                    value={selectedDate || ''}
+                                    onChange={e => setSelectedDate(e.target.value)}
+                                    className="form-input"
+                                    required
+                                />
+                            </div>
+                        </div>
+
+                        {/* Department Dropdown */}
+                        <div className="form-group">
+                            <label className="form-label">Department</label>
                             <select
                                 className="form-input form-select"
-                                name="doctor"
-                                value={selectedDoctor}
-                                onChange={(e) => setSelectedDoctor(e.target.value)}
+                                name="department"
+                                value={department}
+                                onChange={(e) => setDepartment(e.target.value)}
                                 required
                             >
-                                <option value="" disabled>Select Doctor</option>
-                                {doctors.map((doctor) => (
-                                    <option key={doctor.id} value={doctor.id}>
-                                        {doctor.name} {doctor.degree && `- ${doctor.degree}`}
-                                    </option>
-                                ))}
+                                <option value="" disabled>Select Department</option>
+                                {hospital?.services?.map((service, index) => (
+                                    <option key={index} value={service.category}>{service.category}</option>
+                                )) || (
+                                        <>
+                                            <option value="Pediatrics">Pediatrics</option>
+                                            <option value="Obstetrics and Gynecology">Obstetrics and Gynecology</option>
+                                            <option value="Cardiology">Cardiology</option>
+                                            <option value="Neurology">Neurology</option>
+                                        </>
+                                    )}
                             </select>
                         </div>
-                    )}
 
-                    {/* Notes Field */}
-                    <div className="form-group full-width">
-                        <label className="form-label">Additional Notes</label>
-                        <textarea
-                            className="form-input form-textarea"
-                            placeholder="Any additional information"
-                            value={formData.notes}
-                            onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                        />
-                    </div>
+                        {/* Doctor Dropdown */}
+                        {department && (
+                            <div className="form-group">
+                                <label className="form-label">Choose a Doctor</label>
+                                <select
+                                    className="form-input form-select"
+                                    name="doctor"
+                                    value={selectedDoctor}
+                                    onChange={(e) => setSelectedDoctor(e.target.value)}
+                                    required
+                                >
+                                    <option value="" disabled>Select Doctor</option>
+                                    {doctors.map((doctor) => (
+                                        <option key={doctor.id} value={doctor.id}>
+                                            {doctor.name} {doctor.degree && `- ${doctor.degree}`}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
 
-                    {/* Error Display */}
-                    {error && (
+                        {/* Time Slot Dropdown */}
+                        {selectedDoctor && selectedDate && (
+                            <div className="form-group">
+                                <label className="form-label">Choose a Time Slot</label>
+                                <select
+                                    className="form-input form-select"
+                                    name="time"
+                                    value={formData.time}
+                                    onChange={(e) => setFormData({ ...formData, time: e.target.value })}
+                                    required
+                                >
+                                    <option value="" disabled>Select Time Slot</option>
+                                    {timeSlots.map((slot, idx) => (
+                                        <option key={idx} value={slot}>{slot}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
+
+                        {/* Notes Field */}
                         <div className="form-group full-width">
-                            <div className="error-message">{error}</div>
+                            <label className="form-label">Additional Notes</label>
+                            <textarea
+                                className="form-input form-textarea"
+                                placeholder="Any additional information"
+                                value={formData.notes}
+                                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                            />
                         </div>
-                    )}
 
-                    {/* Submit Button */}
-                    <div className="form-group full-width">
-                        <button className="submit-button" type="submit" disabled={loading}>
-                            <span>{loading ? 'Booking...' : 'Submit Appointment'}</span>
-                        </button>
+                        {/* Error Display */}
+                        {error && (
+                            <div className="form-group full-width">
+                                <div className="error-message">{error}</div>
+                            </div>
+                        )}
+
+                        {/* Submit Button */}
+                        <div className="form-group full-width">
+                            <button className="submit-button" type="submit" disabled={loading}>
+                                <span>{loading ? 'Booking...' : 'Submit Appointment'}</span>
+                            </button>
+                        </div>
                     </div>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
+
     );
 }

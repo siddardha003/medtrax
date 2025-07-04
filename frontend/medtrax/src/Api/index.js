@@ -80,7 +80,10 @@ export const deleteHospitalApi = (id) => API.delete(`/api/admin/hospitals/${id}`
 // Hospital Appointments APIs
 export const getAppointmentsApi = (params) => API.get('/api/hospital/appointments', { params })
 export const getAppointmentApi = (id) => API.get(`/api/hospital/appointments/${id}`)
-export const createAppointmentApi = (formData) => API.post('/api/hospital/appointments', formData)
+// For admin use only:
+export const createAdminAppointmentApi = (formData) => API.post('/api/hospital/appointments', formData)
+// For regular users:
+export const createAppointmentApi = (formData) => API.post('/api/public/appointments', formData)
 export const updateAppointmentApi = (id, formData) => API.put(`/api/hospital/appointments/${id}`, formData)
 export const cancelAppointmentApi = (id, formData) => API.put(`/api/hospital/appointments/${id}/cancel`, formData)
 export const getAppointmentStatsApi = () => API.get('/api/hospital/appointments/stats')

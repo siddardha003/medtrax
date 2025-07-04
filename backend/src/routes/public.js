@@ -3,6 +3,7 @@ const Hospital = require('../models/Hospital');
 const Shop = require('../models/Shop');
 const User = require('../models/User');
 const Appointment = require('../models/Appointment');
+const { protect } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -330,6 +331,59 @@ router.get('/stats', async (req, res, next) => {
             success: false,
             error: 'Unable to fetch statistics'
         });
+    }
+});
+
+// @route   POST /api/public/appointments
+// @desc    Book an appointment (logged-in users only)
+// @access  Private (User)
+router.post('/appointments', protect, async (req, res, next) => {
+    try {
+        // Extract appointment details from request body
+        const {
+            hospitalId,
+            doctorId,
+            department,
+            appointmentDate,
+            appointmentTime,
+            patientName,
+            patientPhone,
+            patientEmail,
+            notes
+        } = req.body;
+
+        // Only require the fields present in the frontend form
+        if (!hospitalId || !doctorId || !department || !appointmentDate || !appointmentTime || !patientName || !patientPhone || !patientEmail) {
+            return res.status(400).json({ success: false, error: 'Missing required fields' });
+        }
+
+        // Check if hospital exists and is active
+        const hospital = await Hospital.findById(hospitalId);
+        if (!hospital || !hospital.isActive) {
+            return res.status(400).json({ success: false, error: 'Hospital not found or inactive' });
+        }
+
+        // Create appointment with flat structure
+        const appointment = await Appointment.create({
+            hospitalId,
+            doctorId,
+            department,
+            appointmentDate,
+            appointmentTime,
+            patientName,
+            patientPhone,
+            patientEmail,
+            notes,
+            createdBy: req.user._id
+        });
+
+        res.status(201).json({
+            success: true,
+            message: 'Appointment booked successfully',
+            data: { appointment }
+        });
+    } catch (error) {
+        next(error);
     }
 });
 
