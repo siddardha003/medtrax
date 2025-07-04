@@ -17,7 +17,11 @@ const {
     updateShopProfile,
     updateShopStatus,
     uploadShopImage,
-    debugShopAccess
+    debugShopAccess,
+    getShopServices,
+    addServiceCategory,
+    updateServiceCategory,
+    deleteServiceCategory
 } = require('../controllers/shopController');
 
 const { protect, authorize, validateUserRole } = require('../middleware/auth');
@@ -293,5 +297,48 @@ router.patch('/status', [
         .withMessage('isActive must be a boolean'),
     handleValidationErrors
 ], updateShopStatus);
+
+// Service Management Routes
+
+// @route   GET /api/shop/services
+// @desc    Get all shop services
+// @access  Private (Shop Admin only)
+router.get('/services', getShopServices);
+
+// @route   POST /api/shop/services
+// @desc    Add new service category
+// @access  Private (Shop Admin only)
+router.post('/services', [
+    body('category')
+        .isLength({ min: 2, max: 100 })
+        .trim()
+        .withMessage('Service category must be between 2 and 100 characters'),
+    body('items')
+        .optional()
+        .isArray()
+        .withMessage('Items must be an array'),
+    handleValidationErrors
+], addServiceCategory);
+
+// @route   PUT /api/shop/services/:categoryIndex
+// @desc    Update service category
+// @access  Private (Shop Admin only)
+router.put('/services/:categoryIndex', [
+    body('category')
+        .optional()
+        .isLength({ min: 2, max: 100 })
+        .trim()
+        .withMessage('Service category must be between 2 and 100 characters'),
+    body('items')
+        .optional()
+        .isArray()
+        .withMessage('Items must be an array'),
+    handleValidationErrors
+], updateServiceCategory);
+
+// @route   DELETE /api/shop/services/:categoryIndex
+// @desc    Delete service category
+// @access  Private (Shop Admin only)
+router.delete('/services/:categoryIndex', deleteServiceCategory);
 
 module.exports = router;

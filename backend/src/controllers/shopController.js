@@ -1121,6 +1121,275 @@ const debugShopAccess = async (req, res) => {
     }
 };
 
+// @desc    Get shop services
+// @route   GET /api/shop/services
+// @access  Private (Shop Admin)
+const getShopServices = async (req, res) => {
+    try {
+        console.log('🔍 Get shop services request received');
+        console.log('👤 User ID:', req.user._id);
+        console.log('🏪 User Shop ID:', req.user.shopId);
+        
+        const shopId = req.user.shopId;
+
+        if (!shopId) {
+            console.log('❌ No shopId found for user');
+            return res.status(400).json({
+                success: false,
+                error: 'User is not associated with any shop'
+            });
+        }
+
+        const shop = await Shop.findById(shopId);
+        
+        if (!shop) {
+            return res.status(404).json({
+                success: false,
+                error: 'Shop not found'
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Shop services retrieved successfully',
+            data: { services: shop.services || [] }
+        });
+
+    } catch (error) {
+        console.error('Get shop services error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Server error'
+        });
+    }
+};
+
+// @desc    Add new service category
+// @route   POST /api/shop/services
+// @access  Private (Shop Admin)
+const addServiceCategory = async (req, res) => {
+    try {
+        console.log('🏪 Add service category request received');
+        console.log('👤 User ID:', req.user._id);
+        console.log('🏪 User Shop ID:', req.user.shopId);
+        console.log('📦 Request body:', JSON.stringify(req.body, null, 2));
+        
+        const shopId = req.user.shopId;
+        const { category, items } = req.body;
+        
+        if (!shopId) {
+            console.log('❌ No shopId found for user');
+            return res.status(400).json({
+                success: false,
+                error: 'User is not associated with any shop'
+            });
+        }
+        
+        if (!category || !category.trim()) {
+            return res.status(400).json({
+                success: false,
+                error: 'Service category is required'
+            });
+        }
+        
+        const shop = await Shop.findById(shopId);
+        
+        if (!shop) {
+            return res.status(404).json({
+                success: false,
+                error: 'Shop not found'
+            });
+        }
+        
+        // Check if category already exists
+        const existingCategory = shop.services.find(s => s.category.toLowerCase() === category.toLowerCase());
+        if (existingCategory) {
+            return res.status(400).json({
+                success: false,
+                error: 'Service category already exists'
+            });
+        }
+        
+        // Add new service category
+        shop.services.push({
+            category: category.trim(),
+            items: items || []
+        });
+        
+        shop.updatedBy = req.user._id;
+        await shop.save();
+        
+        console.log('✅ Service category added:', category);
+        
+        res.status(201).json({
+            success: true,
+            message: 'Service category added successfully',
+            data: { 
+                category: shop.services[shop.services.length - 1],
+                totalServices: shop.services.length
+            }
+        });
+
+    } catch (error) {
+        console.error('❌ Add service category error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Server error'
+        });
+    }
+};
+
+// @desc    Update service category
+// @route   PUT /api/shop/services/:categoryIndex
+// @access  Private (Shop Admin)
+const updateServiceCategory = async (req, res) => {
+    try {
+        console.log('🏪 Update service category request received');
+        console.log('👤 User ID:', req.user._id);
+        console.log('🏪 User Shop ID:', req.user.shopId);
+        console.log('📦 Request body:', JSON.stringify(req.body, null, 2));
+        
+        const shopId = req.user.shopId;
+        const categoryIndex = parseInt(req.params.categoryIndex);
+        const { category, items } = req.body;
+        
+        if (!shopId) {
+            return res.status(400).json({
+                success: false,
+                error: 'User is not associated with any shop'
+            });
+        }
+        
+        if (isNaN(categoryIndex) || categoryIndex < 0) {
+            return res.status(400).json({
+                success: false,
+                error: 'Invalid category index'
+            });
+        }
+        
+        const shop = await Shop.findById(shopId);
+        
+        if (!shop) {
+            return res.status(404).json({
+                success: false,
+                error: 'Shop not found'
+            });
+        }
+        
+        if (categoryIndex >= shop.services.length) {
+            return res.status(404).json({
+                success: false,
+                error: 'Service category not found'
+            });
+        }
+        
+        // Update category name if provided
+        if (category && category.trim()) {
+            // Check if new name conflicts with existing category
+            const existingCategory = shop.services.find((s, index) => 
+                index !== categoryIndex && s.category.toLowerCase() === category.toLowerCase()
+            );
+            if (existingCategory) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Service category name already exists'
+                });
+            }
+            shop.services[categoryIndex].category = category.trim();
+        }
+        
+        // Update items if provided
+        if (items && Array.isArray(items)) {
+            shop.services[categoryIndex].items = items;
+        }
+        
+        shop.updatedBy = req.user._id;
+        await shop.save();
+        
+        console.log('✅ Service category updated:', shop.services[categoryIndex].category);
+        
+        res.status(200).json({
+            success: true,
+            message: 'Service category updated successfully',
+            data: { category: shop.services[categoryIndex] }
+        });
+
+    } catch (error) {
+        console.error('❌ Update service category error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Server error'
+        });
+    }
+};
+
+// @desc    Delete service category
+// @route   DELETE /api/shop/services/:categoryIndex
+// @access  Private (Shop Admin)
+const deleteServiceCategory = async (req, res) => {
+    try {
+        console.log('🏪 Delete service category request received');
+        console.log('👤 User ID:', req.user._id);
+        console.log('🏪 User Shop ID:', req.user.shopId);
+        
+        const shopId = req.user.shopId;
+        const categoryIndex = parseInt(req.params.categoryIndex);
+        
+        if (!shopId) {
+            return res.status(400).json({
+                success: false,
+                error: 'User is not associated with any shop'
+            });
+        }
+        
+        if (isNaN(categoryIndex) || categoryIndex < 0) {
+            return res.status(400).json({
+                success: false,
+                error: 'Invalid category index'
+            });
+        }
+        
+        const shop = await Shop.findById(shopId);
+        
+        if (!shop) {
+            return res.status(404).json({
+                success: false,
+                error: 'Shop not found'
+            });
+        }
+        
+        if (categoryIndex >= shop.services.length) {
+            return res.status(404).json({
+                success: false,
+                error: 'Service category not found'
+            });
+        }
+        
+        const deletedCategory = shop.services[categoryIndex].category;
+        shop.services.splice(categoryIndex, 1);
+        shop.updatedBy = req.user._id;
+        await shop.save();
+        
+        console.log('✅ Service category deleted:', deletedCategory);
+        
+        res.status(200).json({
+            success: true,
+            message: 'Service category deleted successfully',
+            data: { 
+                deletedCategory,
+                totalServices: shop.services.length
+            }
+        });
+
+    } catch (error) {
+        console.error('❌ Delete service category error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Server error'
+        });
+    }
+};
+
 module.exports = {
     getInventory,
     getInventoryItem,
@@ -1139,5 +1408,9 @@ module.exports = {
     updateShopProfile,
     updateShopStatus,
     uploadShopImage,
-    debugShopAccess
+    debugShopAccess,
+    getShopServices,
+    addServiceCategory,
+    updateServiceCategory,
+    deleteServiceCategory
 };

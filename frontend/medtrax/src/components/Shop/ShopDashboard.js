@@ -198,6 +198,93 @@ const ShopDashboard = () => {
     }
   }, []);
 
+  // Service management functions
+  const fetchShopServices = useCallback(async () => {
+    try {
+      const { data } = await ShopApi.getShopServicesApi();
+      if (data.success) {
+        setShopProfile(prev => ({
+          ...prev,
+          services: data.data.services || []
+        }));
+      }
+    } catch (error) {
+      console.error('Error fetching shop services:', error);
+      dispatch(showNotification({
+        message: 'Failed to load services',
+        messageType: 'error'
+      }));
+    }
+  }, [dispatch]);
+
+  const addServiceCategory = async (category, items) => {
+    try {
+      const { data } = await ShopApi.addServiceCategoryApi({ category, items });
+      if (data.success) {
+        dispatch(showNotification({
+          message: 'Service category added successfully',
+          messageType: 'success'
+        }));
+        // Refresh services
+        await fetchShopServices();
+        return true;
+      }
+    } catch (error) {
+      console.error('Error adding service category:', error);
+      dispatch(showNotification({
+        message: error.response?.data?.error || 'Failed to add service category',
+        messageType: 'error'
+      }));
+      return false;
+    }
+  };
+
+  const updateServiceCategory = async (categoryIndex, category, items) => {
+    try {
+      const { data } = await ShopApi.updateServiceCategoryApi(categoryIndex, { category, items });
+      if (data.success) {
+        dispatch(showNotification({
+          message: 'Service category updated successfully',
+          messageType: 'success'
+        }));
+        // Refresh services
+        await fetchShopServices();
+        return true;
+      }
+    } catch (error) {
+      console.error('Error updating service category:', error);
+      dispatch(showNotification({
+        message: error.response?.data?.error || 'Failed to update service category',
+        messageType: 'error'
+      }));
+      return false;
+    }
+  };
+
+  const deleteServiceCategory = async (categoryIndex) => {
+    try {
+      const { data } = await ShopApi.deleteServiceCategoryApi(categoryIndex);
+      if (data.success) {
+        dispatch(showNotification({
+          message: 'Service category deleted successfully',
+          messageType: 'success'
+        }));
+        // Refresh services
+        await fetchShopServices();
+        return true;
+      }
+    } catch (error) {
+      console.error('Error deleting service category:', error);
+      dispatch(showNotification({
+        message: error.response?.data?.error || 'Failed to delete service category',
+        messageType: 'error'
+      }));
+      return false;
+    }
+  };
+
+
+
   const fetchInventory = useCallback(async () => {
     setLoading(true);
     try {
@@ -237,35 +324,9 @@ const ShopDashboard = () => {
   }, [searchQuery, filters, dispatch]);
 
   const fetchAnalytics = useCallback(async () => {
-    setLoading(true);
-    try {
-      // For now, we'll simulate analytics data since the backend might not have detailed analytics
-      const simulatedAnalytics = {
-        weeklyVisits: [120, 150, 180, 210, 195, 160, 140],
-        monthlyContactClicks: [45, 52, 38, 61, 49, 55, 43],
-        popularCategories: [
-          { name: 'Prescription Medicines', count: 25 },
-          { name: 'OTC Medicines', count: 18 },
-          { name: 'Medical Devices', count: 12 },
-          { name: 'Health Supplements', count: 8 }
-        ],
-        weeklyRevenue: [15000, 18000, 22000, 19000, 21000, 17000, 16000]
-      };
-
-      setStats(prev => ({
-        ...prev,
-        analytics: simulatedAnalytics
-      }));
-    } catch (error) {
-      console.error('Error fetching analytics:', error);
-      dispatch(showNotification({
-        message: 'Unable to load analytics data',
-        messageType: 'error'
-      }));
-    } finally {
-      setLoading(false);
-    }
-  }, [dispatch]);
+    // Analytics tab was removed, this function is kept for compatibility
+    console.log('Analytics tab was removed');
+  }, []);
 
   // Shop profile management functions
   const fetchShopProfile = useCallback(async () => {
@@ -865,11 +926,11 @@ const ShopDashboard = () => {
       fetchInventoryPreview();
       fetchShopProfile();
     } else if (activeTab === 'inventory') {
-      fetchInventory();
+      fetchShopServices();
     } else if (activeTab === 'analytics') {
       fetchAnalytics();
     }
-  }, [activeTab, fetchStats, fetchInventory, fetchAnalytics, fetchInventoryPreview, fetchShopProfile]);
+  }, [activeTab, fetchStats, fetchInventory, fetchAnalytics, fetchInventoryPreview, fetchShopProfile, fetchShopServices]);
 
   useEffect(() => {
     if (activeTab === 'inventory') {
@@ -891,6 +952,13 @@ const ShopDashboard = () => {
 
     return matchesSearch && matchesCategory && matchesStock && matchesPrescription;
   });
+
+  // Inline editing state
+  const [editingServiceIdx, setEditingServiceIdx] = useState(null);
+  const [editingItemIdx, setEditingItemIdx] = useState(null);
+  const [inlineEditServiceName, setInlineEditServiceName] = useState('');
+  const [inlineEditItem, setInlineEditItem] = useState({ name: '', price: '', availability: 'Available', image: '' });
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -906,12 +974,6 @@ const ShopDashboard = () => {
               </p>
             </div>
             <div className="flex items-center space-x-4">
-              <button
-                onClick={() => setShowAddForm(true)}
-                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium"
-              >
-                Add Item
-              </button>
               <button
                 onClick={() => setShowProfileModal(true)}
                 className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium"
@@ -1192,405 +1254,404 @@ const ShopDashboard = () => {
         {/* Inventory Tab */}
         {activeTab === 'inventory' && (
           <div className="space-y-6">
-            {/* Search and Filters */}
-            <div className="bg-white p-6 rounded-lg shadow">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Search</label>
-                  <input
-                    type="text"
-                    placeholder="Search items..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                  <select
-                    value={filters.category}
-                    onChange={(e) => handleFilterChange('category', e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
-                  >
-                    <option value="">All Categories</option>
-                    {categories.map(cat => (
-                      <option key={cat} value={cat}>
-                        {cat.replace('_', ' ').toUpperCase()}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Stock Status</label>
-                  <select
-                    value={filters.stockStatus}
-                    onChange={(e) => handleFilterChange('stockStatus', e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
-                  >
-                    <option value="">All Stock</option>
-                    <option value="in_stock">In Stock</option>
-                    <option value="low_stock">Low Stock</option>
-                    <option value="out_of_stock">Out of Stock</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Prescription Required</label>
-                  <select
-                    value={filters.prescriptionRequired}
-                    onChange={(e) => handleFilterChange('prescriptionRequired', e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
-                  >
-                    <option value="">All Items</option>
-                    <option value="true">Prescription Required</option>
-                    <option value="false">No Prescription Required</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="mt-4 flex justify-between items-center">
-                <p className="text-sm text-gray-600">
-                  Showing {filteredInventory.length} of {inventory.length} items
-                </p>
+            {/* Service/Item List UI */}
+            <div className="bg-white shadow rounded-lg p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-lg font-medium text-gray-900">Services & Items</h2>
                 <button
-                  onClick={() => {
-                    setSearchQuery('');
-                    setFilters({ category: '', stockStatus: '', prescriptionRequired: '' });
-                  }}
-                  className="text-green-600 hover:text-green-800 text-sm font-medium"
+                  className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium"
+                  onClick={() => setShowAddForm(true)}
                 >
-                  Clear Filters
+                  Add Service
                 </button>
               </div>
-            </div>
-
-            {/* Inventory Table */}
-            <div className="bg-white shadow rounded-lg">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h2 className="text-lg font-medium text-gray-900">Inventory Items</h2>
-              </div>
-
-              {loading ? (
-                <div className="p-6 text-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto"></div>
-                  <p className="mt-2 text-gray-600">Loading inventory...</p>
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Expiry</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {filteredInventory.length === 0 ? (
-                        <tr>
-                          <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
-                            {inventory.length === 0
-                              ? "No inventory items found. Add your first item!"
-                              : "No items match your current filters."
+              {shopProfile?.services && shopProfile.services.length > 0 ? (
+                shopProfile.services.map((service, sIdx) => (
+                  <div key={sIdx} className="mb-6 border-b pb-4">
+                    <div className="flex items-center justify-between mb-2">
+                      {editingServiceIdx === sIdx && editingItemIdx === null ? (
+                        <input
+                          type="text"
+                          value={inlineEditServiceName}
+                          onChange={e => setInlineEditServiceName(e.target.value)}
+                          onBlur={async () => {
+                            if (inlineEditServiceName.trim() && inlineEditServiceName !== service.category) {
+                              const success = await updateServiceCategory(sIdx, inlineEditServiceName, service.items);
+                              if (!success) {
+                                // Revert on failure
+                                setInlineEditServiceName(service.category);
+                              }
                             }
-                          </td>
-                        </tr>
+                            setEditingServiceIdx(null);
+                          }}
+                          onKeyDown={async e => {
+                            if (e.key === 'Enter') {
+                              if (inlineEditServiceName.trim() && inlineEditServiceName !== service.category) {
+                                const success = await updateServiceCategory(sIdx, inlineEditServiceName, service.items);
+                                if (!success) {
+                                  // Revert on failure
+                                  setInlineEditServiceName(service.category);
+                                }
+                              }
+                              setEditingServiceIdx(null);
+                            }
+                          }}
+                          className="text-xl font-semibold text-gray-800 border-b border-gray-400 focus:outline-none"
+                          autoFocus
+                        />
                       ) : (
-                        filteredInventory.map((item) => (
-                          <tr key={item._id}>
-                            <td className="px-6 py-4">
-                              <div>                              <div className="text-sm font-medium text-gray-900">{item.name}</div>
-                                <div className="text-sm text-gray-500">{item.manufacturer}</div>
-                                <div className="text-xs text-gray-400">SKU: {item.sku}</div>
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <span className="text-sm text-gray-900 capitalize">
-                                {item.category?.replace('_', ' ')}
-                              </span>
-                              {item.prescriptionRequired && (
-                                <div className="text-xs text-red-600 font-medium">Rx Required</div>
-                              )}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm text-gray-900">₹{item.pricing?.sellingPrice || item.price}</div>
-                              <div className="text-sm text-gray-500">Cost: ₹{item.pricing?.costPrice || item.costPrice}</div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStockColor(getStockStatus(item))}`}>
-                                {item.quantity?.current || item.stock || 0} units
-                              </span>
-                              <div className="text-xs text-gray-500 mt-1">
-                                Min: {item.quantity?.minimum || item.minStockLevel || 0} | Max: {item.quantity?.maximum || item.maxStockLevel || 0}
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className={`text-sm ${isExpiringSoon(item.expiryDate) ? 'text-red-600 font-medium' : 'text-gray-900'}`}>
-                                {new Date(item.expiryDate).toLocaleDateString()}
-                              </div>
-                              {isExpiringSoon(item.expiryDate) && (
-                                <div className="text-xs text-red-500">Expires soon!</div>
-                              )}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                              <button
-                                onClick={() => handleEdit(item)}
-                                className="text-blue-600 hover:text-blue-900"
-                              >
-                                Edit
-                              </button>
-                              <button
-                                onClick={() => {
-                                  const newStock = prompt(`Update stock for ${item.name}:`, item.stock);
-                                  if (newStock && !isNaN(newStock)) {
-                                    handleStockUpdate(item._id, parseInt(newStock));
-                                  }
-                                }}
-                                className="text-green-600 hover:text-green-900"
-                              >
-                                Update Stock
-                              </button>
-                              <button
-                                onClick={() => handleDelete(item._id)}
-                                className="text-red-600 hover:text-red-900"
-                              >
-                                Delete
-                              </button>
-                            </td>
-                          </tr>
-                        ))
+                        <div
+                          className="text-xl font-semibold text-gray-800 cursor-pointer"
+                          onClick={() => {
+                            setEditingServiceIdx(sIdx);
+                            setEditingItemIdx(null);
+                            setInlineEditServiceName(service.category);
+                          }}
+                        >
+                          {service.category}
+                        </div>
                       )}
-                    </tbody>
-                  </table>
-                </div>
+                      <button
+                        className="text-red-600 hover:text-red-800 text-sm"
+                        onClick={async () => {
+                          const success = await deleteServiceCategory(sIdx);
+                          if (!success) {
+                            // Don't remove from UI if backend call failed
+                            return;
+                          }
+                        }}
+                      >Remove Service</button>
+                    </div>
+                    <div className="space-y-2">
+                      {service.items && service.items.length > 0 ? (
+                        service.items.map((item, iIdx) => (
+                          <div key={iIdx} className="flex items-center justify-between bg-gray-50 rounded p-2">
+                            {editingServiceIdx === sIdx && editingItemIdx === iIdx ? (
+                              <div className="flex items-center gap-3 w-full">
+                                <input
+                                  type="text"
+                                  value={inlineEditItem.name}
+                                  onChange={e => setInlineEditItem(prev => ({ ...prev, name: e.target.value }))}
+                                  className="flex-1 p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                                  placeholder="Item Name"
+                                />
+                                <input
+                                  type="number"
+                                  value={inlineEditItem.price}
+                                  onChange={e => setInlineEditItem(prev => ({ ...prev, price: e.target.value }))}
+                                  className="w-24 p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                                  placeholder="Price"
+                                />
+                                <select
+                                  value={inlineEditItem.availability}
+                                  onChange={e => setInlineEditItem(prev => ({ ...prev, availability: e.target.value }))}
+                                  className="w-32 p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                                >
+                                  <option value="Available">Available</option>
+                                  <option value="Limited Stock">Limited Stock</option>
+                                  <option value="Out of Stock">Out of Stock</option>
+                                  <option value="24/7 Available">24/7 Available</option>
+                                </select>
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={e => {
+                                    const file = e.target.files[0];
+                                    if (file) {
+                                      const reader = new FileReader();
+                                      reader.onloadend = () => {
+                                        setInlineEditItem(prev => ({ ...prev, image: reader.result }));
+                                      };
+                                      reader.readAsDataURL(file);
+                                    }
+                                  }}
+                                  className="w-32"
+                                />
+                                {inlineEditItem.image && (
+                                  <img src={inlineEditItem.image} alt="preview" className="w-10 h-10 object-cover rounded" />
+                                )}
+                                <button
+                                  className="text-green-600 hover:text-green-800 text-xs"
+                                  onClick={async () => {
+                                    const updatedItems = [...service.items];
+                                    updatedItems[iIdx] = { ...inlineEditItem };
+                                    const success = await updateServiceCategory(sIdx, service.category, updatedItems);
+                                    if (!success) {
+                                      // Revert on failure
+                                      setInlineEditItem(service.items[iIdx]);
+                                    }
+                                    setEditingItemIdx(null);
+                                  }}
+                                >Save</button>
+                                <button
+                                  className="text-gray-600 hover:text-gray-800 text-xs"
+                                  onClick={() => setEditingItemIdx(null)}
+                                >Cancel</button>
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-3 w-full">
+                                {item.image && (
+                                  <img src={item.image} alt={item.name} className="w-10 h-10 object-cover rounded" />
+                                )}
+                                <div className="flex-1">
+                                  <div className="font-medium text-gray-900">{item.name}</div>
+                                  <div className="text-sm text-gray-500">₹{item.price} • {item.availability}</div>
+                                </div>
+                                <button
+                                  className="text-blue-600 hover:text-blue-800 text-xs"
+                                  onClick={() => {
+                                    setEditingServiceIdx(sIdx);
+                                    setEditingItemIdx(iIdx);
+                                    setInlineEditItem(item);
+                                  }}
+                                >Edit</button>
+                                <button
+                                  className="text-red-600 hover:text-red-800 text-xs"
+                                  onClick={async () => {
+                                    const updatedItems = service.items.filter((_, j) => j !== iIdx);
+                                    const success = await updateServiceCategory(sIdx, service.category, updatedItems);
+                                    if (!success) {
+                                      // Don't remove from UI if backend call failed
+                                      return;
+                                    }
+                                  }}
+                                >Remove</button>
+                              </div>
+                            )}
+                          </div>
+                        ))
+                      ) : (
+                        <div className="text-gray-400 text-sm">No items in this service.</div>
+                      )}
+                    </div>
+                    {/* Inline Add Item */}
+                    {editingServiceIdx === sIdx && editingItemIdx === 'new' ? (
+                      <div className="flex items-center gap-3 mt-2">
+                        <input
+                          type="text"
+                          placeholder="Item Name"
+                          value={inlineEditItem.name}
+                          onChange={e => setInlineEditItem(prev => ({ ...prev, name: e.target.value }))}
+                          className="flex-1 p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                        />
+                        <input
+                          type="number"
+                          placeholder="Price"
+                          value={inlineEditItem.price}
+                          onChange={e => setInlineEditItem(prev => ({ ...prev, price: e.target.value }))}
+                          className="w-24 p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                        />
+                        <select
+                          value={inlineEditItem.availability}
+                          onChange={e => setInlineEditItem(prev => ({ ...prev, availability: e.target.value }))}
+                          className="w-32 p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                        >
+                          <option value="Available">Available</option>
+                          <option value="Limited Stock">Limited Stock</option>
+                          <option value="Out of Stock">Out of Stock</option>
+                          <option value="24/7 Available">24/7 Available</option>
+                        </select>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={e => {
+                            const file = e.target.files[0];
+                            if (file) {
+                              const reader = new FileReader();
+                              reader.onloadend = () => {
+                                setInlineEditItem(prev => ({ ...prev, image: reader.result }));
+                              };
+                              reader.readAsDataURL(file);
+                            }
+                          }}
+                          className="w-32"
+                        />
+                        {inlineEditItem.image && (
+                          <img src={inlineEditItem.image} alt="preview" className="w-10 h-10 object-cover rounded" />
+                        )}
+                        <button
+                          className="text-green-600 hover:text-green-800 text-xs"
+                          onClick={async () => {
+                            const updatedItems = [...service.items, { ...inlineEditItem }];
+                            const success = await updateServiceCategory(sIdx, service.category, updatedItems);
+                            if (!success) {
+                              // Don't add to UI if backend call failed
+                              return;
+                            }
+                            setEditingItemIdx(null);
+                          }}
+                        >Save</button>
+                        <button
+                          className="text-gray-600 hover:text-gray-800 text-xs"
+                          onClick={() => setEditingItemIdx(null)}
+                        >Cancel</button>
+                      </div>
+                    ) : (
+                      <button
+                        className="mt-2 text-green-600 hover:text-green-800 text-sm"
+                        onClick={() => {
+                          setEditingServiceIdx(sIdx);
+                          setEditingItemIdx('new');
+                          setInlineEditItem({ name: '', price: '', availability: 'Available', image: '' });
+                        }}
+                      >Add Item</button>
+                    )}
+                  </div>
+                ))
+              ) : (
+                <div className="text-gray-400 text-center">No services found. Add your first service!</div>
               )}
             </div>
+
+            {/* Add Service Modal */}
+            {showAddForm && (
+              <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+                <div className="relative top-10 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white">
+                  <div className="mt-3">
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-lg font-medium text-gray-900">Add New Service</h3>
+                      <button
+                        onClick={() => setShowAddForm(false)}
+                        className="text-gray-400 hover:text-gray-600"
+                      >✕</button>
+                    </div>
+                    <form
+                      onSubmit={async e => {
+                        e.preventDefault();
+                        const success = await addServiceCategory(
+                          formData.newServiceCategory,
+                          formData.newServiceItems.filter(item => item.name.trim())
+                        );
+                        if (success) {
+                          setShowAddForm(false);
+                          setFormData(prev => ({
+                            ...prev,
+                            newServiceCategory: '',
+                            newServiceItems: [{ name: '', price: '', availability: 'Available', image: '' }]
+                          }));
+                        }
+                      }}
+                      className="space-y-4"
+                    >
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Service Category</label>
+                        <input
+                          type="text"
+                          value={formData.newServiceCategory || ''}
+                          onChange={e => setFormData(prev => ({ ...prev, newServiceCategory: e.target.value }))}
+                          className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Items</label>
+                        <div className="space-y-2">
+                          {(formData.newServiceItems || [{ name: '', price: '', availability: 'Available', image: '' }]).map((item, idx) => (
+                            <div key={idx} className="flex flex-col md:flex-row gap-2 items-center border-b pb-2 mb-2">
+                              <input
+                                type="text"
+                                placeholder="Item Name"
+                                value={item.name}
+                                onChange={e => {
+                                  const newItems = [...(formData.newServiceItems || [])];
+                                  newItems[idx].name = e.target.value;
+                                  setFormData(prev => ({ ...prev, newServiceItems: newItems }));
+                                }}
+                                className="flex-1 p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                                required
+                              />
+                              <input
+                                type="number"
+                                placeholder="Price"
+                                value={item.price}
+                                onChange={e => {
+                                  const newItems = [...(formData.newServiceItems || [])];
+                                  newItems[idx].price = e.target.value;
+                                  setFormData(prev => ({ ...prev, newServiceItems: newItems }));
+                                }}
+                                className="w-24 p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                                required
+                              />
+                              <select
+                                value={item.availability}
+                                onChange={e => {
+                                  const newItems = [...(formData.newServiceItems || [])];
+                                  newItems[idx].availability = e.target.value;
+                                  setFormData(prev => ({ ...prev, newServiceItems: newItems }));
+                                }}
+                                className="w-32 p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                              >
+                                <option value="Available">Available</option>
+                                <option value="Limited Stock">Limited Stock</option>
+                                <option value="Out of Stock">Out of Stock</option>
+                                <option value="24/7 Available">24/7 Available</option>
+                              </select>
+                              {/* Image upload UI only, no upload logic yet */}
+                              <input
+                                type="file"
+                                accept="image/*"
+                                onChange={e => {
+                                  const file = e.target.files[0];
+                                  if (file) {
+                                    const reader = new FileReader();
+                                    reader.onloadend = () => {
+                                      const newItems = [...(formData.newServiceItems || [])];
+                                      newItems[idx].image = reader.result;
+                                      setFormData(prev => ({ ...prev, newServiceItems: newItems }));
+                                    };
+                                    reader.readAsDataURL(file);
+                                  }
+                                }}
+                                className="w-32"
+                              />
+                              {item.image && (
+                                <img src={item.image} alt="preview" className="w-10 h-10 object-cover rounded" />
+                              )}
+                              <button
+                                type="button"
+                                className="text-red-600 hover:text-red-800 text-xs"
+                                onClick={() => {
+                                  const newItems = [...(formData.newServiceItems || [])];
+                                  newItems.splice(idx, 1);
+                                  setFormData(prev => ({ ...prev, newServiceItems: newItems.length ? newItems : [{ name: '', price: '', availability: 'Available', image: '' }] }));
+                                }}
+                              >Remove</button>
+                            </div>
+                          ))}
+                          <button
+                            type="button"
+                            className="px-3 py-1 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
+                            onClick={() => {
+                              setFormData(prev => ({
+                                ...prev,
+                                newServiceItems: [
+                                  ...(prev.newServiceItems || []),
+                                  { name: '', price: '', availability: 'Available', image: '' }
+                                ]
+                              }));
+                            }}
+                          >Add Item</button>
+                        </div>
+                      </div>
+                      <div className="flex justify-end gap-2 pt-4">
+                        <button
+                          type="button"
+                          onClick={() => setShowAddForm(false)}
+                          className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                        >Cancel</button>
+                        <button
+                          type="submit"
+                          className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+                        >Save Service</button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
-
-      {/* Add/Edit Item Modal */}
-      {showAddForm && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-10 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white">
-            <div className="mt-3">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-medium text-gray-900">
-                  {editingProduct ? 'Edit Inventory Item' : 'Add New Inventory Item'}
-                </h3>
-                <button
-                  onClick={resetForm}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  ✕
-                </button>
-              </div>
-
-              <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
-                <div className="col-span-2 md:col-span-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Item Name *</label>
-                  <input
-                    type="text"
-                    name="name"
-                    placeholder="Item Name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
-                    required
-                  />
-                </div>
-
-                <div className="col-span-2 md:col-span-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
-                  <select
-                    name="category"
-                    value={formData.category}
-                    onChange={handleInputChange}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
-                    required
-                  >
-                    <option value="">Select Category</option>
-                    {categories.map(cat => (
-                      <option key={cat} value={cat}>
-                        {cat.replace('_', ' ').toUpperCase()}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="col-span-2 md:col-span-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Manufacturer *</label>
-                  <input
-                    type="text"
-                    name="manufacturer"
-                    placeholder="Manufacturer"
-                    value={formData.manufacturer}
-                    onChange={handleInputChange}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
-                    required
-                  />
-                </div>
-
-                <div className="col-span-2 md:col-span-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">SKU *</label>
-                  <input
-                    type="text"
-                    name="sku"
-                    placeholder="SKU"
-                    value={formData.sku}
-                    onChange={handleInputChange}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
-                    required
-                  />
-                </div>
-
-                <div className="col-span-2 md:col-span-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Price *</label>
-                  <input
-                    type="number"
-                    name="price"
-                    placeholder="Price"
-                    value={formData.price}
-                    onChange={handleInputChange}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
-                    required
-                    min="0"
-                    step="0.01"
-                  />
-                </div>
-
-                <div className="col-span-2 md:col-span-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Cost Price *</label>
-                  <input
-                    type="number"
-                    name="costPrice"
-                    placeholder="Cost Price"
-                    value={formData.costPrice}
-                    onChange={handleInputChange}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
-                    required
-                    min="0"
-                    step="0.01"
-                  />
-                </div>
-
-                <div className="col-span-2 md:col-span-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Initial Stock *</label>
-                  <input
-                    type="number"
-                    name="stock"
-                    placeholder="Initial Stock"
-                    value={formData.stock}
-                    onChange={handleInputChange}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
-                    required
-                    min="0"
-                  />
-                </div>
-
-                <div className="col-span-2 md:col-span-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Min Stock Level *</label>
-                  <input
-                    type="number"
-                    name="minStockLevel"
-                    placeholder="Min Stock Level"
-                    value={formData.minStockLevel}
-                    onChange={handleInputChange}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
-                    required
-                    min="0"
-                  />
-                </div>
-
-                <div className="col-span-2 md:col-span-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Max Stock Level</label>
-                  <input
-                    type="number"
-                    name="maxStockLevel"
-                    placeholder="Max Stock Level"
-                    value={formData.maxStockLevel}
-                    onChange={handleInputChange}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
-                    min="0"
-                  />
-                </div>
-
-                <div className="col-span-2 md:col-span-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Expiry Date *</label>
-                  <input
-                    type="date"
-                    name="expiryDate"
-                    value={formData.expiryDate}
-                    onChange={handleInputChange}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
-                    required
-                  />
-                </div>
-
-                <div className="col-span-2 md:col-span-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Batch Number</label>
-                  <input
-                    type="text"
-                    name="batchNumber"
-                    placeholder="Batch Number"
-                    value={formData.batchNumber}
-                    onChange={handleInputChange}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
-                  />
-                </div>
-
-                <div className="col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                  <textarea
-                    name="description"
-                    placeholder="Description"
-                    value={formData.description}
-                    onChange={handleInputChange}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
-                    rows="3"
-                  />
-                </div>
-
-                <div className="col-span-2 flex items-center">
-                  <input
-                    type="checkbox"
-                    id="prescriptionRequired"
-                    name="prescriptionRequired"
-                    checked={formData.prescriptionRequired}
-                    onChange={handleInputChange}
-                    className="mr-2 focus:ring-green-500"
-                  />
-                  <label htmlFor="prescriptionRequired" className="text-sm text-gray-700">
-                    Prescription Required
-                  </label>
-                </div>
-
-                <div className="col-span-2 flex justify-end space-x-2 pt-4">
-                  <button
-                    type="button"
-                    onClick={resetForm}
-                    className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50"
-                  >
-                    {loading ? 'Saving...' : (editingProduct ? 'Update Item' : 'Add Item')}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Profile Edit Modal */}
       {showProfileModal && (

@@ -139,6 +139,12 @@ export const getOrderApi = (id) => API.get(`/api/shop/orders/${id}`)
 export const updateOrderStatusApi = (id, formData) => API.put(`/api/shop/orders/${id}/status`, formData)
 export const getShopStatsApi = () => API.get('/api/shop/stats')
 
+// Shop Services APIs
+export const getShopServicesApi = () => API.get('/api/shop/services')
+export const addServiceCategoryApi = (formData) => API.post('/api/shop/services', formData)
+export const updateServiceCategoryApi = (categoryIndex, formData) => API.put(`/api/shop/services/${categoryIndex}`, formData)
+export const deleteServiceCategoryApi = (categoryIndex) => API.delete(`/api/shop/services/${categoryIndex}`)
+
 // Admin User Management APIs
 export const getAdminUsersApi = (params) => API.get('/api/admin/users', { params })
 export const getAdminUserApi = (id) => API.get(`/api/admin/users/${id}`)
