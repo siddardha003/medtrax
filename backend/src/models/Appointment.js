@@ -1,65 +1,23 @@
 const mongoose = require('mongoose');
 
 const appointmentSchema = new mongoose.Schema({
-    // Patient Information
-    patient: {
-        firstName: {
-            type: String,
-            required: [true, 'Patient first name is required'],
-            trim: true,
-            maxlength: [50, 'First name cannot exceed 50 characters']
-        },
-        lastName: {
-            type: String,
-            required: [true, 'Patient last name is required'],
-            trim: true,
-            maxlength: [50, 'Last name cannot exceed 50 characters']
-        },
-        email: {
-            type: String,
-            required: [true, 'Patient email is required'],
-            lowercase: true,
-            trim: true,
-            match: [
-                /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
-                'Please enter a valid email'
-            ]
-        },
-        phone: {
-            type: String,
-            required: [true, 'Patient phone is required'],
-            trim: true,
-            match: [/^[\+]?[1-9][\d]{0,15}$/, 'Please enter a valid phone number']
-        },
-        dateOfBirth: {
-            type: Date,
-            required: [true, 'Date of birth is required'],
-            validate: {
-                validator: function(value) {
-                    return value < new Date();
-                },
-                message: 'Date of birth must be in the past'
-            }
-        },
-        gender: {
-            type: String,
-            enum: ['male', 'female', 'other'],
-            required: [true, 'Gender is required']
-        },
-        address: {
-            street: String,
-            city: String,
-            state: String,
-            zipCode: String,
-            country: { type: String, default: 'India' }
-        },
-        emergencyContact: {
-            name: String,
-            phone: String,
-            relationship: String
-        }
+    // Flat patient info for public bookings
+    patientName: {
+        type: String,
+        required: [true, 'Patient name is required'],
+        trim: true,
+        maxlength: [100, 'Name cannot exceed 100 characters']
     },
-
+    patientPhone: {
+        type: String,
+        required: [true, 'Patient phone is required'],
+        trim: true
+    },
+    patientEmail: {
+        type: String,
+        required: [true, 'Patient email is required'],
+        trim: true
+    },
     // Hospital and Department
     hospitalId: {
         type: mongoose.Schema.Types.ObjectId,
@@ -68,192 +26,30 @@ const appointmentSchema = new mongoose.Schema({
     },
     department: {
         type: String,
-        enum: [
-            'cardiology', 'neurology', 'orthopedics', 'pediatrics', 
-            'gynecology', 'dermatology', 'psychiatry', 'radiology',
-            'pathology', 'emergency', 'icu', 'general_medicine',
-            'general_surgery', 'dentistry', 'ophthalmology', 'ent'
-        ],
         required: [true, 'Department is required']
     },
-    
-    // Doctor Information (optional - for future use)
-    doctor: {
-        name: String,
-        specialization: String,
-        licenseNumber: String
+    doctorId: {
+        type: String,
+        required: [true, 'Doctor is required']
     },
-
     // Appointment Details
     appointmentDate: {
         type: Date,
-        required: [true, 'Appointment date is required'],
-        validate: {
-            validator: function(value) {
-                return value >= new Date();
-            },
-            message: 'Appointment date must be in the future'
-        }
+        required: [true, 'Appointment date is required']
     },
     appointmentTime: {
         type: String,
-        required: [true, 'Appointment time is required'],
-        match: [/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Invalid time format (HH:MM)']
+        required: [true, 'Appointment time is required']
     },
-    duration: {
-        type: Number,
-        default: 30, // Duration in minutes
-        min: [15, 'Minimum duration is 15 minutes'],
-        max: [240, 'Maximum duration is 4 hours']
-    },
-
-    // Appointment Status
-    status: {
-        type: String,
-        enum: ['scheduled', 'confirmed', 'in_progress', 'completed', 'cancelled', 'no_show'],
-        default: 'scheduled'
-    },
-    priority: {
-        type: String,
-        enum: ['low', 'medium', 'high', 'emergency'],
-        default: 'medium'
-    },
-
-    // Visit Type
-    visitType: {
-        type: String,
-        enum: ['consultation', 'follow_up', 'checkup', 'emergency', 'procedure'],
-        required: [true, 'Visit type is required'],
-        default: 'consultation'
-    },
-
-    // Reason and Symptoms
-    reasonForVisit: {
-        type: String,
-        required: [true, 'Reason for visit is required'],
-        maxlength: [500, 'Reason cannot exceed 500 characters']
-    },
-    symptoms: [{
-        type: String,
-        trim: true
-    }],
     notes: {
         type: String,
         maxlength: [1000, 'Notes cannot exceed 1000 characters']
     },
-
-    // Medical History
-    hasAllergies: {
-        type: Boolean,
-        default: false
-    },
-    allergies: [{
-        allergen: String,
-        severity: {
-            type: String,
-            enum: ['mild', 'moderate', 'severe']
-        },
-        reaction: String
-    }],
-    currentMedications: [{
-        name: String,
-        dosage: String,
-        frequency: String
-    }],
-    medicalHistory: [{
-        condition: String,
-        diagnosedDate: Date,
-        status: {
-            type: String,
-            enum: ['active', 'resolved', 'chronic']
-        }
-    }],
-
-    // Insurance Information
-    insurance: {
-        hasInsurance: {
-            type: Boolean,
-            default: false
-        },
-        provider: String,
-        policyNumber: String,
-        groupNumber: String
-    },
-
-    // Payment Information
-    payment: {
-        consultationFee: {
-            type: Number,
-            min: [0, 'Fee cannot be negative']
-        },
-        paymentStatus: {
-            type: String,
-            enum: ['pending', 'partial', 'paid', 'refunded'],
-            default: 'pending'
-        },
-        paymentMethod: {
-            type: String,
-            enum: ['cash', 'card', 'upi', 'net_banking', 'insurance']
-        },
-        transactionId: String
-    },
-
-    // Appointment Management
-    bookedBy: {
-        type: String,
-        enum: ['patient', 'hospital_staff', 'online'],
-        default: 'online'
-    },
-    confirmationCode: {
-        type: String,
-        unique: true,
-        uppercase: true
-    },
-    reminderSent: {
-        type: Boolean,
-        default: false
-    },
-    reminderDate: Date,
-
-    // Cancellation Details
-    cancellation: {
-        cancelledAt: Date,
-        cancelledBy: {
-            type: String,
-            enum: ['patient', 'hospital', 'system']
-        },
-        reason: String,
-        refundAmount: Number,
-        refundStatus: {
-            type: String,
-            enum: ['pending', 'processed', 'declined']
-        }
-    },
-
-    // Follow-up
-    followUp: {
-        isRequired: {
-            type: Boolean,
-            default: false
-        },
-        scheduledDate: Date,
-        notes: String
-    },
-
-    // Metadata
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
-    },
-    updatedBy: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User'
     }
-}, {
-    timestamps: true,
-    toJSON: { virtuals: true },
-    toObject: { virtuals: true }
-});
+}, { timestamps: true });
 
 // Virtual for patient full name
 appointmentSchema.virtual('patientFullName').get(function() {

@@ -46,8 +46,9 @@ export const loginUserAccount = (formData, navigate) => async (dispatch) => {
         token: token,
         userInfo: {
           id: user._id || user.id,
-          name: user.fullName || `${user.firstName} ${user.lastName}`,
+          name: user.fullName,
           email: user.email,
+          phone: user.phone,
           role: user.role || 'user',
           isAdmin: false  // Force isAdmin to false for regular user login
         }
@@ -103,6 +104,7 @@ export const loginAdminAccount = (formData, navigate) => async (dispatch) => {
           id: user._id || user.id,
           name: user.fullName || `${user.firstName} ${user.lastName}`,
           email: user.email,
+          phone: user.phone,
           role: user.role,
           isAdmin: true  // Force isAdmin to true for admin login
         }
