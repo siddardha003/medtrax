@@ -13,7 +13,7 @@ const ShopDashboard = () => {
 
   // State management
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [inventory, setInventory] = useState([]);
+
   const [stats, setStats] = useState({
     totalProducts: 0,
     inStockProducts: 0,
@@ -26,13 +26,13 @@ const ShopDashboard = () => {
   });
   const [loading, setLoading] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
-  const [editingProduct, setEditingProduct] = useState(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filters, setFilters] = useState({
-    category: '',
-    stockStatus: '',
-    prescriptionRequired: ''
+  const [formData, setFormData] = useState({
+    newServiceCategory: '',
+    newServiceItems: [{ name: '', price: '', availability: 'Available', image: '' }]
   });
+
+
+
 
   // Shop profile state
   const [shopProfile, setShopProfile] = useState(null);
@@ -85,29 +85,9 @@ const ShopDashboard = () => {
 
   // ...rest of your profile modal JSX...
 
-  // Form data for inventory items
-  const [formData, setFormData] = useState({
-    name: '',
-    category: '',
-    description: '',
-    manufacturer: '',
-    price: '',
-    costPrice: '',
-    stock: '',
-    minStockLevel: '',
-    maxStockLevel: '',
-    sku: '',
-    prescriptionRequired: false,
-    expiryDate: '',
-    batchNumber: '',
-    image: '' // Add image field for service items
-  });
 
-  const categories = [
-    'prescription_medicines', 'otc_medicines', 'medical_devices', 'surgical_instruments',
-    'health_supplements', 'baby_care', 'elderly_care', 'first_aid',
-    'diagnostic_kits', 'medical_consumables', 'ayurvedic', 'homeopathic'
-  ];
+
+
 
   // Define stock status options for UI display and filtering
   // eslint-disable-next-line no-unused-vars
@@ -126,31 +106,11 @@ const ShopDashboard = () => {
     return 'in_stock';
   }, []);
 
-  const getStockColor = (status) => {
-    switch (status) {
-      case 'in_stock': return 'bg-green-100 text-green-800';
-      case 'low_stock': return 'bg-yellow-100 text-yellow-800';
-      case 'out_of_stock': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
 
-  const isExpiringSoon = (expiryDate) => {
-    if (!expiryDate) return false;
-    const today = new Date();
-    const expiry = new Date(expiryDate);
-    const thirtyDaysFromNow = new Date(today.getTime() + (30 * 24 * 60 * 60 * 1000));
-    return expiry <= thirtyDaysFromNow;
-  };
 
-  // Calculate derived data
-  const lowStockItems = inventory.filter(item => getStockStatus(item) === 'low_stock' || getStockStatus(item) === 'out_of_stock');
-  const expiringItems = inventory.filter(item => isExpiringSoon(item.expiryDate));
-  const totalValue = inventory.reduce((sum, item) => {
-    const currentStock = item.quantity?.current || item.stock || 0;
-    const price = item.pricing?.sellingPrice || item.price || 0;
-    return sum + (price * currentStock);
-  }, 0);
+
+
+
 
   // Data fetching functions
   const fetchStats = useCallback(async () => {
@@ -239,16 +199,7 @@ const ShopDashboard = () => {
     }
   }, [dispatch, getStockStatus]);
 
-  const fetchInventoryPreview = useCallback(async () => {
-    try {
-      const { data } = await ShopApi.getInventoryApi({ limit: 5 });
-      if (data.success) {
-        setInventory(data.data.items?.slice(0, 5) || []);
-      }
-    } catch (error) {
-      console.error('Error fetching inventory preview:', error);
-    }
-  }, []);
+
 
   // Service management functions
   const fetchShopServices = useCallback(async () => {
@@ -337,43 +288,7 @@ const ShopDashboard = () => {
 
 
 
-  const fetchInventory = useCallback(async () => {
-    setLoading(true);
-    try {
-      const params = {
-        search: searchQuery,
-        category: filters.category,
-        stockStatus: filters.stockStatus,
-        prescriptionRequired: filters.prescriptionRequired,
-        limit: 100
-      };
 
-      // Remove empty filters
-      Object.keys(params).forEach(key => {
-        if (params[key] === '' || params[key] === null || params[key] === undefined) {
-          delete params[key];
-        }
-      });
-
-      const { data } = await ShopApi.getInventoryApi(params);
-      if (data.success) {
-        setInventory(data.data.items || []);
-      } else {
-        dispatch(showNotification({
-          message: 'Failed to fetch inventory',
-          messageType: 'error'
-        }));
-      }
-    } catch (error) {
-      console.error('Error fetching inventory:', error);
-      dispatch(showNotification({
-        message: 'Unable to load inventory. Please try again.',
-        messageType: 'error'
-      }));
-    } finally {
-      setLoading(false);
-    }
-  }, [searchQuery, filters, dispatch]);
 
   const fetchAnalytics = useCallback(async () => {
     // Analytics tab was removed, this function is kept for compatibility
@@ -736,206 +651,16 @@ const ShopDashboard = () => {
       setProfileFormData(prev => ({ ...prev, [name]: value }));
     }
   };
-  // Form validation
-  const validateForm = () => {
-    const errors = [];
 
-    if (!formData.name.trim()) errors.push('Product name is required');
-    if (!formData.category) errors.push('Category is required');
-    if (!formData.manufacturer.trim()) errors.push('Manufacturer is required');
-    if (!formData.sku.trim()) errors.push('SKU is required');
-    if (!formData.price || isNaN(formData.price) || parseFloat(formData.price) <= 0) {
-      errors.push('Valid price is required');
-    }
-    if (!formData.costPrice || isNaN(formData.costPrice) || parseFloat(formData.costPrice) <= 0) {
-      errors.push('Valid cost price is required');
-    }
-    if (!formData.stock || isNaN(formData.stock) || parseInt(formData.stock) < 0) {
-      errors.push('Valid stock quantity is required');
-    }
-    if (!formData.minStockLevel || isNaN(formData.minStockLevel) || parseInt(formData.minStockLevel) < 0) {
-      errors.push('Valid minimum stock level is required');
-    }
-    if (!formData.expiryDate) errors.push('Expiry date is required');
 
-    return errors;
-  };
 
-  // Form handlers
-  const handleSubmit = async (e) => {
-    e.preventDefault();
 
-    // Validate form
-    const validationErrors = validateForm();
-    if (validationErrors.length > 0) {
-      dispatch(showNotification(validationErrors.join('. '), 'error'));
-      return;
-    }
-    setLoading(true);
-    try {
-      // Map frontend category to backend enum
-      const categoryMapping = {
-        'PRESCRIPTION MEDICINES': 'prescription_drug',
-        'OTC MEDICINES': 'otc_drug',
-        'MEDICAL DEVICES': 'medical_device',
-        'SURGICAL INSTRUMENTS': 'surgical_instrument',
-        'HEALTH SUPPLEMENTS': 'health_supplement',
-        'BABY CARE': 'baby_care',
-        'ELDERLY CARE': 'elderly_care',
-        'FIRST AID': 'first_aid',
-        'DIAGNOSTIC KITS': 'diagnostic_kit',
-        'MEDICAL CONSUMABLES': 'medical_consumables',
-        'AYURVEDIC': 'ayurvedic',
-        'HOMEOPATHIC': 'homeopathic'
-      };
 
-      const productData = {
-        name: formData.name.trim(),
-        category: categoryMapping[formData.category] || formData.category.toLowerCase().replace(/\s+/g, '_'),
-        description: formData.description.trim(),
-        manufacturer: formData.manufacturer.trim(),
-        sku: formData.sku.trim(),
-        batchNumber: formData.batchNumber.trim(),
-        unit: 'piece', // Add default unit
-        pricing: {
-          costPrice: parseFloat(formData.costPrice),
-          sellingPrice: parseFloat(formData.price),
-          mrp: parseFloat(formData.price) * 1.1 // Default MRP as 110% of selling price
-        }, quantity: {
-          current: parseInt(formData.stock),
-          minimum: parseInt(formData.minStockLevel),
-          maximum: parseInt(formData.maxStockLevel) || parseInt(formData.minStockLevel) * 10
-        },
-        prescriptionRequired: formData.prescriptionRequired,
-        expiryDate: formData.expiryDate
-        // Backend will use req.user.shopId automatically
-      };
 
-      console.log('📦 Sending product data:', productData);
-      console.log('👤 Current user info:', userInfo);
 
-      let response;
-      if (editingProduct) {
-        response = await ShopApi.updateInventoryItemApi(editingProduct._id, productData);
-        if (response.data.success) {
-          setInventory(inventory.map(item =>
-            item._id === editingProduct._id ? response.data.data.item : item
-          ));
-          dispatch(showNotification('Product updated successfully!', 'success'));
-        }
-      } else {
-        response = await ShopApi.addInventoryItemApi(productData);
-        if (response.data.success) {
-          setInventory([response.data.data.item, ...inventory]);
-          dispatch(showNotification('Product added successfully!', 'success'));
-        }
-      }
 
-      if (!response.data.success) {
-        dispatch(showNotification(response.data.error || 'Failed to save product', 'error'));
-      } else {
-        resetForm();
-        fetchStats(); // Refresh stats
-      }
-    } catch (error) {
-      console.error('Error saving product:', error);
-      dispatch(showNotification(error.response?.data?.error || error.message || 'Failed to save product', 'error'));
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  const handleEdit = (product) => {
-    setEditingProduct(product);
-    setFormData({
-      name: product.name || '',
-      category: product.category || '',
-      description: product.description || '',
-      manufacturer: product.manufacturer || '',
-      sku: product.sku || '',
-      price: (product.pricing?.sellingPrice || product.price || '').toString(),
-      costPrice: (product.pricing?.costPrice || product.costPrice || '').toString(),
-      stock: (product.quantity?.current || product.stock || '').toString(),
-      minStockLevel: (product.quantity?.minimum || product.minStockLevel || '').toString(),
-      maxStockLevel: (product.quantity?.maximum || product.maxStockLevel || '').toString(),
-      prescriptionRequired: product.prescriptionRequired || false,
-      expiryDate: product.expiryDate ? new Date(product.expiryDate).toISOString().split('T')[0] : '',
-      batchNumber: product.batchNumber || ''
-    });
-    setShowAddForm(true);
-  };
-  const handleDelete = async (productId) => {
-    if (!window.confirm('Are you sure you want to delete this product?')) return;
 
-    setLoading(true);
-    try {
-      const { data } = await ShopApi.deleteInventoryItemApi(productId);
-      if (data.success) {
-        setInventory(inventory.filter(item => item._id !== productId));
-        dispatch(showNotification('Product deleted successfully!', 'success'));
-        fetchStats(); // Refresh stats
-      } else {
-        dispatch(showNotification('Failed to delete product', 'error'));
-      }
-    } catch (error) {
-      console.error('Error deleting product:', error);
-      dispatch(showNotification('Failed to delete product', 'error'));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleStockUpdate = async (productId, newStock) => {
-    setLoading(true);
-    try {
-      const product = inventory.find(item => item._id === productId);
-      if (!product) {
-        dispatch(showNotification('Product not found', 'error'));
-        return;
-      } const updatedData = {
-        quantity: {
-          current: newStock,
-          minimum: product.quantity?.minimum || product.minStockLevel || 0,
-          maximum: product.quantity?.maximum || product.maxStockLevel || newStock * 2
-        }
-      }
-      const { data } = await ShopApi.updateInventoryItemApi(productId, updatedData);
-      if (data.success) {
-        setInventory(inventory.map(item =>
-          item._id === productId ? data.data.item : item
-        ));
-        dispatch(showNotification('Stock updated successfully!', 'success'));
-        fetchStats(); // Refresh stats
-      } else {
-        dispatch(showNotification('Failed to update stock', 'error'));
-      }
-    } catch (error) {
-      console.error('Error updating stock:', error);
-      dispatch(showNotification('Failed to update stock', 'error'));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const resetForm = () => {
-    setFormData({
-      name: '',
-      category: '',
-      description: '',
-      manufacturer: '',
-      sku: '',
-      price: '',
-      costPrice: '',
-      stock: '',
-      minStockLevel: '',
-      maxStockLevel: '',
-      prescriptionRequired: false,
-      expiryDate: '',
-      batchNumber: ''
-    });
-    setEditingProduct(null);
-    setShowAddForm(false);
-  };
 
   const handleLogout = async () => {
     console.log('Shop admin logout clicked');
@@ -956,54 +681,23 @@ const ShopDashboard = () => {
     }
   };
 
-  const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
-  };
 
-  const handleFilterChange = (filterType, value) => {
-    setFilters(prev => ({
-      ...prev,
-      [filterType]: value
-    }));
-  };
 
   // useEffects for data fetching
   useEffect(() => {
     if (activeTab === 'dashboard') {
       fetchStats();
-      fetchInventoryPreview();
       fetchShopProfile();
     } else if (activeTab === 'inventory') {
       fetchShopServices();
     } else if (activeTab === 'analytics') {
       fetchAnalytics();
     }
-  }, [activeTab, fetchStats, fetchInventory, fetchAnalytics, fetchInventoryPreview, fetchShopProfile, fetchShopServices]);
+  }, [activeTab, fetchStats, fetchAnalytics, fetchShopProfile, fetchShopServices]);
 
-  useEffect(() => {
-    if (activeTab === 'inventory') {
-      fetchInventory();
-    }
-  }, [filters, searchQuery, activeTab, fetchInventory]);
 
-  // Filter inventory based on search and filters
-  const filteredInventory = inventory.filter(item => {
-    const matchesSearch = !searchQuery ||
-      item.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.manufacturer?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.sku?.toLowerCase().includes(searchQuery.toLowerCase());
 
-    const matchesCategory = !filters.category || item.category === filters.category;
-    const matchesStock = !filters.stockStatus || getStockStatus(item) === filters.stockStatus;
-    const matchesPrescription = !filters.prescriptionRequired ||
-      item.prescriptionRequired.toString() === filters.prescriptionRequired;
 
-    return matchesSearch && matchesCategory && matchesStock && matchesPrescription;
-  });
 
   // Inline editing state
   const [editingServiceIdx, setEditingServiceIdx] = useState(null);
