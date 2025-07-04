@@ -199,7 +199,7 @@ router.get('/shops', async (req, res, next) => {
         if (state) {
             filter.state = { $regex: state, $options: 'i' };
         }        const shops = await Shop.find(filter)
-            .select('name address city state pincode contactPhone contactEmail ownerName services')
+            .select('name address city state pincode contactPhone contactEmail ownerName services location phone images')
             .limit(limit * 1)
             .skip((page - 1) * limit)
             .sort({ name: 1 });
@@ -242,14 +242,22 @@ router.get('/shops', async (req, res, next) => {
             }
         ];
 
-        const finalShops = shops.length > 0 ? shops : dummyShops;        res.status(200).json({
+        const finalShops = shops.length > 0 ? shops : dummyShops;
+        // Ensure images field is always present
+        const shopsWithImages = finalShops.map(shop => {
+            // Convert to plain object if needed
+            const plainShop = shop.toObject ? shop.toObject() : shop;
+            if (!plainShop.images) plainShop.images = [];
+            return plainShop;
+        });
+        res.status(200).json({
             success: true,
             data: {
-                shops: finalShops,
+                shops: shopsWithImages,
                 pagination: {
                     current: page,
-                    pages: Math.ceil((total || finalShops.length) / limit),
-                    total: total || finalShops.length
+                    pages: Math.ceil((total || shopsWithImages.length) / limit),
+                    total: total || shopsWithImages.length
                 }
             }
         });

@@ -178,7 +178,11 @@ const MedicalshopDetails = () => {
         city: shopData.city,
         state: shopData.state,
         phone: shopData.phone,
-        directionsLink: shopData.directionsLink || 'https://maps.google.com',
+        // Dynamically generate directionsLink if not provided and coordinates are present
+        directionsLink: shopData.directionsLink ||
+            ((shopData.latitude && shopData.longitude)
+                ? `https://www.google.com/maps/search/?api=1&query=${shopData.latitude},${shopData.longitude}`
+                : null),
         images: shopData.images || [],
         services: shopData.services || [],
         // Include owner fields from backend
@@ -543,27 +547,11 @@ const MedicalshopDetails = () => {
                 console.log('Response structure:', response.data);
 
                 // Extract the actual shop data from the nested response
-                const shopData = response.data.data;  // Backend returns { success: true, data: shopData }
-
-                console.log('=== BACKEND DATA DEBUG ===');
-                console.log('Raw shop data from backend:', shopData);
-                console.log('Backend name:', shopData.name);
-                console.log('Backend images:', shopData.images);
-                console.log('Backend services:', shopData.services);
-                console.log('Backend location:', shopData.location);
-                console.log('Backend address:', shopData.address);
-                console.log('Backend fullAddress:', shopData.fullAddress);
-                console.log('Backend ownerName:', shopData.ownerName);
-                console.log('Backend ownerPhone:', shopData.ownerPhone);
-                console.log('Backend ownerEmail:', shopData.ownerEmail);
-                console.log('Backend phone:', shopData.phone);
-                console.log('Backend latitude:', shopData.latitude);
-                console.log('Backend longitude:', shopData.longitude);
-                console.log('=== END DEBUG ===');
+                const shopData = response.data.data;  
 
                 // Extract coordinates from backend data
-                let latitude = 17.4065; // fallback
-                let longitude = 78.4772; // fallback
+                let latitude = null;
+                let longitude = null;
 
                 if (shopData.location && shopData.location.coordinates && Array.isArray(shopData.location.coordinates)) {
                     // GeoJSON format: [longitude, latitude]
@@ -575,12 +563,20 @@ const MedicalshopDetails = () => {
                     longitude = shopData.longitude;
                 }
 
-                // Update map state with backend data
-                setSelectedMedicalshop({
-                    name: shopData.name || 'Medical Shop',
-                    latitude: latitude,
-                    longitude: longitude,
-                });
+                // Only set selectedMedicalshop if coordinates are valid
+                if (latitude && longitude) {
+                    setSelectedMedicalshop({
+                        name: shopData.name || 'Medical Shop',
+                        latitude: latitude,
+                        longitude: longitude,
+                    });
+                } else {
+                    setSelectedMedicalshop({
+                        name: shopData.name || 'Medical Shop',
+                        latitude: null,
+                        longitude: null,
+                    });
+                }
 
                 // Transform the services data to match frontend expectations
                 const transformedShopData = {
@@ -595,7 +591,10 @@ const MedicalshopDetails = () => {
                             (shopData.address || 'Location not available')),
                     // Handle phone field mapping
                     phone: shopData.phone || shopData.contactPhone || 'Phone not available',
-                    directionsLink: shopData.directionsLink || 'https://maps.google.com',
+                    directionsLink: shopData.directionsLink ||
+                        ((shopData.latitude && shopData.longitude)
+                            ? `https://www.google.com/maps/search/?api=1&query=${shopData.latitude},${shopData.longitude}`
+                            : `https://maps.google.com`),
                     // Use backend images if available, otherwise use empty array (placeholders will be shown)
                     images: shopData.images && shopData.images.length > 0 ? shopData.images : [],
                     // Include owner fields from backend
@@ -626,8 +625,8 @@ const MedicalshopDetails = () => {
                 setShopData(null); // Use pure fallback on error
                 setSelectedMedicalshop({
                     name: pureFallbackShopData.name,
-                    latitude: 17.4065,
-                    longitude: 78.4772,
+                    latitude: null,
+                    longitude: null,
                 });
             } finally {
                 setLoading(false);
@@ -742,9 +741,11 @@ const MedicalshopDetails = () => {
                 </p>
                 <p className="medicalshop-location">
                     📍 {finalDisplayData.formattedLocation || finalDisplayData.location || 'Location not available'}{" "}
-                    <a style={{ color: "#008b95" }} href={finalDisplayData.directionsLink || '#'} target="_blank" rel="noreferrer">
-                        Get directions
-                    </a>
+                    {(finalDisplayData.directionsLink && finalDisplayData.latitude && finalDisplayData.longitude) ? (
+                        <a style={{ color: "#008b95" }} href={finalDisplayData.directionsLink} target="_blank" rel="noreferrer">
+                            Get directions
+                        </a>
+                    ) : null}
                 </p>
                 {/* Owner/Admin Contact Info */}
                 {/* {(finalDisplayData.ownerName || finalDisplayData.ownerPhone || finalDisplayData.ownerEmail) && (
@@ -1042,15 +1043,20 @@ const MedicalshopDetails = () => {
                     {/* Location Map */}
                     <div className="map-section">
                         <h2>Our Location</h2>
-                        <MedicalshopMap
-                            latitude={selectedMedicalshop.latitude}
-                            longitude={selectedMedicalshop.longitude}
-                            medicalshopName={selectedMedicalshop.name}
-                        />
-                        {/* Show coordinates if available from backend */}
-                        {(selectedMedicalshop.latitude && selectedMedicalshop.longitude) && (
-                            <div className="shop-coordinates" style={{ marginTop: '10px', textAlign: 'center', color: '#666', fontSize: '12px' }}>
-                                <small>Coordinates: {selectedMedicalshop.latitude.toFixed(6)}, {selectedMedicalshop.longitude.toFixed(6)}</small>
+                        {(selectedMedicalshop.latitude && selectedMedicalshop.longitude) ? (
+                            <>
+                                <MedicalshopMap
+                                    latitude={selectedMedicalshop.latitude}
+                                    longitude={selectedMedicalshop.longitude}
+                                    medicalshopName={selectedMedicalshop.name}
+                                />
+                                <div className="shop-coordinates" style={{ marginTop: '10px', textAlign: 'center', color: '#666', fontSize: '12px' }}>
+                                    <small>Coordinates: {selectedMedicalshop.latitude.toFixed(6)}, {selectedMedicalshop.longitude.toFixed(6)}</small>
+                                </div>
+                            </>
+                        ) : (
+                            <div style={{ color: 'red', textAlign: 'center', margin: '10px 0' }}>
+                                Location coordinates not available.
                             </div>
                         )}
                     </div>
@@ -1104,9 +1110,11 @@ const MedicalshopDetails = () => {
                         </div>
                         <p className="location-info">
                             📍 {displayData.location || 'Location not available'}{" "}
-                            <a style={{ color: "#008b95", marginLeft: "1%" }} href={displayData.directionsLink || '#'} target="_blank" rel="noreferrer">
-                                Get directions
-                            </a>
+                            {(displayData.directionsLink && displayData.latitude && displayData.longitude) ? (
+                                <a style={{ color: "#008b95", marginLeft: "1%" }} href={displayData.directionsLink} target="_blank" rel="noreferrer">
+                                    Get directions
+                                </a>
+                            ) : null}
                         </p>
                         {/* Owner/Admin Info in booking card */}
                         {(displayData.ownerName || displayData.ownerPhone || displayData.ownerEmail) && (

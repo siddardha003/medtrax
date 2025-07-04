@@ -807,7 +807,9 @@ const updateShopProfile = async (req, res) => {
             ownerPhone,
             ownerEmail,
             directionsLink,
-            description
+            description,
+            latitude,
+            longitude
         } = req.body;
 
         console.log('📋 Extracted fields:', {
@@ -820,7 +822,9 @@ const updateShopProfile = async (req, res) => {
             ownerPhone,
             ownerEmail,
             directionsLink,
-            description
+            description,
+            latitude,
+            longitude
         });
 
         // Update fields if provided
@@ -865,6 +869,20 @@ const updateShopProfile = async (req, res) => {
         if (location) {
             console.log('✅ Updating location:', location);
             shop.location = location;
+            // Sync top-level latitude and longitude with GeoJSON coordinates
+            if (location.type === 'Point' && Array.isArray(location.coordinates) && location.coordinates.length === 2) {
+                shop.longitude = location.coordinates[0];
+                shop.latitude = location.coordinates[1];
+            }
+        }
+        // Update latitude and longitude if provided
+        if (latitude !== undefined) {
+            console.log('✅ Updating latitude:', latitude);
+            shop.latitude = latitude;
+        }
+        if (longitude !== undefined) {
+            console.log('✅ Updating longitude:', longitude);
+            shop.longitude = longitude;
         }
         if (ownerName !== undefined) {
             console.log('✅ Updating ownerName:', ownerName);
