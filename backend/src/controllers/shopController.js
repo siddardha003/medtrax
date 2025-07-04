@@ -952,6 +952,11 @@ const updateShopProfile = async (req, res) => {
 // @route   PATCH /api/shop/status
 // @access  Private (Shop Admin)
 const updateShopStatus = async (req, res) => {
+    // Debug log for user and request body
+    console.log('PATCH /api/shop/status', {
+      user: req.user,
+      body: req.body
+    });
     try {
         const shopId = req.user.shopId;
         const { isActive } = req.body;

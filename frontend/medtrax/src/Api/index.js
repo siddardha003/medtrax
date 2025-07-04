@@ -112,7 +112,7 @@ export const deleteShopApi = (id) => API.delete(`/api/admin/shops/${id}`)
 // Shop Profile APIs
 export const getShopProfileApi = () => API.get('/api/shop/profile')
 export const updateShopProfileApi = (formData) => API.put('/api/shop/profile', formData)
-export const updateShopStatusApi = (isActive) => API.patch('/api/shop/status', { isActive })
+export const updateShopStatusApi = (isActive) => API.patch('/api/shop/status', { isActive: Boolean(isActive) })
 export const uploadShopImageApi = (formData) => {
   const config = {
     headers: {

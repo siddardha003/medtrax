@@ -320,39 +320,37 @@ const ShopDashboard = () => {
     }
   }, [dispatch]);
 
-  const toggleShopStatus = async () => {
-    if (!shopProfile) {
-      dispatch(showNotification({
-        message: 'Shop profile not loaded',
-        messageType: 'error'
-      }));
+  const handleDeactivateShop = async () => {
+    if (!window.confirm(`Are you sure you want to ${shopProfile?.isActive ? 'deactivate' : 'activate'} this shop?`)) {
       return;
     }
 
-    const newStatus = !shopProfile.isActive;
-    const confirmMessage = `Are you sure you want to ${newStatus ? 'activate' : 'deactivate'} your shop?`;
-
-    if (!window.confirm(confirmMessage)) return;
-
     setLoading(true);
     try {
-      const { data } = await ShopApi.updateShopStatusApi({ isActive: newStatus });
+      // Toggle the status: send the opposite of the current value
+      const newStatus = !shopProfile?.isActive;
+      const { data } = await ShopApi.updateShopStatusApi(newStatus);
       if (data.success) {
-        setShopProfile(prev => ({ ...prev, isActive: newStatus }));
+        setShopProfile(prev => ({ ...prev, isActive: data.data.shop.isActive }));
         dispatch(showNotification({
-          message: `Shop ${newStatus ? 'activated' : 'deactivated'} successfully!`,
+          message: `Shop ${data.data.shop.isActive ? 'activated' : 'deactivated'} successfully!`,
           messageType: 'success'
         }));
       } else {
-        dispatch(showNotification({
-          message: data.error || 'Failed to update shop status',
-          messageType: 'error'
-        }));
+        throw new Error(data.error || 'Failed to update shop status');
       }
     } catch (error) {
+      // Enhanced error logging for debugging
       console.error('Error updating shop status:', error);
+      if (error.response) {
+        console.error('Backend response:', error.response);
+        if (error.response.data) {
+          console.error('Backend error data:', error.response.data);
+        }
+      }
+      const errorMsg = error.response?.data?.error || error.response?.data?.message || error.message || 'Failed to update shop status';
       dispatch(showNotification({
-        message: 'Failed to update shop status',
+        message: errorMsg,
         messageType: 'error'
       }));
     } finally {
@@ -900,8 +898,12 @@ const ShopDashboard = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Shop Dashboard</h1>
-              <p className="text-gray-600">Welcome back, {userInfo?.name}</p>
+              <h1 className="text-3xl font-bold text-gray-900">
+                {shopProfile?.name ? shopProfile.name : 'Shop Dashboard'}
+              </h1>
+              <p className="text-gray-600">
+                Welcome, {shopProfile?.ownerName || userInfo?.name || 'Shop Admin'}
+              </p>
             </div>
             <div className="flex items-center space-x-4">
               <button
@@ -909,6 +911,12 @@ const ShopDashboard = () => {
                 className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium"
               >
                 Add Item
+              </button>
+              <button
+                onClick={() => setShowProfileModal(true)}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium"
+              >
+                Edit Shop
               </button>
               <button
                 onClick={handleLogout}
@@ -928,8 +936,7 @@ const ShopDashboard = () => {
             {[
               { id: 'dashboard', name: 'Dashboard', icon: '📊' },
               { id: 'profile', name: 'Profile', icon: '🏪' },
-              { id: 'inventory', name: 'Inventory', icon: '📦' },
-              { id: 'analytics', name: 'Analytics', icon: '📈' }
+              { id: 'inventory', name: 'Inventory', icon: '📦' }
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -943,7 +950,8 @@ const ShopDashboard = () => {
                 <span>{tab.name}</span>
               </button>
             ))}
-          </nav>        </div>
+          </nav>
+        </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -1112,7 +1120,7 @@ const ShopDashboard = () => {
                     {shopProfile?.isActive ? 'Active' : 'Inactive'}
                   </span>
                   <button
-                    onClick={toggleShopStatus}
+                    onClick={handleDeactivateShop}
                     disabled={loading || !shopProfile}
                     className={`px-4 py-2 rounded-lg font-medium text-white ${shopProfile?.isActive
                         ? 'bg-red-600 hover:bg-red-700'
@@ -1361,156 +1369,6 @@ const ShopDashboard = () => {
                   </table>
                 </div>
               )}
-            </div>
-          </div>
-        )}
-
-        {/* Analytics Tab */}
-        {activeTab === 'analytics' && (
-          <div className="space-y-8">
-            {/* Basic Analytics Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="bg-white p-6 rounded-lg shadow">
-                <div className="flex items-center">
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                    <span className="text-2xl">👀</span>
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">Page Visits</p>
-                    <p className="text-2xl font-bold text-gray-900">{stats.pageVisits}</p>
-                    <p className="text-xs text-gray-500">This month</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white p-6 rounded-lg shadow">
-                <div className="flex items-center">
-                  <div className="p-2 bg-green-100 rounded-lg">
-                    <span className="text-2xl">📞</span>
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">Contact Clicks</p>
-                    <p className="text-2xl font-bold text-gray-900">{stats.contactClicks}</p>
-                    <p className="text-xs text-gray-500">This month</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white p-6 rounded-lg shadow">
-                <div className="flex items-center">
-                  <div className="p-2 bg-purple-100 rounded-lg">
-                    <span className="text-2xl">📊</span>
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">Conversion Rate</p>
-                    <p className="text-2xl font-bold text-gray-900">
-                      {stats.pageVisits > 0 ? ((stats.contactClicks / stats.pageVisits) * 100).toFixed(1) : 0}%
-                    </p>
-                    <p className="text-xs text-gray-500">Contact/Visit ratio</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white p-6 rounded-lg shadow">
-                <div className="flex items-center">
-                  <div className="p-2 bg-yellow-100 rounded-lg">
-                    <span className="text-2xl">⭐</span>
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">Avg. Daily Visits</p>
-                    <p className="text-2xl font-bold text-gray-900">
-                      {Math.round(stats.pageVisits / 30)}
-                    </p>
-                    <p className="text-xs text-gray-500">Per day</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Category Performance */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="bg-white p-6 rounded-lg shadow">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Popular Categories</h3>
-                <div className="space-y-3">
-                  {categories.slice(0, 5).map((category, index) => {
-                    const count = inventory.filter(item => item.category === category).length;
-                    const percentage = inventory.length > 0 ? (count / inventory.length) * 100 : 0;
-                    return (
-                      <div key={category} className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600 capitalize">
-                          {category.replace('_', ' ')}
-                        </span>
-                        <div className="flex items-center space-x-2">
-                          <div className="w-20 bg-gray-200 rounded-full h-2">
-                            <div
-                              className="bg-green-600 h-2 rounded-full"
-                              style={{ width: `${percentage}%` }}
-                            ></div>
-                          </div>
-                          <span className="text-sm font-medium text-gray-900 w-8">{count}</span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="bg-white p-6 rounded-lg shadow">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Inventory Summary</h3>
-                <div className="space-y-4">
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-600">Total Items</span>
-                    <span className="text-sm font-medium text-gray-900">{inventory.length}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-600">Total Value</span>
-                    <span className="text-sm font-medium text-gray-900">₹{totalValue.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-600">In Stock</span>
-                    <span className="text-sm font-medium text-green-600">
-                      {inventory.filter(item => getStockStatus(item) === 'in_stock').length}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-600">Low Stock</span>
-                    <span className="text-sm font-medium text-yellow-600">
-                      {inventory.filter(item => getStockStatus(item) === 'low_stock').length}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-600">Out of Stock</span>
-                    <span className="text-sm font-medium text-red-600">
-                      {inventory.filter(item => getStockStatus(item) === 'out_of_stock').length}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-600">Expiring Soon</span>
-                    <span className="text-sm font-medium text-orange-600">{expiringItems.length}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Simple charts simulation */}
-            <div className="bg-white p-6 rounded-lg shadow">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Weekly Performance</h3>
-              <div className="grid grid-cols-7 gap-2 mb-4">
-                {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, index) => {
-                  const visits = [20, 35, 45, 32, 28, 15, 12][index]; // Simulated data
-                  return (
-                    <div key={day} className="text-center">
-                      <div className="text-xs text-gray-500 mb-1">{day}</div>
-                      <div
-                        className="bg-green-200 rounded-sm mx-auto"
-                        style={{ height: `${visits * 2}px`, width: '16px' }}
-                      ></div>
-                      <div className="text-xs text-gray-700 mt-1">{visits}</div>
-                    </div>
-                  );
-                })}
-              </div>
-              <p className="text-sm text-gray-600 text-center">Page visits per day (this week)</p>
             </div>
           </div>
         )}
