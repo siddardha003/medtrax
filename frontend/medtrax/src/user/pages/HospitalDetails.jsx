@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useParams, useSearchParams } from "react-router-dom";
+import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import "../css/HospitalDetails.css";
 import "../css/Reviews.css";
 import HospitalMap from "../components/Hospitalmap";
@@ -8,17 +8,17 @@ import { getPublicHospitalDetailsApi, submitReviewApi, getHospitalReviewsApi } f
 // Helper function to ensure valid image URLs
 const getValidImageUrl = (url) => {
     if (!url) return null;
-    
+
     // If URL already has a protocol, return it as is
     if (url.startsWith('http://') || url.startsWith('https://')) {
         return url;
     }
-    
+
     // If it's a relative URL, add the base URL
     if (url.startsWith('/')) {
         return `${window.location.origin}${url}`;
     }
-    
+
     // If it's just a path without leading slash
     return `${window.location.origin}/${url}`;
 };
@@ -31,6 +31,7 @@ const HospitalDetails = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [hospitalData, setHospitalData] = useState(null);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchHospitalDetails = async () => {
@@ -459,6 +460,15 @@ const HospitalDetails = () => {
 
     const today = new Date().toLocaleString("en-US", { weekday: "long" });
 
+    // Add this handler for booking
+    const handleBookNow = () => {
+        if (hospitalData && hospitalData._id) {
+            navigate(`/appform?hospitalId=${hospitalData._id}`, { state: { hospital: hospitalData } });
+        } else {
+            alert("Hospital information is not loaded yet.");
+        }
+    };
+
     if (loading) {
         return (
             <div className="loading-spinner" style={{
@@ -679,11 +689,12 @@ const HospitalDetails = () => {
                                             <div key={index} className="review-card">
                                                 <div className="review-stars">{"⭐".repeat(review.rating || 0)}</div>
                                                 <h4>{review.text || 'No review text provided'}</h4>
-                                                <p>{review.userName || 'Anonymous User'}</p>
-                                                <p>{review.userLocation || 'Location not specified'}</p>
-                                                <p className="review-date">
-                                                    {review.createdAt ? new Date(review.createdAt).toLocaleDateString() : 'Date not available'}
-                                                </p>
+                                                <div>
+                                                    <p>{review.userName || 'Anonymous User'}</p>
+                                                    <p className="review-date">
+                                                        {review.createdAt ? new Date(review.createdAt).toLocaleDateString() : 'Date not available'}
+                                                    </p>
+                                                </div>
                                             </div>
                                         ))}
                                     </div>
@@ -801,12 +812,12 @@ const HospitalDetails = () => {
                         <div className="booking-rating">
                             ⭐ {displayData.rating} ({displayData.reviewsCount})
                         </div>
-                        <button className="book-now-btn">Book now</button>
+                        <button className="book-now-btn" onClick={handleBookNow}>Book now</button>
                         <p>🕒 Open until {displayData.closingTime}</p>
                         <p>
                             📍 {displayData.formattedLocation || `${displayData.address || ''}, ${displayData.city || ''}, ${displayData.state || ''}`.replace(/,\s*,/g, ',').replace(/,\s*$/g, '')}
                             {" "}
-                            <a href={displayData.directionsLink} target="_blank" rel="noreferrer">
+                            <a style={{color: "#008b95", marginLeft: "10px"}} href={displayData.directionsLink} target="_blank" rel="noreferrer">
                                 Get directions
                             </a>
                         </p>

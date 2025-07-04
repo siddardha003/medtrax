@@ -168,7 +168,7 @@ const Contact = styled.div`
 `;
 
 const ViewButton = styled.button`
-  background: linear-gradient(90deg, #008b95 0%, #86c2c6 100%);
+  background: #008b95;
   color: white;
   border: none;
   padding: 0.8rem 1.5rem;
@@ -318,13 +318,13 @@ const HospitalFinder = () => {
           <HospitalsGrid>
             {filteredHospitals.map((hospital) => (
               <HospitalCard key={hospital._id} onClick={() => handleHospitalClick(hospital._id)}>
-                <HospitalImage image={hospital.image} />
+                <HospitalImage image={hospital.images?.[0] || hospital.image} />
                 
                 <HospitalInfo>
                   <HospitalName>{hospital.name}</HospitalName>
                   
                   <div>
-                    <Rating>
+                    <Rating style={{marginBottom: '8px'}}>
                       <Star size={16} fill="currentColor" />
                       <span>{hospital.rating || 'N/A'}</span>
                     </Rating>
@@ -332,7 +332,7 @@ const HospitalFinder = () => {
                       <MapPin size={14} />
                       <span>
                         {hospital.address 
-                          ? `${hospital.address.city || ''}, ${hospital.address.state || ''}`.trim().replace(/^,|,$/, '')
+                          ? `${hospital.address || ''}`.trim().replace(/^,|,$/, '')
                           : hospital.location || 'Location not available'
                         }
                       </span>

@@ -7,14 +7,19 @@ import {
   getLatestWeightApi,
   saveHormoneDataApi,
   getHormoneHistoryApi,
+  getLatestHormoneApi,
   saveSleepDataApi,
   getSleepHistoryApi,
+  getLatestSleepApi,
   saveHeadacheDataApi,
   getHeadacheHistoryApi,
+  getLatestHeadacheApi,
   saveStressDataApi,
   getStressHistoryApi,
+  getLatestStressApi,
   saveStomachDataApi,
-  getStomachHistoryApi
+  getStomachHistoryApi,
+  getLatestStomachApi
 } from '../../Api';
 // import { Link } from 'react-router-dom';
 import '../css/HealthTracker.css';
@@ -58,28 +63,29 @@ const HealthTracker = () => {
         try {
           const response = await getWeightHistoryApi({ limit: 10 });
           if (response.data.success) {
-            const formattedData = response.data.data.map(item => ({
-              date: new Date(item.date).toISOString().split('T')[0],
-              weight: item.weight.toString()
-            }));
+            console.log('Weight history raw data:', response.data.data);
+            const formattedData = response.data.data
+              .sort((a, b) => {
+                // Sort by date descending, then by _id descending
+                const dateA = new Date(a.date);
+                const dateB = new Date(b.date);
+                if (dateA > dateB) return -1;
+                if (dateA < dateB) return 1;
+                // If dates are equal, compare _id as strings (MongoDB ObjectId)
+                return b._id.localeCompare(a._id);
+              })
+              .map(item => ({
+                date: new Date(item.date).toISOString().split('T')[0],
+                weight: item.weight.toString()
+              }));
             setHistoryData(formattedData);
           }
         } catch (error) {
           console.error('Error fetching weight history:', error);
-          // Fallback to dummy data for demo
-          setHistoryData([
-            { date: "2024-10-07", weight: "55" },
-            { date: "2024-10-06", weight: "54.5" },
-            { date: "2024-10-05", weight: "55.2" },
-          ]);
+          setHistoryData([]);
         }
       } else {
-        // Show dummy data for non-authenticated users
-        setHistoryData([
-          { date: "2024-10-07", weight: "55" },
-          { date: "2024-10-06", weight: "54.5" },
-          { date: "2024-10-05", weight: "55.2" },
-        ]);
+        setHistoryData([]);
       }
     };
 
@@ -155,37 +161,36 @@ const HealthTracker = () => {
         try {
           const response = await getHormoneHistoryApi({ limit: 10 });
           if (response.data.success) {
-            const formattedData = response.data.data.map(item => ({
-              date1: new Date(item.date).toISOString().split('T')[0],
-              FSH: item.FSH || 0,
-              LH: item.LH || 0,
-              testosterone: item.testosterone || 0,
-              thyroid: item.thyroid || 0,
-              prolactin: item.prolactin || 0,
-              avgBloodGlucose: item.avgBloodGlucose || 0,
-            }));
+            const formattedData = response.data.data
+              .sort((a, b) => {
+                const dateA = new Date(a.date);
+                const dateB = new Date(b.date);
+                if (dateA > dateB) return -1;
+                if (dateA < dateB) return 1;
+                return b._id.localeCompare(a._id);
+              })
+              .map(item => ({
+                date1: new Date(item.date).toISOString().split('T')[0],
+                FSH: item.FSH || 0,
+                LH: item.LH || 0,
+                testosterone: item.testosterone || 0,
+                thyroid: item.thyroid || 0,
+                prolactin: item.prolactin || 0,
+                avgBloodGlucose: item.avgBloodGlucose || 0,
+              }));
             setHistoryData1(formattedData);
+            if (formattedData.length > 0) {
+              setLastChecked1(formattedData[0]);
+            }
           }
         } catch (error) {
           console.error('Error fetching hormone history:', error);
-          // Fallback to dummy data
-          setHistoryData1([
-            {
-              date1: "2024-10-07",
-              FSH: 90, LH: 67, testosterone: 77,
-              thyroid: 89, prolactin: 88, avgBloodGlucose: 92,
-            }
-          ]);
+          setHistoryData1([]);
+          setLastChecked1(null);
         }
       } else {
-        // Show dummy data for non-authenticated users
-        setHistoryData1([
-          {
-            date1: "2024-10-07",
-            FSH: 90, LH: 67, testosterone: 77,
-            thyroid: 89, prolactin: 88, avgBloodGlucose: 92,
-          }
-        ]);
+        setHistoryData1([]);
+        setLastChecked1(null);
       }
     };
 
@@ -196,6 +201,15 @@ const HealthTracker = () => {
 
   const handleSave1 = async () => {
     if (date1 && Object.values(hormones).some(value => value !== "")) {
+      const flatHormoneObj = {
+        date1: date1,
+        FSH: hormones.FSH,
+        LH: hormones.LH,
+        testosterone: hormones.testosterone,
+        thyroid: hormones.thyroid,
+        prolactin: hormones.prolactin,
+        avgBloodGlucose: hormones.avgBloodGlucose,
+      };
       if (isAuthenticated) {
         try {
           const response = await saveHormoneDataApi({
@@ -207,9 +221,8 @@ const HealthTracker = () => {
             prolactin: hormones.prolactin ? parseFloat(hormones.prolactin) : undefined,
             avgBloodGlucose: hormones.avgBloodGlucose ? parseFloat(hormones.avgBloodGlucose) : undefined,
           });
-          
           if (response.data.success) {
-            setLastChecked1({ date: date1, hormones });
+            setLastChecked1(flatHormoneObj);
             setHormones({
               FSH: "", LH: "", testosterone: "", thyroid: "", prolactin: "", avgBloodGlucose: "",
             });
@@ -224,7 +237,7 @@ const HealthTracker = () => {
         }
       } else {
         // For non-authenticated users, just update local state
-        setLastChecked1({ date: date1, hormones });
+        setLastChecked1(flatHormoneObj);
         setHormones({
           FSH: "", LH: "", testosterone: "", thyroid: "", prolactin: "", avgBloodGlucose: "",        });
         setDate1("");
@@ -267,28 +280,26 @@ const HealthTracker = () => {
         try {
           const response = await getHeadacheHistoryApi({ limit: 10 });
           if (response.data.success) {
-            const formattedData = response.data.data.map(item => ({
-              date2: new Date(item.date).toISOString().split('T')[0],
-              severity2: item.severity,
-            }));
+            const formattedData = response.data.data
+              .sort((a, b) => {
+                const dateA = new Date(a.date);
+                const dateB = new Date(b.date);
+                if (dateA > dateB) return -1;
+                if (dateA < dateB) return 1;
+                return b._id.localeCompare(a._id);
+              })
+              .map(item => ({
+                date2: new Date(item.date).toISOString().split('T')[0],
+                severity2: item.severity,
+              }));
             setHistoryData2(formattedData);
           }
         } catch (error) {
           console.error('Error fetching headache history:', error);
-          // Fallback to dummy data
-          setHistoryData2([
-            { date2: "2024-11-20", severity2: "Moderate" },
-            { date2: "2024-11-21", severity2: "Severe" },
-            { date2: "2024-11-22", severity2: "Mild" },
-          ]);
+          setHistoryData2([]);
         }
       } else {
-        // Show dummy data for non-authenticated users
-        setHistoryData2([
-          { date2: "2024-11-20", severity2: "Moderate" },
-          { date2: "2024-11-21", severity2: "Severe" },
-          { date2: "2024-11-22", severity2: "Mild" },
-        ]);
+        setHistoryData2([]);
       }
     };
 
@@ -362,28 +373,26 @@ const HealthTracker = () => {
         try {
           const response = await getStressHistoryApi({ limit: 10 });
           if (response.data.success) {
-            const formattedData = response.data.data.map(item => ({
-              date3: new Date(item.date).toISOString().split('T')[0],
-              severity3: item.severity,
-            }));
+            const formattedData = response.data.data
+              .sort((a, b) => {
+                const dateA = new Date(a.date);
+                const dateB = new Date(b.date);
+                if (dateA > dateB) return -1;
+                if (dateA < dateB) return 1;
+                return b._id.localeCompare(a._id);
+              })
+              .map(item => ({
+                date3: new Date(item.date).toISOString().split('T')[0],
+                severity3: item.severity,
+              }));
             setHistoryData3(formattedData);
           }
         } catch (error) {
           console.error('Error fetching stress history:', error);
-          // Fallback to dummy data
-          setHistoryData3([
-            { date3: "2024-11-20", severity3: "Moderate" },
-            { date3: "2024-11-21", severity3: "Severe" },
-            { date3: "2024-11-22", severity3: "Mild" },
-          ]);
+          setHistoryData3([]);
         }
       } else {
-        // Show dummy data for non-authenticated users
-        setHistoryData3([
-          { date3: "2024-11-20", severity3: "Moderate" },
-          { date3: "2024-11-21", severity3: "Severe" },
-          { date3: "2024-11-22", severity3: "Mild" },
-        ]);
+        setHistoryData3([]);
       }
     };
 
@@ -461,28 +470,26 @@ const HealthTracker = () => {
         try {
           const response = await getStomachHistoryApi({ limit: 10 });
           if (response.data.success) {
-            const formattedData = response.data.data.map(item => ({
-              date4: new Date(item.date).toISOString().split('T')[0],
-              severity4: item.severity,
-            }));
+            const formattedData = response.data.data
+              .sort((a, b) => {
+                const dateA = new Date(a.date);
+                const dateB = new Date(b.date);
+                if (dateA > dateB) return -1;
+                if (dateA < dateB) return 1;
+                return b._id.localeCompare(a._id);
+              })
+              .map(item => ({
+                date4: new Date(item.date).toISOString().split('T')[0],
+                severity4: item.severity,
+              }));
             setHistoryData4(formattedData);
           }
         } catch (error) {
           console.error('Error fetching stomach history:', error);
-          // Fallback to dummy data
-          setHistoryData4([
-            { date4: "2024-11-20", severity4: "Moderate" },
-            { date4: "2024-11-21", severity4: "Severe" },
-            { date4: "2024-11-22", severity4: "Mild" },
-          ]);
+          setHistoryData4([]);
         }
       } else {
-        // Show dummy data for non-authenticated users
-        setHistoryData4([
-          { date4: "2024-11-20", severity4: "Moderate" },
-          { date4: "2024-11-21", severity4: "Severe" },
-          { date4: "2024-11-22", severity4: "Mild" },
-        ]);
+        setHistoryData4([]);
       }
     };
 
@@ -553,7 +560,7 @@ const HealthTracker = () => {
   const [date5, setDate5] = useState("");
   const [showForm5, setShowForm5] = useState(false); // Control form visibility
   const [showHistory5, setShowHistory5] = useState(false); // Control history visibility
-  const [historyData5, setHistoryData5] = useState([]); // Store history data from backend
+  const [historyData5, setHistoryData5] = useState([]);
 
   useEffect(() => {
     const fetchSleepHistory = async () => {
@@ -561,28 +568,26 @@ const HealthTracker = () => {
         try {
           const response = await getSleepHistoryApi({ limit: 10 });
           if (response.data.success) {
-            const formattedData = response.data.data.map(item => ({
-              date5: new Date(item.date).toISOString().split('T')[0],
-              sleep: item.hours.toString(),
-            }));
+            const formattedData = response.data.data
+              .sort((a, b) => {
+                const dateA = new Date(a.date);
+                const dateB = new Date(b.date);
+                if (dateA > dateB) return -1;
+                if (dateA < dateB) return 1;
+                return b._id.localeCompare(a._id);
+              })
+              .map(item => ({
+                date5: new Date(item.date).toISOString().split('T')[0],
+                sleep: item.hoursSlept || item.sleep || 0,
+              }));
             setHistoryData5(formattedData);
           }
         } catch (error) {
           console.error('Error fetching sleep history:', error);
-          // Fallback to dummy data
-          setHistoryData5([
-            { date5: "2024-10-07", sleep: "8" },
-            { date5: "2024-10-06", sleep: "7" },
-            { date5: "2024-10-05", sleep: "6" },
-          ]);
+          setHistoryData5([]);
         }
       } else {
-        // Show dummy data for non-authenticated users
-        setHistoryData5([
-          { date5: "2024-10-07", sleep: "8" },
-          { date5: "2024-10-06", sleep: "7" },
-          { date5: "2024-10-05", sleep: "6" },
-        ]);
+        setHistoryData5([]);
       }
     };
 
@@ -597,12 +602,12 @@ const HealthTracker = () => {
         try {
           const sleepData = {
             date: date5,
-            hours: parseFloat(newSleep),
-            quality: 'Good', // Default quality - you might want to add this as a form field
+            hoursSlept: parseFloat(newSleep),
+            sleepQuality: 'good', // Default value, you may want to make this user-selectable
           };
           await saveSleepDataApi(sleepData);
           setSleep(newSleep);
-          setLastChecked5(date5);
+          setLastChecked5({ date5: date5, sleep: parseFloat(newSleep) });
           setNewSleep("");
           setDate5("");
           setShowForm5(false);
@@ -615,7 +620,7 @@ const HealthTracker = () => {
       } else {
         // For non-authenticated users, just update local state
         setSleep(newSleep);
-        setLastChecked5(date5);
+        setLastChecked5({ date5: date5, sleep: parseFloat(newSleep) });
         setNewSleep("");
         setDate5("");
         setShowForm5(false);
@@ -631,8 +636,94 @@ const HealthTracker = () => {
   };
 
   const handleShowHistory5 = () => {
-    setShowForm5(false); // Hide form when showing history    setShowHistory5(true); // Show history
+    setShowForm5(false); // Hide form when showing history
+    setShowHistory5(true); // Show history
   };
+
+  // Fetch latest entries for all trackers on mount
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    // Weight
+    getLatestWeightApi().then(response => {
+      if (response.data.success && response.data.data) {
+        const latestData = response.data.data;
+        setWeight(latestData.weight);
+        setLastChecked(new Date(latestData.date).toISOString().split('T')[0]);
+      }
+    }).catch(e => console.error('Error loading latest weight:', e));
+
+    // Hormone
+    getLatestHormoneApi().then(response => {
+      if (response.data.success && response.data.data) {
+        const item = response.data.data;
+        setLastChecked1({
+          date1: new Date(item.date).toISOString().split('T')[0],
+          FSH: item.FSH || 0,
+          LH: item.LH || 0,
+          testosterone: item.testosterone || 0,
+          thyroid: item.thyroid || 0,
+          prolactin: item.prolactin || 0,
+          avgBloodGlucose: item.avgBloodGlucose || 0,
+        });
+      } else {
+        setLastChecked1(null);
+      }
+    }).catch(e => setLastChecked1(null));
+
+    // Headache
+    getLatestHeadacheApi().then(response => {
+      if (response.data.success && response.data.data) {
+        const item = response.data.data;
+        setLastChecked2({
+          date2: new Date(item.date).toISOString().split('T')[0],
+          severity2: item.severity,
+        });
+      } else {
+        setLastChecked2(null);
+      }
+    }).catch(e => setLastChecked2(null));
+
+    // Stress
+    getLatestStressApi().then(response => {
+      if (response.data.success && response.data.data) {
+        const item = response.data.data;
+        setLastChecked3({
+          date3: new Date(item.date).toISOString().split('T')[0],
+          severity3: item.severity,
+        });
+      } else {
+        setLastChecked3(null);
+      }
+    }).catch(e => setLastChecked3(null));
+
+    // Stomach
+    getLatestStomachApi().then(response => {
+      if (response.data.success && response.data.data) {
+        const item = response.data.data;
+        setLastChecked4({
+          date4: new Date(item.date).toISOString().split('T')[0],
+          severity4: item.severity,
+        });
+      } else {
+        setLastChecked4(null);
+      }
+    }).catch(e => setLastChecked4(null));
+
+    // Sleep
+    getLatestSleepApi().then(response => {
+      if (response.data.success && response.data.data) {
+        const item = response.data.data;
+        setLastChecked5({
+          date5: item.date ? new Date(item.date).toISOString().split('T')[0] : '',
+          sleep: item.hoursSlept !== undefined ? item.hoursSlept : (item.sleep !== undefined ? item.sleep : null)
+        });
+      } else {
+        setLastChecked5(null);
+      }
+    }).catch(e => setLastChecked5(null));
+
+  }, [isAuthenticated]);
 
   // Ensure we're still inside the main HealthTracker function
   return (
@@ -885,15 +976,12 @@ const HealthTracker = () => {
                 {/* Weight Display Section - Shown only if weight has been set */}
                 {weight && (
                   <div className="weight-display20">
-                    <p>Last Checked {lastChecked}</p>
+                    <h3>Last Checked {lastChecked}</h3>
                     <div className="circl20">
-                      <p>{weight} Kg</p>
+                      <span>{weight} Kg</span>
                     </div>
                   </div>
                 )}
-
-
-
               </div>
             </div>
             <div id="X-ray" className={`st-tab ${isActive === 1 ? "active" : ""}`}>
@@ -1048,6 +1136,7 @@ const HealthTracker = () => {
                 </div>
               </div>
             </div>
+
             <div id="Pulmonary" className={`st-tab ${isActive === 2 ? "active" : ""}`}>
               <div className="st-imagebox-info">
                 <div className="banner">
@@ -1085,7 +1174,7 @@ const HealthTracker = () => {
                       </div>
 
                       <div className="headache-options">
-                        {["None", "Moderate", "Mild", "Severe"].map((level) => (
+                        {["Mild","Moderate", "Severe"].map((level) => (
                           <div
                             key={level}
                             className={`headache-option ${severity2 === level ? "selected" : ""
@@ -1172,7 +1261,7 @@ const HealthTracker = () => {
                         </div>
 
                         <div className="stress-options">
-                          {["None", "Moderate", "Mild", "Severe"].map((level) => (
+                          {["Mild","Moderate", "Severe"].map((level) => (
                             <div
                               key={level}
                               className={`stress-option ${severity3 === level ? "selected" : ""
@@ -1259,7 +1348,7 @@ const HealthTracker = () => {
                         </div>
 
                         <div className="stomach-options">
-                          {["None", "Moderate", "Mild", "Severe"].map((level) => (
+                          {["Mild","Moderate", "Severe"].map((level) => (
                             <div
                               key={level}
                               className={`stomach-option ${severity4 === level ? "selected" : ""
@@ -1384,12 +1473,13 @@ const HealthTracker = () => {
                     </div>
                   )}
 
-                  {/* sleep Display Section - Shown only if sleep has been set */}
-                  {sleep && (
+                  {/* sleep Display Section - Debug log and relaxed check */}
+                  {console.log('lastChecked5:', lastChecked5)}
+                  {lastChecked5 && lastChecked5.date5 && typeof lastChecked5.sleep === 'number' && (
                     <div className="sleep-display20">
-                      <p>Last Checked {lastChecked5}</p>
-                      <div className="circle20">
-                        <p>{sleep} Hrs</p>
+                      <h3>Last Checked {lastChecked5.date5}</h3>
+                      <div className="circle21">
+                        <span>{lastChecked5.sleep} Hrs</span>
                       </div>
                     </div>
                   )}

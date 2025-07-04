@@ -80,7 +80,10 @@ export const deleteHospitalApi = (id) => API.delete(`/api/admin/hospitals/${id}`
 // Hospital Appointments APIs
 export const getAppointmentsApi = (params) => API.get('/api/hospital/appointments', { params })
 export const getAppointmentApi = (id) => API.get(`/api/hospital/appointments/${id}`)
-export const createAppointmentApi = (formData) => API.post('/api/hospital/appointments', formData)
+// For admin use only:
+export const createAdminAppointmentApi = (formData) => API.post('/api/hospital/appointments', formData)
+// For regular users:
+export const createAppointmentApi = (formData) => API.post('/api/public/appointments', formData)
 export const updateAppointmentApi = (id, formData) => API.put(`/api/hospital/appointments/${id}`, formData)
 export const cancelAppointmentApi = (id, formData) => API.put(`/api/hospital/appointments/${id}/cancel`, formData)
 export const getAppointmentStatsApi = () => API.get('/api/hospital/appointments/stats')
@@ -198,6 +201,7 @@ export const getLatestWeightApi = () => API.get('/api/health/weight/latest')
 // Hormone Tracker APIs
 export const saveHormoneDataApi = (formData) => API.post('/api/health/hormone', formData)
 export const getHormoneHistoryApi = (params) => API.get('/api/health/hormone/history', { params })
+export const getLatestHormoneApi = () => API.get('/api/health/hormone/latest')
 
 // Review APIs
 export const submitReviewApi = (formData) => API.post('/api/reviews/submit', formData)
@@ -208,18 +212,22 @@ export const submitShopReviewApi = (formData) => API.post('/api/reviews/shop/sub
 // Sleep Tracker APIs
 export const saveSleepDataApi = (formData) => API.post('/api/health/sleep', formData)
 export const getSleepHistoryApi = (params) => API.get('/api/health/sleep/history', { params })
+export const getLatestSleepApi = () => API.get('/api/health/sleep/latest')
 
 // Headache Tracker APIs
 export const saveHeadacheDataApi = (formData) => API.post('/api/health/headache', formData)
 export const getHeadacheHistoryApi = (params) => API.get('/api/health/headache/history', { params })
+export const getLatestHeadacheApi = () => API.get('/api/health/headache/latest')
 
 // Stress Tracker APIs
 export const saveStressDataApi = (formData) => API.post('/api/health/stress', formData)
 export const getStressHistoryApi = (params) => API.get('/api/health/stress/history', { params })
+export const getLatestStressApi = () => API.get('/api/health/stress/latest')
 
 // Stomach Tracker APIs
 export const saveStomachDataApi = (formData) => API.post('/api/health/stomach', formData)
 export const getStomachHistoryApi = (params) => API.get('/api/health/stomach/history', { params })
+export const getLatestStomachApi = () => API.get('/api/health/stomach/latest')
 
 // Medicine Reminder APIs
 export const saveMedicineReminderApi = (formData) => API.post('/api/health/reminder', formData)
