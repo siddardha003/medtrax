@@ -56,7 +56,6 @@ const MedReminder = () => {
     async function setupPush() {
       if (isAuthenticated && 'serviceWorker' in navigator) {
         try {
-          console.log('[PushDebug] User is authenticated, setting up push subscription process...');
           const reg = await navigator.serviceWorker.ready;
 
           // Step 1: Get the subscription from the browser
@@ -64,7 +63,6 @@ const MedReminder = () => {
 
           // Step 2: If no subscription, create one
           if (!sub) {
-            console.log('[PushDebug] No subscription found in browser. Creating one...');
             const { getVapidPublicKey, subscribeUserToPush } = await import('../../notifications');
             const publicKey = await getVapidPublicKey();
             sub = await subscribeUserToPush(reg, publicKey);
@@ -72,17 +70,14 @@ const MedReminder = () => {
 
           // Step 3: ALWAYS send the subscription to the backend to ensure it's synced with the userId
           if (sub) {
-            console.log('[PushDebug] Syncing subscription with backend...');
             const { sendSubscriptionToBackend } = await import('../../notifications');
             await sendSubscriptionToBackend(sub);
           }
 
           setPushSubscription(sub);
         } catch (err) {
-          console.error('[PushDebug] Full push subscription setup failed:', err);
         }
       } else if (!isAuthenticated) {
-        console.log('[PushDebug] User not authenticated. Skipping push setup.');
       }
     }
 
@@ -92,7 +87,6 @@ const MedReminder = () => {
   const fetchReminders = async () => {
     try {
       const response = await getMedicineRemindersApi({ active: true });
-      console.log('Fetched reminders from backend (full):', JSON.stringify(response.data, null, 2));
       if (response.data.success) {
         const allReminders = response.data.data.map(rem => ({
           ...rem,
@@ -102,15 +96,12 @@ const MedReminder = () => {
         // Filter into active and completed lists
         setActiveReminders(allReminders.filter(r => r.status === 'active'));
         setCompletedReminders(allReminders.filter(r => r.status === 'completed'));
-        console.log('Reminders set in state:', allReminders);
         if (Array.isArray(allReminders)) {
           allReminders.forEach((rem, idx) => {
-            console.log(`Reminder[${idx}] id:`, rem.id);
           });
         }
       }
     } catch (error) {
-      console.error('Error fetching reminders:', error);
     }
   };
 
@@ -163,7 +154,6 @@ const MedReminder = () => {
           await saveOrUpdateReminder(reminderData);
         }
       } catch (error) {
-        console.error('Error saving reminder:', error);
         alert('Error saving reminder. Please try again.');
       }
     } else {
@@ -189,7 +179,6 @@ const MedReminder = () => {
           alert('Reminder updated successfully!');
         }
       } catch (error) {
-        console.error('Error updating reminder:', error);
         alert('Error updating reminder. Please try again.');
       }
     } else {
@@ -208,7 +197,6 @@ const MedReminder = () => {
           // Note: The new backend logic handles scheduling, so we can remove the frontend scheduling logic
         }
       } catch (error) {
-        console.error('Error saving reminder:', error);
         alert('Error saving reminder. Please try again.');
       }
     }
@@ -248,18 +236,14 @@ const MedReminder = () => {
     }
   };
   const handleDeleteReminder = async (index, reminderId) => {
-    console.log('handleDeleteReminder called. isAuthenticated:', isAuthenticated, 'reminderId:', reminderId);
     if (isAuthenticated && reminderId) {
       try {
-        console.log('Attempting to delete reminder with ID:', reminderId);
         const response = await deleteMedicineReminderApi(reminderId);
-        console.log('Delete API response:', response.data);
         if (response.data.success) {
           await fetchReminders();
           alert('Reminder deleted successfully!');
         }
       } catch (error) {
-        console.error('Error deleting reminder:', error);
         alert('Error deleting reminder. Please try again.');
       }
     } else {

@@ -37,7 +37,6 @@ const HospitalDetails = () => {
         const fetchHospitalDetails = async () => {
             try {
                 setLoading(true);
-                console.log('Fetching hospital details for ID:', id);
 
                 if (!id) {
                     setError('No hospital ID provided');
@@ -46,21 +45,13 @@ const HospitalDetails = () => {
                 }
 
                 const { data } = await getPublicHospitalDetailsApi(id);
-                console.log('Hospital data received:', data);
 
                 if (data.success) {
-                    console.log('Hospital location:', data.data.hospital.location);
-                    console.log('Hospital address details:', {
-                        address: data.data.hospital.address,
-                        city: data.data.hospital.city,
-                        state: data.data.hospital.state
-                    });
                     setHospitalData(data.data.hospital);
                 } else {
                     setError('Failed to load hospital details');
                 }
             } catch (err) {
-                console.error('Error fetching hospital details:', err);
                 setError('Failed to load hospital details. Please try again later.');
             } finally {
                 setLoading(false);
@@ -70,7 +61,6 @@ const HospitalDetails = () => {
         if (id) {
             fetchHospitalDetails();
         } else {
-            console.warn('No hospital ID found in URL parameters');
             setLoading(false);
             setError('No hospital ID provided');
         }
@@ -250,7 +240,6 @@ const HospitalDetails = () => {
                     setReviewError('Failed to load reviews');
                 }
             } catch (err) {
-                console.error('Error fetching reviews:', err);
                 setReviewError('Failed to load reviews. Please try again later.');
             } finally {
                 setLoadingReviews(false);
@@ -268,11 +257,9 @@ const HospitalDetails = () => {
     useEffect(() => {
         try {
             const profileData = localStorage.getItem('profile');
-            console.log('Profile data from localStorage:', profileData);
 
             if (profileData) {
                 const profile = JSON.parse(profileData);
-                console.log('Parsed profile:', profile);
 
                 // Check if we have a valid profile with userInfo (Redux format)
                 if (profile && profile.userInfo) {
@@ -282,7 +269,6 @@ const HospitalDetails = () => {
                         name: profile.userInfo.name || 'Anonymous User',
                         location: profile.userInfo.location || "Location not specified"
                     });
-                    console.log('User is logged in as:', profile.userInfo.name);
                 }
                 // Backwards compatibility for other profile formats
                 else if (profile && profile.user) {
@@ -292,18 +278,14 @@ const HospitalDetails = () => {
                         name: profile.user.name || 'Anonymous User',
                         location: profile.user.location || "Location not specified"
                     });
-                    console.log('User is logged in (legacy format) as:', profile.user.name);
                 }
                 else {
-                    console.log('Profile exists but has invalid format');
                     setUser({ isLoggedIn: false });
                 }
             } else {
-                console.log('No profile data found in localStorage');
                 setUser({ isLoggedIn: false });
             }
         } catch (error) {
-            console.error('Error parsing user profile:', error);
             setUser({ isLoggedIn: false });
         }
     }, []);
@@ -339,7 +321,6 @@ const HospitalDetails = () => {
 
             // First check: if no token available, user is definitely not logged in
             if (!isAuthenticated) {
-                console.log('No authentication token found. User needs to log in.');
                 alert("Please log in to submit a review.");
                 return;
             }
@@ -347,8 +328,6 @@ const HospitalDetails = () => {
             // Second check: verify our component state is also reflecting the logged-in state
             // This is a redundant check but helps ensure UI consistency
             if (!user?.isLoggedIn) {
-                console.log('Token exists but component state shows user not logged in. Refreshing state.');
-                // We could refresh the user state here if needed
                 alert("Please log in to submit a review.");
                 return;
             }
@@ -359,21 +338,17 @@ const HospitalDetails = () => {
                 return;
             }
 
-            console.log('Submitting review for hospital ID:', id);
             const reviewData = {
                 hospitalId: id,
                 rating: newReview.stars,
                 text: newReview.text
             };
-            console.log('Review data being submitted:', reviewData);
 
             const response = await submitReviewApi(reviewData);
-            console.log('Review submission response:', response);
 
             if (response.data.success) {
                 // Add the new review to the beginning of the reviews array
                 const newReviewData = response.data.data.review;
-                console.log('New review added:', newReviewData);
 
                 setReviews(prevReviews => [newReviewData, ...prevReviews]);
 
@@ -391,11 +366,9 @@ const HospitalDetails = () => {
 
                 alert("Review submitted successfully!");
             } else {
-                console.error('Review submission failed with error:', response.data.message);
                 alert("Failed to submit review. Please try again.");
             }
         } catch (error) {
-            console.error("Error submitting review:", error);
             alert("Error submitting review. Please try again later.");
         }
     };
@@ -717,15 +690,6 @@ const HospitalDetails = () => {
                                 const profile = profileData ? JSON.parse(profileData) : null;
                                 const isLoggedIn = !!(profile && (profile.token || (profile.userInfo && profile.userInfo.id)));
 
-                                // Debug
-                                console.log('Review form auth check:', {
-                                    profileExists: !!profileData,
-                                    hasToken: !!(profile && profile.token),
-                                    hasUserInfo: !!(profile && profile.userInfo),
-                                    isLoggedInState: user?.isLoggedIn,
-                                    finalDecision: isLoggedIn
-                                });
-
                                 if (isLoggedIn) {
                                     return (
                                         <form className="review-form" onSubmit={handleReviewSubmit}>
@@ -765,7 +729,6 @@ const HospitalDetails = () => {
                                     );
                                 }
                             } catch (error) {
-                                console.error('Error rendering review form:', error);
                                 return <p>An error occurred when checking login status. Please refresh the page.</p>;
                             }
                         })()}

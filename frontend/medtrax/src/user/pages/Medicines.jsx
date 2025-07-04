@@ -231,18 +231,15 @@ const Medicines = () => {
       try {
         setLoading(true);
         const response = await getPublicShopsApi();
-        console.log('Medicines API Response:', response.data); // Debug log
 
         if (response.data && response.data.success) {
           const shopsData = response.data.data.shops || [];
           // Ensure we always set an array
           setShops(Array.isArray(shopsData) ? shopsData : []);
-          console.log('Shops loaded for medicines:', shopsData.length); // Debug log
         } else {
           throw new Error('Invalid API response structure');
         }
       } catch (error) {
-        console.error('Error fetching shops:', error);
         setError(error.message);
         // Fallback to static data if API fails
         setShops(fallbackShopsData);
