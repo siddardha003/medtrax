@@ -203,9 +203,9 @@ const HospitalProfile = () => {
     setUploadingImage(true);
     setError('');
     try {
-      console.log('Uploading image:', file.name);
+      
       const response = await uploadHospitalImageApi(formData);
-      console.log('Upload response:', response);
+      
       
       const { data } = response;
       if (data && data.success) {
@@ -226,7 +226,7 @@ const HospitalProfile = () => {
           finalUrl = baseUrl + (finalUrl.startsWith('/') ? '' : '/') + finalUrl;
         }
         
-        console.log('Image uploaded with URL:', finalUrl);
+        
         
         setBasicInfo(prev => ({
           ...prev,
@@ -235,7 +235,7 @@ const HospitalProfile = () => {
         setSuccess('Image uploaded successfully');
         
         // Log success with the URL for verification
-        console.log('Image URL after processing:', finalUrl);
+        
       } else {
         console.error('Upload response was not successful:', data);
         setError('Server response indicates upload was not successful. Please try again.');

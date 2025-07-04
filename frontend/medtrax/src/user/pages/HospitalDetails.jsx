@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import "../css/HospitalDetails.css";
 import "../css/Reviews.css";
-import HospitalMap from "../components/Hospitalmap";
+import EnhancedMap from "../components/EnhancedMap";
 import { getPublicHospitalDetailsApi, submitReviewApi, getHospitalReviewsApi } from "../../Api";
 
 // Helper function to ensure valid image URLs
@@ -735,10 +735,15 @@ const HospitalDetails = () => {
                     </div>
                     <div style={{ margin: '10px' }}>
                         <h2>{selectedHospital.name}</h2>
-                        <HospitalMap
-                            latitude={selectedHospital.latitude}
-                            longitude={selectedHospital.longitude}
-                            hospitalName={selectedHospital.name}
+                        <EnhancedMap
+                            data={hospitalData}
+                            name={displayData.name}
+                            type="hospital"
+                            height="500px"
+                            showCoordinates={true}
+                            onCoordinateError={(error) => {
+                                console.log('Map coordinate error:', error);
+                            }}
                         />
                     </div>
                     <div style={styles.containernew}>

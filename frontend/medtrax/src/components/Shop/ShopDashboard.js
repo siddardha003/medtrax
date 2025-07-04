@@ -292,7 +292,7 @@ const ShopDashboard = () => {
 
   const fetchAnalytics = useCallback(async () => {
     // Analytics tab was removed, this function is kept for compatibility
-    console.log('Analytics tab was removed');
+    
   }, []);
 
   // Shop profile management functions
@@ -393,9 +393,9 @@ const ShopDashboard = () => {
 
     setUploadingImage(true);
     try {
-      console.log('Uploading image:', file.name);
+      
       const response = await ShopApi.uploadShopImageApi(formData);
-      console.log('Upload response:', response);
+      
       
       const { data } = response;
       if (data && data.success) {
@@ -419,7 +419,7 @@ const ShopDashboard = () => {
           finalUrl = baseUrl + (finalUrl.startsWith('/') ? '' : '/') + finalUrl;
         }
         
-        console.log('Image uploaded with URL:', finalUrl);
+        
         
         setProfileFormData(prev => ({
           ...prev,
@@ -432,7 +432,7 @@ const ShopDashboard = () => {
         }));
         
         // Log success with the URL for verification
-        console.log('Image URL after processing:', finalUrl);
+        
       } else {
         console.error('Upload response was not successful:', data);
         dispatch(showNotification({
@@ -459,9 +459,9 @@ const ShopDashboard = () => {
 
     setUploadingServiceImage(true);
     try {
-      console.log('Uploading service image:', file.name);
+      
       const response = await ShopApi.uploadShopImageApi(formData);
-      console.log('Service image upload response:', response);
+      
       
       const { data } = response;
       if (data && data.success) {
@@ -485,7 +485,7 @@ const ShopDashboard = () => {
           finalUrl = baseUrl + (finalUrl.startsWith('/') ? '' : '/') + finalUrl;
         }
         
-        console.log('Service image uploaded with URL:', finalUrl);
+        
         
         // Update the service item with the image URL
         const newItems = [...(profileFormData.newServiceItems || [])];
@@ -502,7 +502,7 @@ const ShopDashboard = () => {
           messageType: 'success'
         }));
         
-        console.log('Service image URL after processing:', finalUrl);
+        
       } else {
         console.error('Upload response was not successful:', data);
         dispatch(showNotification({
@@ -588,14 +588,6 @@ const ShopDashboard = () => {
       openingTimes: profileFormData.openingTimes
     };
 
-    console.log('🚀 FRONTEND - Sending payload:', JSON.stringify(payload, null, 2));
-    console.log('🚀 FRONTEND - Services in payload:', {
-      servicesType: typeof payload.services,
-      servicesIsArray: Array.isArray(payload.services),
-      servicesLength: payload.services ? payload.services.length : 'N/A',
-      servicesContent: payload.services
-    });
-
     setLoading(true);
     try {
       const { data } = await ShopApi.updateShopProfileApi(payload);
@@ -663,7 +655,7 @@ const ShopDashboard = () => {
 
 
   const handleLogout = async () => {
-    console.log('Shop admin logout clicked');
+    
     try {
       const result = await dispatch(logOut());
       if (result && result.success) {

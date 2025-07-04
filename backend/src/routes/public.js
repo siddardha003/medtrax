@@ -304,14 +304,14 @@ router.get('/stats', async (req, res, next) => {
         const usersCollection = User.collection;
         
         const totalHospitals = await hospitalsCollection.countDocuments();
-        console.log(`Found ${totalHospitals} hospitals in database`);
+        
         
         const totalShops = await shopsCollection.countDocuments();
-        console.log(`Found ${totalShops} shops in database`);
+        
         
         // Get total users who are patients
         const totalPatients = await usersCollection.countDocuments({ role: 'user' });
-        console.log(`Found ${totalPatients} patients in database`);
+        
         
         // Calculate years of experience (assuming service started in 2020)
         const currentYear = new Date().getFullYear();
@@ -325,8 +325,6 @@ router.get('/stats', async (req, res, next) => {
             totalShops: totalShops > 0 ? totalShops : 10,
             totalHospitals: totalHospitals > 0 ? totalHospitals : 15
         };
-
-        console.log('Public stats fetched from DB:', stats);
 
         res.status(200).json({
             success: true,

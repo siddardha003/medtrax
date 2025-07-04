@@ -7,27 +7,18 @@ const ProtectedRoute = ({ children, requiredRole = null }) => {
   const location = useLocation();
   
   useEffect(() => {
-    console.log('ProtectedRoute check:', {
-      path: location.pathname,
-      requiredRole,
-      userRole: userInfo?.role,
-      isAdmin: userInfo?.isAdmin,
-      isAuthenticated: !!token && !!userInfo?.id
-    });
+    
   }, [location.pathname, requiredRole, token, userInfo, userInfo?.role, userInfo?.isAdmin]);
   
   // Check if user is authenticated
   if (!token || !userInfo?.id) {
-    console.log('Not authenticated, redirecting to login');
+    
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   // Check if specific role is required
   if (requiredRole && userInfo.role !== requiredRole) {
-    console.log('Access denied - wrong role', {
-      required: requiredRole,
-      actual: userInfo.role
-    });
+    
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="max-w-md w-full bg-white p-8 rounded-lg shadow-md text-center">
@@ -51,7 +42,7 @@ const ProtectedRoute = ({ children, requiredRole = null }) => {
     );
   }
 
-  console.log('Access granted to', location.pathname);
+  
   return children;
 };
 

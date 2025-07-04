@@ -50,7 +50,7 @@ function App() {
         const publicKey = await getVapidPublicKey();
         await subscribeUserToPush(swReg, publicKey);
       } catch (err) {
-        console.log('Push setup error:', err);
+        
       }
     }
     setupPush();

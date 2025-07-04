@@ -14,7 +14,7 @@ const connectDB = async () => {
             useNewUrlParser: true,
             useUnifiedTopology: true,
         });
-        console.log('✅ MongoDB Connected');
+        
     } catch (error) {
         console.error('❌ Database connection failed:', error.message);
         process.exit(1);
@@ -96,10 +96,10 @@ const seedSuperAdmin = async () => {
         const existingSuperAdmin = await User.findOne({ role: 'super_admin' });
         
         if (existingSuperAdmin) {
-            console.log('🔍 Super Admin already exists:');
-            console.log(`   Email: ${existingSuperAdmin.email}`);
-            console.log(`   Name: ${existingSuperAdmin.firstName} ${existingSuperAdmin.lastName}`);
-            console.log('✅ No need to create a new super admin');
+            
+            
+            
+            
             return existingSuperAdmin;
         }        // Create default super admin
         const superAdminData = {
@@ -114,10 +114,10 @@ const seedSuperAdmin = async () => {
 
         const superAdmin = await User.create(superAdminData);
 
-        console.log('🎉 Super Admin created successfully!');
-        console.log('📧 Email:', superAdmin.email);
-        console.log('🔑 Password:', 'Admin@123');
-        console.log('👤 Name:', `${superAdmin.firstName} ${superAdmin.lastName}`);
+        
+        
+        
+        
         
         return superAdmin;
 
@@ -125,7 +125,7 @@ const seedSuperAdmin = async () => {
         console.error('❌ Error creating super admin:', error.message);
         
         if (error.code === 11000) {
-            console.log('📧 Email already exists. Super admin might already be created.');
+            
         }
         return null;
     }
@@ -134,7 +134,7 @@ const seedSuperAdmin = async () => {
 // Seed sample data (optional)
 const seedSampleData = async () => {
     try {
-        console.log('🌱 Seeding sample data...');
+        
         
         // First create super admin to use as createdBy
         const superAdmin = await seedSuperAdmin();
@@ -398,15 +398,15 @@ const seedSampleData = async () => {
         // Clear existing data (for fresh seeding)
         await Hospital.deleteMany({});
         await Shop.deleteMany({});
-        console.log('🗑️  Cleared existing hospitals and shops data');
+        
 
         // Create hospitals
         const createdHospitals = await Hospital.insertMany(hospitalsData);
-        console.log(`🏥 Created ${createdHospitals.length} hospitals`);
+        
 
         // Create shops
         const createdShops = await Shop.insertMany(shopsData);
-        console.log(`🏪 Created ${createdShops.length} medical shops`);
+        
 
         // Create admin users for hospitals and shops
         const hospitalAdmins = [];
@@ -426,7 +426,7 @@ const seedSampleData = async () => {
             try {
                 const admin = await User.create(adminData);
                 hospitalAdmins.push(admin);
-                console.log(`👨‍⚕️ Created hospital admin: ${admin.email}`);
+                
             } catch (error) {
                 if (error.code !== 11000) { // Skip duplicate email errors
                     console.error(`Error creating hospital admin: ${error.message}`);
@@ -450,7 +450,7 @@ const seedSampleData = async () => {
             try {
                 const admin = await User.create(adminData);
                 shopAdmins.push(admin);
-                console.log(`💊 Created shop admin: ${admin.email}`);
+                
             } catch (error) {
                 if (error.code !== 11000) { // Skip duplicate email errors
                     console.error(`Error creating shop admin: ${error.message}`);
@@ -458,31 +458,31 @@ const seedSampleData = async () => {
             }
         }
 
-        console.log('');
-        console.log('🎉 Sample data seeding completed successfully!');
-        console.log('');
-        console.log('📋 TEST ACCOUNTS CREATED:');
-        console.log('');
-        console.log('🔐 SUPER ADMIN:');
-        console.log('   Email: admin@medtrax.com');
-        console.log('   Password: Admin@123');
-        console.log('');
-        console.log('🏥 HOSPITAL ADMINS:');
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         hospitalAdmins.forEach((admin, index) => {
-            console.log(`   Hospital ${index + 1}: ${admin.email} / Hospital@123`);
+            
         });
-        console.log('');
-        console.log('🏪 SHOP ADMINS:');
+        
+        
         shopAdmins.forEach((admin, index) => {
-            console.log(`   Shop ${index + 1}: ${admin.email} / Shop@123`);
+            
         });
-        console.log('');
-        console.log('🔗 FRONTEND TESTING:');
-        console.log('   - Visit http://localhost:3000 to see the frontend');
-        console.log('   - Go to /hospitals to see the hospital listings');
-        console.log('   - Go to /medicines to see the pharmacy listings');
-        console.log('   - Use /login to sign in with any of the above accounts');
-        console.log('');
+        
+        
+        
+        
+        
+        
+        
 
     } catch (error) {
         console.error('❌ Error seeding sample data:', error.message);
@@ -497,12 +497,12 @@ const runSeeder = async (seedFunction, name) => {
     try {
         await connectDB();
         await seedFunction();
-        console.log(`✅ ${name} completed successfully`);
+        
     } catch (error) {
         console.error(`❌ Error in ${name}:`, error.message);
     } finally {
         await mongoose.connection.close();
-        console.log('🔌 Database connection closed');
+        
     }
 };
 
@@ -519,26 +519,23 @@ switch (command) {
                 await connectDB();
                 await seedSuperAdmin();
                 await seedSampleData();
-                console.log('✅ All seeding completed successfully');
+                
             } catch (error) {
                 console.error('❌ Error in complete seeding:', error.message);
             } finally {
                 await mongoose.connection.close();
-                console.log('🔌 Database connection closed');
+                
             }
         })();
         break;
     default:
-        console.log('📖 Usage:');
-        console.log('   npm run seed admin  - Create super admin user');
-        console.log('   npm run seed sample - Seed sample data (hospitals, shops, admins)');
-        console.log('   npm run seed all    - Create admin + seed sample data');
-        console.log('');
-        console.log('🔧 Make sure MongoDB is running and .env file is configured');
-        console.log('');
-        console.log('💡 After seeding, you can test the application with:');
-        console.log('   - Frontend: http://localhost:3000');
-        console.log('   - Backend API: http://localhost:5000/api');
+        
+        
+        
+        
+        
+        
+        
         break;
 }
 

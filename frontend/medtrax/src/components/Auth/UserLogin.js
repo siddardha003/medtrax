@@ -86,7 +86,7 @@ const UserLogin = () => {
   // Redirect if already logged in
   useEffect(() => {
     if (userInfo && userInfo.id) {
-      console.log('User already logged in, redirecting to homepage');
+      
       navigate('/');
     }
   }, [userInfo, navigate]);
@@ -109,7 +109,7 @@ const UserLogin = () => {
         role: 'user' // Explicitly specify user role for validation
       };
       
-      console.log('User login attempt with data:', loginData);
+      
       const result = await dispatch(loginUserAccount(loginData, navigate));
       
       if (result && result.success) {

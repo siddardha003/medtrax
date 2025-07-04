@@ -40,8 +40,8 @@ const TEST_ACCOUNTS = {
     }
 };
 
-console.log('🧪 Testing Admin-Created Credentials');
-console.log('====================================\n');
+
+
 
 // Helper function to make login request
 const makeLoginRequest = async (endpoint, credentials) => {
@@ -83,47 +83,47 @@ const testCredentials = async (credentials) => {
 
 // Test specific account
 const testAccount = async (name, credentials) => {
-    console.log(`\n🔍 Testing ${name}:`);
-    console.log(`   Email: ${credentials.email}`);
-    console.log(`   Password: ${credentials.password}`);
+    
+    
+    
     
     // First, use debug endpoint to check credentials
-    console.log('   📊 Running credential analysis...');
+    
     const debugResult = await testCredentials(credentials);
     
     if (debugResult.success) {
         const debug = debugResult.data;
-        console.log(`   👤 User found: ${debug.userFound ? 'YES' : 'NO'}`);
-        console.log(`   🆔 User ID: ${debug.userId || 'N/A'}`);
-        console.log(`   🎭 Role: ${debug.role || 'N/A'}`);
-        console.log(`   ✅ Active: ${debug.isActive ? 'YES' : 'NO'}`);
-        console.log(`   🔐 Has password hash: ${debug.hasPassword ? 'YES' : 'NO'}`);
-        console.log(`   🔐 Hash length: ${debug.passwordHashLength || 'N/A'}`);
-        console.log(`   🔐 Is bcrypt format: ${debug.passwordStartsWithBcrypt ? 'YES' : 'NO'}`);
-        console.log(`   🎯 Password match: ${debug.passwordMatch ? 'YES' : 'NO'}`);
-        console.log(`   🏥 Hospital ID: ${debug.hospitalId || 'None'}`);
-        console.log(`   🏪 Shop ID: ${debug.shopId || 'None'}`);
-        console.log(`   📅 Last login: ${debug.lastLogin || 'Never'}`);
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         
         if (debug.matchError) {
-            console.log(`   ❌ Password match error: ${debug.matchError}`);
+            
         }
     } else {
-        console.log(`   ❌ Debug analysis failed: ${debugResult.error}`);
+        
     }
     
     // Then try actual login
-    console.log('   🔑 Attempting login...');
+    
     const loginResult = await makeLoginRequest('/login', credentials);
     
     if (loginResult.success) {
-        console.log(`   ✅ Login successful!`);
-        console.log(`   👤 Logged in as: ${loginResult.user?.firstName} ${loginResult.user?.lastName}`);
-        console.log(`   🎭 Role: ${loginResult.user?.role}`);
+        
+        
+        
         return true;
     } else {
-        console.log(`   ❌ Login failed: ${loginResult.message}`);
-        console.log(`   🔢 Status code: ${loginResult.status}`);
+        
+        
         return false;
     }
 };
@@ -141,29 +141,17 @@ const testAllAccounts = async () => {
     }
     
     // Summary
-    console.log('\n📊 Test Results Summary');
-    console.log('========================');
+    
+    
     
     results.forEach(({ name, success }) => {
         const status = success ? '✅' : '❌';
-        console.log(`${status} ${name}: ${success ? 'PASS' : 'FAIL'}`);
+        
     });
     
     const passedTests = results.filter(r => r.success).length;
     const totalTests = results.length;
     
-    console.log(`\n🎯 Overall: ${passedTests}/${totalTests} accounts working`);
-    
-    if (passedTests < totalTests) {
-        console.log('\n🔧 Troubleshooting Recommendations:');
-        console.log('   1. Check if passwords are being hashed during user creation');
-        console.log('   2. Verify pre-save middleware is working in User model');
-        console.log('   3. Check if bcrypt.compare is working correctly');
-        console.log('   4. Ensure database has the correct user records');
-        console.log('   5. Run: npm run seed sample (to recreate test accounts)');
-    } else {
-        console.log('\n🎉 All test accounts are working correctly!');
-    }
 };
 
 // Check if server is running first
@@ -172,9 +160,9 @@ const checkServer = async () => {
         await axios.get(`${BASE_URL}/debug/routes`);
         return true;
     } catch (error) {
-        console.log('❌ Backend server is not running or not accessible');
-        console.log('🔧 Please start the backend server with: npm start');
-        console.log('');
+        
+        
+        
         return false;
     }
 };
@@ -184,14 +172,14 @@ const checkServer = async () => {
     const serverRunning = await checkServer();
     
     if (serverRunning) {
-        console.log('🔗 Backend server is running');
-        console.log('📡 Debug endpoints are available');
+        
+        
         
         await testAllAccounts();
         
-        console.log('\n🛠️  Manual Testing:');
-        console.log('   - Test credentials: POST http://localhost:5000/api/auth/debug/test-credentials');
-        console.log('   - Login: POST http://localhost:5000/api/auth/login');
-        console.log('   - Frontend: http://localhost:3000/login');
+        
+        
+        
+        
     }
 })();

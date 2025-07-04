@@ -84,10 +84,10 @@ const createUser = async (req, res, next) => {
 
         // Create user
         const user = await User.create(userData);
-        console.log(`✅ User created successfully with ID: ${user._id}`);
-        console.log(`🔐 Password was hashed: ${user.password ? 'YES' : 'NO'}`);
-        console.log(`🔐 Hash length: ${user.password ? user.password.length : 0}`);
-        console.log(`🔐 Hash starts with $2: ${user.password ? user.password.startsWith('$2') : 'NO'}`);
+        
+        
+        
+        
 
         // Update hospital/shop with admin reference
         if (role === 'hospital_admin') {
@@ -95,13 +95,13 @@ const createUser = async (req, res, next) => {
                 adminId: user._id,
                 updatedBy: req.user.id
             });
-            console.log(`🏥 Updated hospital ${hospitalId} with admin reference`);
+            
         } else if (role === 'shop_admin') {
             await Shop.findByIdAndUpdate(shopId, { 
                 adminId: user._id,
                 updatedBy: req.user.id
             });
-            console.log(`🏪 Updated shop ${shopId} with admin reference`);
+            
         }
 
         // Double-check and fix shopId/adminId relationship for shop_admin
@@ -112,12 +112,12 @@ const createUser = async (req, res, next) => {
                 // Update user with correct shopId if missing or mismatched
                 await User.findByIdAndUpdate(user._id, { shopId: updatedShop._id });
                 user.shopId = updatedShop._id;
-                console.log(`🔄 Synced user.shopId with shop._id: ${updatedShop._id}`);
+                
             }
             // Double-check shop.adminId
             if (!updatedShop.adminId || updatedShop.adminId.toString() !== user._id.toString()) {
                 await Shop.findByIdAndUpdate(updatedShop._id, { adminId: user._id });
-                console.log(`🔄 Synced shop.adminId with user._id: ${user._id}`);
+                
             }
         }
         // Double-check and fix hospitalId/adminId relationship for hospital_admin
@@ -126,18 +126,18 @@ const createUser = async (req, res, next) => {
             if (updatedHospital && (!user.hospitalId || user.hospitalId.toString() !== updatedHospital._id.toString())) {
                 await User.findByIdAndUpdate(user._id, { hospitalId: updatedHospital._id });
                 user.hospitalId = updatedHospital._id;
-                console.log(`🔄 Synced user.hospitalId with hospital._id: ${updatedHospital._id}`);
+                
             }
             if (!updatedHospital.adminId || updatedHospital.adminId.toString() !== user._id.toString()) {
                 await Hospital.findByIdAndUpdate(updatedHospital._id, { adminId: user._id });
-                console.log(`🔄 Synced hospital.adminId with user._id: ${user._id}`);
+                
             }
         }
 
         // Send welcome email with credentials
         try {
             await sendWelcomeEmail(user, password);
-            console.log(`📧 Welcome email sent to ${email} with credentials`);
+            
         } catch (emailError) {
             console.error('❌ Email sending failed:', emailError);
             // Don't fail the user creation if email fails

@@ -98,7 +98,7 @@ const AdminLogin = () => {
   // Redirect if already logged in as admin
   useEffect(() => {
     if (userInfo && userInfo.id && userInfo.isAdmin) {
-      console.log('Admin already logged in, redirecting to appropriate dashboard');
+      
       // Navigate based on admin role
       switch (userInfo.role) {
         case 'super_admin':
@@ -135,7 +135,7 @@ const AdminLogin = () => {
         role: selectedRole // Explicitly include admin role
       };
       
-      console.log('Admin login attempt with data:', { ...loginData, role: selectedRole });
+      
       const result = await dispatch(loginAdminAccount(loginData, navigate));
       
       if (result && result.success) {

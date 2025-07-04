@@ -3,7 +3,8 @@ import { useParams, useSearchParams } from "react-router-dom";
 import { getPublicShopDetailsApi, getShopReviewsApi, submitShopReviewApi } from "../../Api";
 import "../css/MedicalshopDetails.css";
 import "../css/Reviews.css";
-import MedicalshopMap from "../components/Medicalshopmap";
+import EnhancedMap from "../components/EnhancedMap";
+import CoordinateDebugger from "../components/CoordinateDebugger";
 
 // Helper function to ensure valid image URLs
 const getValidImageUrl = (url) => {
@@ -634,7 +635,7 @@ const MedicalshopDetails = () => {
         };
 
         fetchShopDetails();
-    }, [shopId]);
+    }, [shopId, pureFallbackShopData.name, transformServices]);
 
     // Calculate rating and reviewsCount dynamically from reviews (frontend-only)
     const calculateRatingAndCount = () => {
@@ -740,12 +741,11 @@ const MedicalshopDetails = () => {
                     🕒 Open until {finalDisplayData.closingTime || '10:00 PM'}
                 </p>
                 <p className="medicalshop-location">
-                    📍 {finalDisplayData.formattedLocation || finalDisplayData.location || 'Location not available'}{" "}
-                    {(finalDisplayData.directionsLink && finalDisplayData.latitude && finalDisplayData.longitude) ? (
-                        <a style={{ color: "#008b95" }} href={finalDisplayData.directionsLink} target="_blank" rel="noreferrer">
+                    📍 {(displayData.location || 'Location not available') + ((displayData.directionsLink && displayData.latitude && displayData.longitude) ? (
+                        <a style={{ color: "#008b95", marginLeft: "1%" }} href={displayData.directionsLink} target="_blank" rel="noreferrer">
                             Get directions
                         </a>
-                    ) : null}
+                    ) : null)}
                 </p>
                 {/* Owner/Admin Contact Info */}
                 {/* {(finalDisplayData.ownerName || finalDisplayData.ownerPhone || finalDisplayData.ownerEmail) && (
@@ -763,7 +763,7 @@ const MedicalshopDetails = () => {
                 {/* Main Image */}
                 <img
                     src={getValidImageUrl(finalDisplayData.images?.[0]) || "data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22800%22%20height%3D%22400%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20800%20400%22%20preserveAspectRatio%3D%22none%22%3E%3Cdefs%3E%3Cstyle%20type%3D%22text%2Fcss%22%3E%23holder_18bb8f38116%20text%20%7B%20fill%3A%23AAAAAA%3Bfont-weight%3Abold%3Bfont-family%3AArial%2C%20Helvetica%2C%20Open%20Sans%2C%20sans-serif%2C%20monospace%3Bfont-size%3A40pt%20%7D%20%3C%2Fstyle%3E%3C%2Fdefs%3E%3Cg%20id%3D%22holder_18bb8f38116%22%3E%3Crect%20width%3D%22800%22%20height%3D%22400%22%20fill%3D%22%23EEEEEE%22%3E%3C%2Frect%3E%3Cg%3E%3Ctext%20x%3D%22285.4296875%22%20y%3D%22217.76%22%3ENo%20Image%20Available%3C%2Ftext%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E"}
-                    alt="Main"
+                    alt={finalDisplayData.name}
                     className="main-image"
                     onError={(e) => {
                         e.target.onerror = null; // Prevent infinite loop
@@ -886,7 +886,12 @@ const MedicalshopDetails = () => {
                                     <div key={idx} className="product-card">
                                         <div className="product-image-placeholder">
                                             {item.image ? (
-                                                <img src={item.image} alt={item.name} className="product-image" />
+                                                <img
+                                                    src={item.image}
+                                                    alt={item.name}
+                                                    className="product-image"
+                                                    onError={e => { e.target.src = 'https://placehold.co/100x100?text=No+Image'; }}
+                                                />
                                             ) : (
                                                 <>
                                                     {item.name.includes("Tablet") && "💊"}
@@ -1043,22 +1048,20 @@ const MedicalshopDetails = () => {
                     {/* Location Map */}
                     <div className="map-section">
                         <h2>Our Location</h2>
-                        {(selectedMedicalshop.latitude && selectedMedicalshop.longitude) ? (
-                            <>
-                                <MedicalshopMap
-                                    latitude={selectedMedicalshop.latitude}
-                                    longitude={selectedMedicalshop.longitude}
-                                    medicalshopName={selectedMedicalshop.name}
-                                />
-                                <div className="shop-coordinates" style={{ marginTop: '10px', textAlign: 'center', color: '#666', fontSize: '12px' }}>
-                                    <small>Coordinates: {selectedMedicalshop.latitude.toFixed(6)}, {selectedMedicalshop.longitude.toFixed(6)}</small>
-                                </div>
-                            </>
-                        ) : (
-                            <div style={{ color: 'red', textAlign: 'center', margin: '10px 0' }}>
-                                Location coordinates not available.
-                            </div>
-                        )}
+                        
+                        {/* Debug Component - Remove this after fixing coordinates */}
+                        <CoordinateDebugger data={shopData} name={finalDisplayData.name} />
+                        
+                        <EnhancedMap
+                            data={shopData}
+                            name={finalDisplayData.name}
+                            type="shop"
+                            height="500px"
+                            showCoordinates={true}
+                            onCoordinateError={(error) => {
+                                console.log('Map coordinate error:', error);
+                            }}
+                        />
                     </div>
 
                     {/* Opening Hours */}
@@ -1109,12 +1112,11 @@ const MedicalshopDetails = () => {
                             <p>🕒 Open until {displayData.closingTime || '10:00 PM'}</p>
                         </div>
                         <p className="location-info">
-                            📍 {displayData.location || 'Location not available'}{" "}
-                            {(displayData.directionsLink && displayData.latitude && displayData.longitude) ? (
+                            📍 {(displayData.location || 'Location not available') + ((displayData.directionsLink && displayData.latitude && displayData.longitude) ? (
                                 <a style={{ color: "#008b95", marginLeft: "1%" }} href={displayData.directionsLink} target="_blank" rel="noreferrer">
                                     Get directions
                                 </a>
-                            ) : null}
+                            ) : null)}
                         </p>
                         {/* Owner/Admin Info in booking card */}
                         {(displayData.ownerName || displayData.ownerPhone || displayData.ownerEmail) && (

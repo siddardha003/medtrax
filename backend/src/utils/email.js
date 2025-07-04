@@ -30,7 +30,7 @@ const sendEmail = async (options) => {
 
         const info = await transporter.sendMail(mailOptions);
         
-        console.log('Email sent successfully:', info.messageId);
+        
         return {
             success: true,
             messageId: info.messageId
@@ -410,7 +410,7 @@ const testEmailConfig = async () => {
     try {
         const transporter = createTransporter();
         await transporter.verify();
-        console.log('✅ Email configuration is valid');
+        
         return true;
     } catch (error) {
         console.error('❌ Email configuration error:', error.message);

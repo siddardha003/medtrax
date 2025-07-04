@@ -12,7 +12,7 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost/medtrax', {
   useUnifiedTopology: true,
 });
 
-console.log('Background job started.');
+
 
 async function processReminders() {
   const now = new Date();
@@ -37,7 +37,7 @@ async function processReminders() {
       });
       // Mark the schedule as sent instead of deleting
       await ReminderSchedule.findByIdAndUpdate(reminder._id, { sent: true });
-      console.log(`Sent and marked reminder: ${reminder.title} to ${reminder.subscription.endpoint}`);
+      
     } catch (err) {
       // If sending fails, we might want to retry later, so we don't delete it.
       // For now, we'll just log the error. A more robust system could add a retry count.
@@ -55,7 +55,7 @@ async function processCompletedReminders() {
       { $set: { status: 'completed' } }
     );
     if (result.modifiedCount > 0) {
-      console.log(`Marked ${result.modifiedCount} reminders as completed.`);
+      
     }
   } catch (err) {
     console.error('Error processing completed reminders:', err);

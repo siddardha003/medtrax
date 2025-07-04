@@ -5,11 +5,7 @@ const fs = require('fs');
 const path = require('path');
 
 // Log Cloudinary config (redacted for security)
-console.log('Cloudinary Config:', {
-  CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME ? 'Set' : 'Not Set',
-  API_KEY: process.env.CLOUDINARY_API_KEY ? 'Set' : 'Not Set',
-  API_SECRET: process.env.CLOUDINARY_API_SECRET ? 'Set' : 'Not Set'
-});
+
 
 // Test direct Cloudinary upload
 async function testDirectUpload() {
@@ -45,7 +41,7 @@ async function testDirectUpload() {
       }
     );
     
-    console.log('Direct upload response:', response.data);
+    
     return response.data;
   } catch (error) {
     console.error('Direct upload error:', error.message);
@@ -68,7 +64,7 @@ function createTestImage() {
   
   // Create a simple test image if it doesn't exist
   if (!fs.existsSync(filePath)) {
-    console.log('Creating test image...');
+    
     
     // Create a very basic image (1x1 pixel black JPEG)
     const imageData = Buffer.from([
@@ -87,9 +83,9 @@ function createTestImage() {
     ]);
     
     fs.writeFileSync(filePath, imageData);
-    console.log('Test image created at:', filePath);
+    
   } else {
-    console.log('Test image already exists at:', filePath);
+    
   }
   
   return filePath;

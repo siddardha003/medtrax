@@ -443,10 +443,10 @@ const searchPatients = async (req, res) => {
 const getHospitalProfile = async (req, res) => {
     try {
         const hospitalId = req.user.hospitalId;
-        console.log(`🏥 Getting profile for hospital: ${hospitalId}`);
+        
         
         if (!hospitalId) {
-            console.log(`❌ No hospitalId found in user object: ${req.user._id}`);
+            
             return res.status(400).json({
                 success: false,
                 error: 'No hospital ID associated with this user'
@@ -456,14 +456,14 @@ const getHospitalProfile = async (req, res) => {
         const hospital = await Hospital.findById(hospitalId).lean();
         
         if (!hospital) {
-            console.log(`❌ Hospital not found with ID: ${hospitalId}`);
+            
             return res.status(404).json({
                 success: false,
                 error: 'Hospital not found'
             });
         }
 
-        console.log(`✅ Successfully retrieved hospital profile: ${hospital.name}`);
+        
         res.status(200).json({
             success: true,
             message: 'Hospital profile retrieved successfully',
@@ -575,7 +575,7 @@ const uploadHospitalImage = async (req, res) => {
                 }
                 
                 // Access Cloudinary upload result directly
-                console.log('File uploaded to Cloudinary:', req.file);
+                
                 
                 if (!req.file.path && !req.file.secure_url) {
                     return res.status(500).json({

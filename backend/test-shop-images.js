@@ -11,12 +11,8 @@ const Shop = require('./src/models/Shop');
 async function checkShopImages() {
   try {
     const shops = await Shop.find({}).limit(5).select('name images');
-    console.log('Shop images in database:');
-    shops.forEach(shop => {
-      console.log(`Shop: ${shop.name}`);
-      console.log(`Images: ${JSON.stringify(shop.images)}`);
-      console.log('---');
-    });
+    
+ 
     process.exit(0);
   } catch (error) {
     console.error('Error:', error);

@@ -8,12 +8,12 @@ async function testSpecificPasswords() {
         const User = require('./src/models/User');
         
         const email = 'msiri@gmail.com';
-        console.log('🔍 Testing specific passwords for:', email);
+        
         
         const user = await User.findOne({ email }).select('+password');
         
         if (!user) {
-            console.log('❌ User not found');
+            
             return;
         }
         
@@ -40,20 +40,20 @@ async function testSpecificPasswords() {
         for (const testPassword of testPasswords) {
             try {
                 const isMatch = await bcrypt.compare(testPassword, user.password);
-                console.log(`🔑 Password '${testPassword}': ${isMatch ? '✅ MATCH' : '❌ No match'}`);
+                
                 if (isMatch) {
                     found = true;
                     break;
                 }
             } catch (err) {
-                console.log(`🔑 Password '${testPassword}': ❌ Error -`, err.message);
+                
             }
         }
         
         if (!found) {
-            console.log('❌ None of the test passwords matched.');
-            console.log('💡 The password might be auto-generated. Check your email or logs.');
-            console.log('💡 Or try the exact password you entered when creating this user.');
+            
+            
+            
         }
         
         await mongoose.connection.close();

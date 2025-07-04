@@ -306,11 +306,11 @@ const medicalShopsData = [
 
 async function populateShopsData() {
     try {
-        console.log('🏥 Starting to populate medical shops data...');
+        
 
         // Clear existing shop data
         await Shop.deleteMany({});
-        console.log('🗑️ Cleared existing shop data');
+        
 
         // Create shops and their admin users
         for (let i = 0; i < medicalShopsData.length; i++) {
@@ -330,7 +330,7 @@ async function populateShopsData() {
             });
 
             const savedUser = await adminUser.save();
-            console.log(`👤 Created admin user: ${savedUser.email}`);
+            
 
             // Create shop with admin reference
             const shop = new Shop({
@@ -357,34 +357,28 @@ async function populateShopsData() {
             });
 
             const savedShop = await shop.save();
-            console.log(`🏪 Created shop: ${savedShop.name}`);
+            
 
             // Update user with shopId
             savedUser.shopId = savedShop._id;
             await savedUser.save();
-            console.log(`🔗 Linked user ${savedUser.email} to shop ${savedShop.name}`);
+            
         }
 
-        console.log('✅ Successfully populated all medical shops data!');
-        console.log(`📊 Total shops created: ${medicalShopsData.length}`);
-        console.log(`👥 Total admin users created: ${medicalShopsData.length}`);
+        
+        
+        
         
         // Display summary
         const shops = await Shop.find({}).populate('adminId', 'firstName lastName email');
-        console.log('\n📋 Shop Summary:');
-        shops.forEach((shop, index) => {
-            console.log(`${index + 1}. ${shop.name} - ${shop.address.city}, ${shop.address.state}`);
-            console.log(`   Admin: ${shop.adminId.firstName} ${shop.adminId.lastName} (${shop.adminId.email})`);
-            console.log(`   Rating: ${shop.rating} ⭐ (${shop.totalReviews} reviews)`);
-            console.log(`   Phone: ${shop.phone}`);
-            console.log('');
-        });
+        
+        
 
     } catch (error) {
         console.error('❌ Error populating shops data:', error);
     } finally {
         mongoose.connection.close();
-        console.log('🔐 Database connection closed');
+        
     }
 }
 

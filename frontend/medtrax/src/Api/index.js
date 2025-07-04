@@ -11,9 +11,9 @@ API.interceptors.request.use(req => {
       
       if (token) {
         req.headers.Authorization = `Bearer ${token}`;
-        console.log('Added auth token to request');
+        
       } else {
-        console.log('No auth token found in profile');
+        
       }
     }
   } catch (error) {
@@ -48,7 +48,7 @@ API.interceptors.response.use(
     if (error.response?.status === 403 &&
         error.response?.data?.error?.includes('inactive') &&
         error.response?.data?.error?.includes('hospital')) {
-      console.log('❌ Hospital access error detected. This may be due to an inactive hospital.');
+      
     }
     
     // Enhance generic error messages
@@ -175,7 +175,7 @@ export const deleteAdminShopApi = (id) => API.delete(`/api/admin/shops/${id}`)
 export const getPublicHospitalsApi = (params) => API.get('/api/public/hospitals', { params })
 export const getPublicShopsApi = (params) => API.get('/api/public/shops', { params })
 export const getPublicHospitalDetailsApi = (id) => {
-  console.log(`Calling API for hospital details with ID: ${id}`);
+  
   return API.get(`/api/public/hospitals/${id}`);
 }
 export const getPublicShopDetailsApi = (id) => API.get(`/api/public/shops/${id}?t=${Date.now()}`)

@@ -16,17 +16,15 @@ export const createAccount = (formData, navigate) => async (dispatch) => {
     
     return data; // Return data for component to handle notifications
   } catch (error) {
-    console.log(error?.message);
-    console.log(error);
+    
+    
     // Re-throw to allow component to handle the error
     throw error;
   }
 };
 
 export const loginUserAccount = (formData, navigate) => async (dispatch) => {
-  try {
-    console.log('loginUserAccount (regular user) action called with formData:', formData);
-    
+  try {    
     // Ensure we're explicitly marking this as a regular user login
     const userFormData = {
       ...formData,
@@ -34,12 +32,12 @@ export const loginUserAccount = (formData, navigate) => async (dispatch) => {
     };
     
     const { data } = await loginUserApi(userFormData);
-    console.log("Regular user login response:", data);
+    
     
     // Backend sends: { success: true, message: "Login successful", data: { token, user } }
     if (data.success && data.data) {
       const { token, user } = data.data;
-      console.log('User data from API:', user);
+      
       
       // Format for frontend storage
       const userData = {
@@ -60,7 +58,7 @@ export const loginUserAccount = (formData, navigate) => async (dispatch) => {
       
       // Always navigate to homepage for regular users
       if (navigate) {
-        console.log('Regular user successfully logged in, going to homepage');
+        
         navigate("/");
       }
       
@@ -69,14 +67,14 @@ export const loginUserAccount = (formData, navigate) => async (dispatch) => {
       throw new Error("Invalid response format");
     }
   } catch (error) {
-    console.log(error);
+    
     throw error; // Re-throw to allow components to handle the error
   }
 };
 
 export const loginAdminAccount = (formData, navigate) => async (dispatch) => {
   try {
-    console.log('loginAdminAccount action called with formData:', formData);
+    
     
     // Ensure admin role is provided
     if (!formData.role || !['super_admin', 'hospital_admin', 'shop_admin'].includes(formData.role)) {
@@ -90,12 +88,12 @@ export const loginAdminAccount = (formData, navigate) => async (dispatch) => {
     };
     
     const { data } = await loginUserApi(adminFormData); // Use adminFormData with role properly set
-    console.log("Admin login response:", data);
+    
     
     // Backend sends: { success: true, message: "Login successful", data: { token, user } }
     if (data.success && data.data) {
       const { token, user } = data.data;
-      console.log('Admin data from API:', user);
+      
       
       // Format for frontend storage
       const userData = {
@@ -116,29 +114,29 @@ export const loginAdminAccount = (formData, navigate) => async (dispatch) => {
       
       // Navigate based on admin role - ONLY if navigate function is provided
       if (navigate) {
-        console.log('Navigating after admin login, role:', user.role);
+        
         
         // Admin dashboard navigation
         switch (user.role) {
           case 'super_admin':
-            console.log('Redirecting super_admin to /admin-panel');
+            
             navigate("/admin-panel");
             break;
           case 'hospital_admin':
-            console.log('Redirecting hospital_admin to /hospital-dashboard');
+            
             navigate("/hospital-dashboard");
             break;
           case 'shop_admin':
-            console.log('Redirecting shop_admin to /shop-dashboard');
+            
             navigate("/shop-dashboard");
             break;          default:
             // Fallback for unknown admin roles to homepage
-            console.log('Unknown admin role, redirecting to homepage');
+            
             navigate("/");
             break;
         }
       } else {
-        console.log('No navigate function provided, skipping navigation');
+        
       }
       
       return { success: true, data: userData, message: data.message || `Welcome Admin ${userData.userInfo.name}` };
@@ -146,7 +144,7 @@ export const loginAdminAccount = (formData, navigate) => async (dispatch) => {
       throw new Error("Invalid response format");
     }
   } catch (error) {
-    console.log(error);
+    
     throw error; // Re-throw to allow components to handle the error
   }
 };
@@ -154,7 +152,7 @@ export const loginAdminAccount = (formData, navigate) => async (dispatch) => {
 // Remove the wrapper function that causes double calls
 // Components should call loginUserAccount or loginAdminAccount directly
 // export const loginAccount = (formData, navigate) => async (dispatch) => {
-//   console.log('Original loginAccount called, checking if admin or regular user');
+//   
 //   
 //   const isAdminLogin = formData.role && ['super_admin', 'hospital_admin', 'shop_admin'].includes(formData.role);
 //   
@@ -166,7 +164,7 @@ export const loginAdminAccount = (formData, navigate) => async (dispatch) => {
 // };
 
 export const logOut = () => async (dispatch) => {
-  console.log('Logging out user...');
+  
   
   // Completely remove the profile from localStorage
   localStorage.removeItem("profile");
@@ -185,7 +183,7 @@ export const logOut = () => async (dispatch) => {
     },
   });
   
-  console.log('User logged out, navigation will be handled by component');
+  
   return { success: true, message: "Logged out successfully" };
 };
 
@@ -196,10 +194,10 @@ export const initializeAuth = () => (dispatch) => {
     if (profile && profile !== 'null' && profile !== 'undefined') {
       const userData = JSON.parse(profile);
       if (userData && userData.token && userData.userInfo?.id) {
-        console.log('Initializing authentication state from localStorage');
+        
         dispatch({ type: Add_LOGIN_USER, payload: userData });
       } else {
-        console.log('Invalid profile data found, clearing localStorage');
+        
         localStorage.removeItem("profile");
       }
     }

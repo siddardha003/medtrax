@@ -315,11 +315,11 @@ const shopsData = [
 
 async function populateShopsData() {
     try {
-        console.log('🏥 Starting to populate medical shops data...');
+        
         
         // Clear existing shop data
         await Shop.deleteMany({});
-        console.log('🗑️ Cleared existing shop data');        // Create a super admin user to use as createdBy
+                // Create a super admin user to use as createdBy
         const superAdminData = {
             firstName: 'Super',
             lastName: 'Admin',
@@ -334,7 +334,7 @@ async function populateShopsData() {
         let superAdmin = await User.findOne({ email: superAdminData.email });
         if (!superAdmin) {
             superAdmin = await User.create(superAdminData);
-            console.log('👤 Created super admin user');
+            
         }
 
         // Create shops and their admin users
@@ -353,7 +353,7 @@ async function populateShopsData() {
             let adminUser = await User.findOne({ email: adminUserData.email });
             if (!adminUser) {
                 adminUser = await User.create(adminUserData);
-                console.log(`👤 Created admin user for ${shopData.name}`);
+                
             }
 
             // Create shop with createdBy reference
@@ -363,15 +363,15 @@ async function populateShopsData() {
                 adminId: adminUser._id
             });
 
-            console.log(`🏪 Created shop: ${shop.name}`);
+            
         }
 
-        console.log('✅ Successfully populated shops data');
+        
 
     } catch (error) {
         console.error('❌ Error populating shops data:', error);
     } finally {
-        console.log('🔐 Database connection closed');
+        
         mongoose.connection.close();
     }
 }
