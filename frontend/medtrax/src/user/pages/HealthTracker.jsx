@@ -976,9 +976,9 @@ const HealthTracker = () => {
                 {/* Weight Display Section - Shown only if weight has been set */}
                 {weight && (
                   <div className="weight-display20">
-                    <p>Last Checked {lastChecked}</p>
+                    <h3>Last Checked {lastChecked}</h3>
                     <div className="circl20">
-                      <p>{weight} Kg</p>
+                      <span>{weight} Kg</span>
                     </div>
                   </div>
                 )}

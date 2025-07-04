@@ -1,7 +1,5 @@
-import { Icon } from '@iconify/react';
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useParams, useLocation } from 'react-router-dom';
-import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { getPublicHospitalDetailsApi, createAppointmentApi } from '../../Api';
 import { useSelector } from 'react-redux';
@@ -213,7 +211,8 @@ export default function AppForm() {
                     <div className="form-group">
                         <label className="form-label">Preferred Date</label>
                         <div className="date-picker-container">
-                            <DatePicker
+                            <input
+                                type="date"
                                 selected={selectedDate}
                                 onChange={(date) => setSelectedDate(date)}
                                 dateFormat="dd/MM/yyyy"
@@ -223,9 +222,6 @@ export default function AppForm() {
                                 className="form-input"
                                 required
                             />
-                            <i className="icon">
-                                <Icon icon="fa6-solid:calendar-days" />
-                            </i>
                         </div>
                     </div>
 
@@ -275,33 +271,12 @@ export default function AppForm() {
                         </div>
                     )}
 
-                    {/* Time Slots Dropdown */}
-                    {selectedDoctor && (
-                        <div className="form-group">
-                            <label className="form-label">Available Time Slots</label>
-                            <select
-                                className="form-input form-select"
-                                name="time"
-                                value={formData.time}
-                                onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-                                required
-                            >
-                                <option value="" disabled>Select Time Slot</option>
-                                {timeSlots.map((timeSlot, index) => (
-                                    <option key={index} value={timeSlot}>
-                                        {timeSlot}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                    )}
-
                     {/* Notes Field */}
                     <div className="form-group full-width">
                         <label className="form-label">Additional Notes</label>
                         <textarea
                             className="form-input form-textarea"
-                            placeholder="Any additional information or notes"
+                            placeholder="Any additional information"
                             value={formData.notes}
                             onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                         />

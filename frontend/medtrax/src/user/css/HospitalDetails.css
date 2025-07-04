@@ -190,6 +190,8 @@ body {
 .tab-description {
     font-size: 0.75rem;
     color: gray;
+    display: flex;
+    overflow: hidden;
 }
 
 /* Scroll Buttons */
@@ -364,7 +366,7 @@ body {
   }
   
   .book-now-btn {
-    background-color: #007aff;
+    background-color: #008b95;
     color: white;
     border: none;
     width: 365px;
@@ -440,7 +442,6 @@ body {
   .add-review textarea {
     display: block;
     width: 100%;
-    margin-bottom: 15px;
     padding: 10px;
     border: 1px solid #ddd;
     border-radius: 5px;
@@ -510,15 +511,16 @@ body {
   .review-form button {
     margin-top: 10px;
     padding: 10px 20px;
-    background-color: #007bff;
+    background-color: #008b95;
     color: white;
     border: none;
     border-radius: 10px;
     cursor: pointer;
+    margin-bottom: 15px;
   }
   
   .review-form button:hover {
-    background-color: #0056b3;
+    background-color: #008b95;
   }
 
   .map-container {

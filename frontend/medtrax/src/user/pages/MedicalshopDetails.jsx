@@ -2,22 +2,23 @@ import React, { useState, useRef, useEffect } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { getPublicShopDetailsApi, getShopReviewsApi, submitShopReviewApi } from "../../Api";
 import "../css/MedicalshopDetails.css";
+import "../css/Reviews.css";
 import MedicalshopMap from "../components/Medicalshopmap";
 
 // Helper function to ensure valid image URLs
 const getValidImageUrl = (url) => {
     if (!url) return null;
-    
+
     // If URL already has a protocol, return it as is
     if (url.startsWith('http://') || url.startsWith('https://')) {
         return url;
     }
-    
+
     // If it's a relative URL, add the base URL
     if (url.startsWith('/')) {
         return `${window.location.origin}${url}`;
     }
-    
+
     // If it's just a path without leading slash
     return `${window.location.origin}/${url}`;
 };
@@ -27,14 +28,14 @@ const MedicalshopDetails = () => {
     const { id } = useParams();
     const [searchParams] = useSearchParams();
     const shopId = id || searchParams.get('shopId');
-    
+
     console.log('=== MEDICALSHOP DETAILS DEBUG ===');
     console.log('URL id param:', id);
     console.log('Search param shopId:', searchParams.get('shopId'));
     console.log('Final shopId used:', shopId);
     console.log('Current URL:', window.location.href);
     console.log('=== END URL DEBUG ===');
-    
+
     const [shopData, setShopData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -128,7 +129,7 @@ const MedicalshopDetails = () => {
                 ]
             },
             {
-                category: "OTC Medicines", 
+                category: "OTC Medicines",
                 items: [
                     { name: "Vitamin C 500mg (30 tablets)", price: 150, availability: "In Stock" },
                     { name: "Calcium + Vitamin D3 (60 tablets)", price: 200, availability: "Limited Stock" },
@@ -188,9 +189,9 @@ const MedicalshopDetails = () => {
         latitude: shopData.latitude,
         longitude: shopData.longitude,
         // Formatted location
-        formattedLocation: shopData.location || 
-            (shopData.address && shopData.city && shopData.state 
-                ? `${shopData.address}, ${shopData.city}, ${shopData.state}` 
+        formattedLocation: shopData.location ||
+            (shopData.address && shopData.city && shopData.state
+                ? `${shopData.address}, ${shopData.city}, ${shopData.state}`
                 : 'Location not available'),
         // Pass through all other fields
         ...shopData
@@ -335,7 +336,7 @@ const MedicalshopDetails = () => {
         console.log('Input backendServices:', backendServices);
         console.log('Type of backendServices:', typeof backendServices);
         console.log('Is array:', Array.isArray(backendServices));
-        
+
         // Handle case where services is already in the correct format (array of objects with category and items)
         if (backendServices && Array.isArray(backendServices) && backendServices.length > 0) {
             // Check if it's already in the frontend format
@@ -343,11 +344,11 @@ const MedicalshopDetails = () => {
                 console.log('Services already in frontend format');
                 return backendServices;
             }
-            
+
             // Check if it's an array of service keys (strings)
             if (typeof backendServices[0] === 'string') {
                 console.log('Services in string array format, transforming...');
-                
+
                 const serviceMapping = {
                     'prescription_dispensing': {
                         category: "Prescription Medicines",
@@ -436,7 +437,7 @@ const MedicalshopDetails = () => {
                 return transformedServices.length > 0 ? transformedServices : pureFallbackShopData.services;
             }
         }
-        
+
         console.log('No backend services found or invalid format, using fallback data');
         console.log('=== END TRANSFORM SERVICES DEBUG ===');
         return pureFallbackShopData.services;
@@ -517,7 +518,7 @@ const MedicalshopDetails = () => {
         const fetchShopDetails = async () => {
             console.log('=== FETCH SHOP DETAILS START ===');
             console.log('shopId parameter:', shopId);
-            
+
             if (!shopId) {
                 console.log('No shopId provided - using fallback data');
                 setShopData(null); // No shop ID means use pure fallback
@@ -528,22 +529,22 @@ const MedicalshopDetails = () => {
                 });
                 setLoading(false);
                 return;
-            }            
-            
+            }
+
             console.log('Fetching shop details for ID:', shopId);
             setLoading(true);
             setError(null); // Clear any previous errors
             setShopData(null); // Clear previous shop data to prevent display issues
-            
+
             try {
                 console.log('Making API call to:', `/api/public/shops/${shopId}`);
                 const response = await getPublicShopDetailsApi(shopId);
                 console.log('API Response received:', response);
                 console.log('Response structure:', response.data);
-                
+
                 // Extract the actual shop data from the nested response
                 const shopData = response.data.data;  // Backend returns { success: true, data: shopData }
-                
+
                 console.log('=== BACKEND DATA DEBUG ===');
                 console.log('Raw shop data from backend:', shopData);
                 console.log('Backend name:', shopData.name);
@@ -559,11 +560,11 @@ const MedicalshopDetails = () => {
                 console.log('Backend latitude:', shopData.latitude);
                 console.log('Backend longitude:', shopData.longitude);
                 console.log('=== END DEBUG ===');
-                
+
                 // Extract coordinates from backend data
                 let latitude = 17.4065; // fallback
                 let longitude = 78.4772; // fallback
-                
+
                 if (shopData.location && shopData.location.coordinates && Array.isArray(shopData.location.coordinates)) {
                     // GeoJSON format: [longitude, latitude]
                     longitude = shopData.location.coordinates[0];
@@ -573,14 +574,14 @@ const MedicalshopDetails = () => {
                     latitude = shopData.latitude;
                     longitude = shopData.longitude;
                 }
-                
+
                 // Update map state with backend data
                 setSelectedMedicalshop({
                     name: shopData.name || 'Medical Shop',
                     latitude: latitude,
                     longitude: longitude,
                 });
-                
+
                 // Transform the services data to match frontend expectations
                 const transformedShopData = {
                     ...shopData,
@@ -588,10 +589,10 @@ const MedicalshopDetails = () => {
                     // Add other fallback properties if missing (excluding rating/reviewsCount - handled by frontend)
                     closingTime: shopData.closingTime || '10:00 PM',
                     // Handle different location formats from backend
-                    location: shopData.fullAddress || 
-                              (shopData.address && shopData.city && shopData.state ? 
-                                `${shopData.address}, ${shopData.city}, ${shopData.state}` : 
-                                (shopData.address || 'Location not available')),
+                    location: shopData.fullAddress ||
+                        (shopData.address && shopData.city && shopData.state ?
+                            `${shopData.address}, ${shopData.city}, ${shopData.state}` :
+                            (shopData.address || 'Location not available')),
                     // Handle phone field mapping
                     phone: shopData.phone || shopData.contactPhone || 'Phone not available',
                     directionsLink: shopData.directionsLink || 'https://maps.google.com',
@@ -602,7 +603,7 @@ const MedicalshopDetails = () => {
                     ownerPhone: shopData.ownerPhone || shopData.contactPhone || '',
                     ownerEmail: shopData.ownerEmail || shopData.contactEmail || ''
                 };
-                
+
                 console.log('=== TRANSFORMED DATA DEBUG ===');
                 console.log('Transformed shop data:', transformedShopData);
                 console.log('Final name:', transformedShopData.name);
@@ -613,7 +614,7 @@ const MedicalshopDetails = () => {
                 console.log('Final ownerPhone:', transformedShopData.ownerPhone);
                 console.log('Final ownerEmail:', transformedShopData.ownerEmail);
                 console.log('=== END TRANSFORMED DEBUG ===');
-                
+
                 console.log('Setting shopData state with:', transformedShopData);
                 setShopData(transformedShopData);
                 console.log('shopData state has been set');
@@ -641,10 +642,10 @@ const MedicalshopDetails = () => {
         if (reviews.length === 0) {
             return { rating: 0, reviewsCount: 0 };
         }
-        
+
         const totalRating = reviews.reduce((sum, review) => sum + (review.rating || 0), 0);
         const averageRating = totalRating / reviews.length;
-        
+
         return {
             rating: parseFloat(averageRating.toFixed(1)),
             reviewsCount: reviews.length
@@ -660,7 +661,7 @@ const MedicalshopDetails = () => {
         rating: calculatedRating || displayData.rating || 4.4,
         reviewsCount: calculatedReviewsCount || displayData.reviewsCount || 0
     };
-    
+
     // Debug displayData
     console.log('=== DISPLAY DATA DEBUG ===');
     console.log('Current shopData state:', shopData);
@@ -732,37 +733,37 @@ const MedicalshopDetails = () => {
 
             {/* Header */}
             <div className="medicalshop-header">
-                <h1>{finalDisplayData.name}</h1>                
+                <h1>{finalDisplayData.name}</h1>
                 <div className="medicalshoprating">
                     ⭐ {finalDisplayData.rating ? finalDisplayData.rating.toFixed(1) : '4.4'} ({finalDisplayData.reviewsCount || 0} reviews)
-                </div>                
+                </div>
                 <p className="medicalshop-timing">
                     🕒 Open until {finalDisplayData.closingTime || '10:00 PM'}
                 </p>
                 <p className="medicalshop-location">
                     📍 {finalDisplayData.formattedLocation || finalDisplayData.location || 'Location not available'}{" "}
-                    <a href={finalDisplayData.directionsLink || '#'} target="_blank" rel="noreferrer">
+                    <a style={{ color: "#008b95" }} href={finalDisplayData.directionsLink || '#'} target="_blank" rel="noreferrer">
                         Get directions
                     </a>
                 </p>
                 {/* Owner/Admin Contact Info */}
-                {(finalDisplayData.ownerName || finalDisplayData.ownerPhone || finalDisplayData.ownerEmail) && (
+                {/* {(finalDisplayData.ownerName || finalDisplayData.ownerPhone || finalDisplayData.ownerEmail) && (
                     <div className="medicalshop-owner-info" style={{ marginTop: '15px', padding: '10px', backgroundColor: '#f5f5f5', borderRadius: '5px' }}>
                         <h4 style={{ margin: '0 0 10px 0', fontSize: '14px', fontWeight: 'bold' }}>Owner/Manager Contact</h4>
                         {finalDisplayData.ownerName && <p style={{ margin: '5px 0' }}>👤 {finalDisplayData.ownerName}</p>}
                         {finalDisplayData.ownerPhone && <p style={{ margin: '5px 0' }}>📞 {finalDisplayData.ownerPhone}</p>}
                         {finalDisplayData.ownerEmail && <p style={{ margin: '5px 0' }}>✉️ {finalDisplayData.ownerEmail}</p>}
                     </div>
-                )}
+                )} */}
             </div>
-            
+
             {/* Images Section - Improved with better error handling */}
             <div className="medicalshop-images">
                 {/* Main Image */}
-                <img 
-                    src={getValidImageUrl(finalDisplayData.images?.[0]) || "data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22800%22%20height%3D%22400%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20800%20400%22%20preserveAspectRatio%3D%22none%22%3E%3Cdefs%3E%3Cstyle%20type%3D%22text%2Fcss%22%3E%23holder_18bb8f38116%20text%20%7B%20fill%3A%23AAAAAA%3Bfont-weight%3Abold%3Bfont-family%3AArial%2C%20Helvetica%2C%20Open%20Sans%2C%20sans-serif%2C%20monospace%3Bfont-size%3A40pt%20%7D%20%3C%2Fstyle%3E%3C%2Fdefs%3E%3Cg%20id%3D%22holder_18bb8f38116%22%3E%3Crect%20width%3D%22800%22%20height%3D%22400%22%20fill%3D%22%23EEEEEE%22%3E%3C%2Frect%3E%3Cg%3E%3Ctext%20x%3D%22285.4296875%22%20y%3D%22217.76%22%3ENo%20Image%20Available%3C%2Ftext%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E"} 
-                    alt="Main" 
-                    className="main-image" 
+                <img
+                    src={getValidImageUrl(finalDisplayData.images?.[0]) || "data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22800%22%20height%3D%22400%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20800%20400%22%20preserveAspectRatio%3D%22none%22%3E%3Cdefs%3E%3Cstyle%20type%3D%22text%2Fcss%22%3E%23holder_18bb8f38116%20text%20%7B%20fill%3A%23AAAAAA%3Bfont-weight%3Abold%3Bfont-family%3AArial%2C%20Helvetica%2C%20Open%20Sans%2C%20sans-serif%2C%20monospace%3Bfont-size%3A40pt%20%7D%20%3C%2Fstyle%3E%3C%2Fdefs%3E%3Cg%20id%3D%22holder_18bb8f38116%22%3E%3Crect%20width%3D%22800%22%20height%3D%22400%22%20fill%3D%22%23EEEEEE%22%3E%3C%2Frect%3E%3Cg%3E%3Ctext%20x%3D%22285.4296875%22%20y%3D%22217.76%22%3ENo%20Image%20Available%3C%2Ftext%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E"}
+                    alt="Main"
+                    className="main-image"
                     onError={(e) => {
                         e.target.onerror = null; // Prevent infinite loop
                         e.target.src = "data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22800%22%20height%3D%22400%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20800%20400%22%20preserveAspectRatio%3D%22none%22%3E%3Cdefs%3E%3Cstyle%20type%3D%22text%2Fcss%22%3E%23holder_18bb8f38116%20text%20%7B%20fill%3A%23AAAAAA%3Bfont-weight%3Abold%3Bfont-family%3AArial%2C%20Helvetica%2C%20Open%20Sans%2C%20sans-serif%2C%20monospace%3Bfont-size%3A40pt%20%7D%20%3C%2Fstyle%3E%3C%2Fdefs%3E%3Cg%20id%3D%22holder_18bb8f38116%22%3E%3Crect%20width%3D%22800%22%20height%3D%22400%22%20fill%3D%22%23EE5555%22%3E%3C%2Frect%3E%3Cg%3E%3Ctext%20x%3D%22285.4296875%22%20y%3D%22217.76%22%3EImage%20Error%3C%2Ftext%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E";
@@ -771,20 +772,20 @@ const MedicalshopDetails = () => {
 
                 {/* Image Grid */}
                 <div className="image-grid">
-                    <img 
-                        src={getValidImageUrl(finalDisplayData.images?.[1] || finalDisplayData.images?.[0]) || "data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22400%22%20height%3D%22300%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20400%20300%22%20preserveAspectRatio%3D%22none%22%3E%3Cdefs%3E%3Cstyle%20type%3D%22text%2Fcss%22%3E%23holder_18bb8f38116%20text%20%7B%20fill%3A%23AAAAAA%3Bfont-weight%3Abold%3Bfont-family%3AArial%2C%20Helvetica%2C%20Open%20Sans%2C%20sans-serif%2C%20monospace%3Bfont-size%3A20pt%20%7D%20%3C%2Fstyle%3E%3C%2Fdefs%3E%3Cg%20id%3D%22holder_18bb8f38116%22%3E%3Crect%20width%3D%22400%22%20height%3D%22300%22%20fill%3D%22%23EEEEEE%22%3E%3C%2Frect%3E%3Cg%3E%3Ctext%20x%3D%22145.4296875%22%20y%3D%22157.76%22%3ENo%20Image%3C%2Ftext%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E"} 
-                        alt="Secondary 1" 
-                        className="thumbnail" 
+                    <img
+                        src={getValidImageUrl(finalDisplayData.images?.[1] || finalDisplayData.images?.[0]) || "data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22400%22%20height%3D%22300%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20400%20300%22%20preserveAspectRatio%3D%22none%22%3E%3Cdefs%3E%3Cstyle%20type%3D%22text%2Fcss%22%3E%23holder_18bb8f38116%20text%20%7B%20fill%3A%23AAAAAA%3Bfont-weight%3Abold%3Bfont-family%3AArial%2C%20Helvetica%2C%20Open%20Sans%2C%20sans-serif%2C%20monospace%3Bfont-size%3A20pt%20%7D%20%3C%2Fstyle%3E%3C%2Fdefs%3E%3Cg%20id%3D%22holder_18bb8f38116%22%3E%3Crect%20width%3D%22400%22%20height%3D%22300%22%20fill%3D%22%23EEEEEE%22%3E%3C%2Frect%3E%3Cg%3E%3Ctext%20x%3D%22145.4296875%22%20y%3D%22157.76%22%3ENo%20Image%3C%2Ftext%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E"}
+                        alt="Secondary 1"
+                        className="thumbnail"
                         onError={(e) => {
                             e.target.onerror = null; // Prevent infinite loop
                             e.target.src = "data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22400%22%20height%3D%22300%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20400%20300%22%20preserveAspectRatio%3D%22none%22%3E%3Cdefs%3E%3Cstyle%20type%3D%22text%2Fcss%22%3E%23holder_18bb8f38116%20text%20%7B%20fill%3A%23AAAAAA%3Bfont-weight%3Abold%3Bfont-family%3AArial%2C%20Helvetica%2C%20Open%20Sans%2C%20sans-serif%2C%20monospace%3Bfont-size%3A20pt%20%7D%20%3C%2Fstyle%3E%3C%2Fdefs%3E%3Cg%20id%3D%22holder_18bb8f38116%22%3E%3Crect%20width%3D%22400%22%20height%3D%22300%22%20fill%3D%22%23EE5555%22%3E%3C%2Frect%3E%3Cg%3E%3Ctext%20x%3D%22135.4296875%22%20y%3D%22157.76%22%3EImage%20Error%3C%2Ftext%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E";
                         }}
                     />
                     <div className="thumbnail-container">
-                        <img 
-                            src={getValidImageUrl(finalDisplayData.images?.[2] || finalDisplayData.images?.[0]) || "data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22400%22%20height%3D%22300%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20400%20300%22%20preserveAspectRatio%3D%22none%22%3E%3Cdefs%3E%3Cstyle%20type%3D%22text%2Fcss%22%3E%23holder_18bb8f38116%20text%20%7B%20fill%3A%23AAAAAA%3Bfont-weight%3Abold%3Bfont-family%3AArial%2C%20Helvetica%2C%20Open%20Sans%2C%20sans-serif%2C%20monospace%3Bfont-size%3A20pt%20%7D%20%3C%2Fstyle%3E%3C%2Fdefs%3E%3Cg%20id%3D%22holder_18bb8f38116%22%3E%3Crect%20width%3D%22400%22%20height%3D%22300%22%20fill%3D%22%23EEEEEE%22%3E%3C%2Frect%3E%3Cg%3E%3Ctext%20x%3D%22145.4296875%22%20y%3D%22157.76%22%3ENo%20Image%3C%2Ftext%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E"} 
-                            alt="Secondary 2" 
-                            className="thumbnail" 
+                        <img
+                            src={getValidImageUrl(finalDisplayData.images?.[2] || finalDisplayData.images?.[0]) || "data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22400%22%20height%3D%22300%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20400%20300%22%20preserveAspectRatio%3D%22none%22%3E%3Cdefs%3E%3Cstyle%20type%3D%22text%2Fcss%22%3E%23holder_18bb8f38116%20text%20%7B%20fill%3A%23AAAAAA%3Bfont-weight%3Abold%3Bfont-family%3AArial%2C%20Helvetica%2C%20Open%20Sans%2C%20sans-serif%2C%20monospace%3Bfont-size%3A20pt%20%7D%20%3C%2Fstyle%3E%3C%2Fdefs%3E%3Cg%20id%3D%22holder_18bb8f38116%22%3E%3Crect%20width%3D%22400%22%20height%3D%22300%22%20fill%3D%22%23EEEEEE%22%3E%3C%2Frect%3E%3Cg%3E%3Ctext%20x%3D%22145.4296875%22%20y%3D%22157.76%22%3ENo%20Image%3C%2Ftext%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E"}
+                            alt="Secondary 2"
+                            className="thumbnail"
                             onError={(e) => {
                                 e.target.onerror = null; // Prevent infinite loop
                                 e.target.src = "data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22400%22%20height%3D%22300%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20400%20300%22%20preserveAspectRatio%3D%22none%22%3E%3Cdefs%3E%3Cstyle%20type%3D%22text%2Fcss%22%3E%23holder_18bb8f38116%20text%20%7B%20fill%3A%23AAAAAA%3Bfont-weight%3Abold%3Bfont-family%3AArial%2C%20Helvetica%2C%20Open%20Sans%2C%20sans-serif%2C%20monospace%3Bfont-size%3A20pt%20%7D%20%3C%2Fstyle%3E%3C%2Fdefs%3E%3Cg%20id%3D%22holder_18bb8f38116%22%3E%3Crect%20width%3D%22400%22%20height%3D%22300%22%20fill%3D%22%23EE5555%22%3E%3C%2Frect%3E%3Cg%3E%3Ctext%20x%3D%22135.4296875%22%20y%3D%22157.76%22%3EImage%20Error%3C%2Ftext%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E";
@@ -801,13 +802,13 @@ const MedicalshopDetails = () => {
                             <button className="close-btn" onClick={closeModal1}>
                                 &times;
                             </button>
-                            <h3>Shop Images ({finalDisplayData.images ? finalDisplayData.images.length : 0} total)</h3>                        
+                            <h3>Shop Images ({finalDisplayData.images ? finalDisplayData.images.length : 0} total)</h3>
                             {(finalDisplayData.images && finalDisplayData.images.length > 0) ? (
                                 finalDisplayData.images.map((image, index) => (
-                                    <img 
-                                        key={index} 
-                                        src={getValidImageUrl(image)} 
-                                        alt={`Shop Image ${index + 1}`} 
+                                    <img
+                                        key={index}
+                                        src={getValidImageUrl(image)}
+                                        alt={`Shop Image ${index + 1}`}
                                         className="modal-image"
                                         onError={(e) => {
                                             e.target.onerror = null; // Prevent infinite loop
@@ -822,14 +823,14 @@ const MedicalshopDetails = () => {
                     </div>
                 )}
             </div>
-            
+
             {/* Main Content */}
             <div className="med-services-booking">
                 <div className="med-services-section">
                     {/* Enhanced Products & Services Section */}
                     <div className="products-services-section">
                         <h2 className="section-title">Pharmacy Products & Services</h2>
-                        
+
                         {/* Categories Navigation */}
                         <div className="categories-nav-container">
                             <button
@@ -867,7 +868,7 @@ const MedicalshopDetails = () => {
                                 &#9654;
                             </button>
                         </div>
-                        
+
                         {/* Products List */}
                         <div className="products-container">
                             <div className="products-header">
@@ -878,7 +879,7 @@ const MedicalshopDetails = () => {
                                     {(displayData.services && displayData.services[selectedService]?.items?.length) || 0} items available
                                 </div>
                             </div>
-                            
+
                             <div className="products-grid">
                                 {(displayData.services && displayData.services[selectedService]?.items || []).map((item, idx) => (
                                     <div key={idx} className="product-card">
@@ -908,7 +909,7 @@ const MedicalshopDetails = () => {
                                                 <span className="product-price">₹{item.price}</span>
                                             </div>
                                             {/* Show stock information instead of cart */}
-                                            <div className="stock-info">
+                                            {/* <div className="stock-info">
                                                 {item.stockCount && (
                                                     <span className="stock-count">
                                                         📦 {item.stockCount} units available
@@ -919,15 +920,15 @@ const MedicalshopDetails = () => {
                                                         📅 Exp: {new Date(item.expiryDate).toLocaleDateString()}
                                                     </span>
                                                 )}
-                                            </div>
+                                            </div> */}
                                         </div>
                                         <div className="product-info-actions">
-                                            <div className="availability-badge">
+                                            {/* <div className="availability-badge">
                                                 {item.availability === "In Stock" && <span className="badge in-stock">Available</span>}
                                                 {item.availability === "Limited Stock" && <span className="badge limited-stock">Limited</span>}
                                                 {item.availability === "Out of Stock" && <span className="badge out-of-stock">Out of Stock</span>}
                                                 {item.availability === "24/7 Available" && <span className="badge always-available">24/7</span>}
-                                            </div>
+                                            </div> */}
                                             <div className="contact-info">
                                                 <small>📞 Call to confirm availability</small>
                                             </div>
@@ -940,7 +941,7 @@ const MedicalshopDetails = () => {
 
                     {/* Reviews Section */}
                     <div className="reviews-section">
-                        <h2>Customer Reviews</h2>
+                        <h2>Reviews</h2>
                         <div className="scroll-container">
                             <button
                                 className="scroll-button left-button"
@@ -953,17 +954,20 @@ const MedicalshopDetails = () => {
                                     <div className="loading-reviews">Loading reviews...</div>
                                 ) : reviewError ? (
                                     <div className="error-reviews">Error loading reviews: {reviewError}</div>
+                                ) : reviews.length === 0 ? (
+                                    <div className="no-reviews">No reviews yet. Be the first to review!</div>
                                 ) : (
                                     <div className="review-tabs" ref={reviewContainerRef}>
                                         {reviews.map((review, index) => (
                                             <div key={index} className="review-card">
                                                 <div className="review-stars">{"⭐".repeat(review.rating || 0)}</div>
                                                 <h4>{review.text || 'No review text provided'}</h4>
-                                                <p className="review-author">{review.userName || 'Anonymous User'}</p>
-                                                <p className="review-location">{review.userLocation || 'Location not specified'}</p>
-                                                <p className="review-date">
-                                                    {review.createdAt ? new Date(review.createdAt).toLocaleDateString() : 'Date not available'}
-                                                </p>
+                                                <div>
+                                                    <p>{review.userName || 'Anonymous User'}</p>
+                                                    <p className="review-date">
+                                                        {review.createdAt ? new Date(review.createdAt).toLocaleDateString() : 'Date not available'}
+                                                    </p>
+                                                </div>
                                             </div>
                                         ))}
                                     </div>
@@ -1034,7 +1038,7 @@ const MedicalshopDetails = () => {
                             }
                         })()}
                     </div>
-                    
+
                     {/* Location Map */}
                     <div className="map-section">
                         <h2>Our Location</h2>
@@ -1050,7 +1054,7 @@ const MedicalshopDetails = () => {
                             </div>
                         )}
                     </div>
-                    
+
                     {/* Opening Hours */}
                     <div style={styles1.containernew}>
                         <h2 style={styles1.title}>Opening Hours</h2>
@@ -1078,31 +1082,29 @@ const MedicalshopDetails = () => {
                         </ul>
                     </div>
                 </div>
-                
+
                 {/* Booking Card */}
                 <div className="med-booking-card">
                     <div className="med-booking-medical-header">
-                        <h2>{displayData.name || 'Medical Shop'}</h2>                        
+                        <h2>{displayData.name || 'Medical Shop'}</h2>
                         <div className="med-booking-rating">
                             ⭐ {displayData.rating ? displayData.rating.toFixed(1) : '4.4'} ({displayData.reviewsCount || 0} reviews)
                         </div>
                         <button className="med-book-now-btn" onClick={handleContactNowClick}>
                             Contact now
-                        </button>                        
+                        </button>
                         {showPhoneNumber && (
                             <div className="phone-number-display">
                                 <p>📞 {displayData.phone || displayData.ownerPhone || 'Phone not available'}</p>
-                                <p className="timing-note">Available 9AM-9PM</p>
                             </div>
                         )}
                         <div className="store-info">
                             <p>🏬 Store pick-up available</p>
-                            <p>🚚 Home delivery option</p>
                             <p>🕒 Open until {displayData.closingTime || '10:00 PM'}</p>
                         </div>
                         <p className="location-info">
                             📍 {displayData.location || 'Location not available'}{" "}
-                            <a href={displayData.directionsLink || '#'} target="_blank" rel="noreferrer">
+                            <a style={{ color: "#008b95", marginLeft: "1%" }} href={displayData.directionsLink || '#'} target="_blank" rel="noreferrer">
                                 Get directions
                             </a>
                         </p>

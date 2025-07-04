@@ -148,7 +148,7 @@ const Contact = styled.div`
 `;
 
 const ViewButton = styled.button`
-  background: linear-gradient(90deg, #008b95 0%, #86c2c6 100%);
+  background: #008b95;
   color: white;
   border: none;
   padding: 0.8rem 1.5rem;
@@ -301,9 +301,9 @@ const Medicines = () => {
                   <ShopName>{shop.name}</ShopName>
                   
                   <div>
-                    <Rating>
+                    <Rating style={{marginBottom: '8px'}}>
                       <Star size={16} fill="currentColor" />
-                      <span>{shop.rating || '4.5'}</span>
+                      <span >{shop.rating || 'N/A'}</span>
                     </Rating>                    <Location>
                       <MapPin size={14} />
                       <span>{shop.address ? `${shop.address.city}, ${shop.address.state}` : shop.city ? `${shop.city}, ${shop.state}` : shop.location}</span>

@@ -146,7 +146,7 @@ const Contact = styled.div`
 `;
 
 const ViewButton = styled.button`
-  background: linear-gradient(90deg, #008b95 0%, #86c2c6 100%);
+  background: #008b95;
   color: white;
   border: none;
   padding: 0.8rem 1.5rem;
@@ -312,13 +312,13 @@ const Appointments = () => {
                   <ClinicName>{clinic.name}</ClinicName>
                   
                   <div>
-                    <Rating>
+                    <Rating style={{marginBottom: '8px'}}>
                       <Star size={16} fill="currentColor" />
                       <span>{clinic.rating || '4.5'}</span>
                     </Rating>
                     <Location>
                       <MapPin size={14} />
-                      <span>{clinic.address ? `${clinic.address.city}, ${clinic.address.state}` : clinic.location}</span>
+                      <span>{clinic.address ? `${clinic.address}`.trim().replace(/^,|,$/, '') : clinic.location || 'Location not available'}</span>
                     </Location>
                     <Contact>
                       <Phone size={14} />
