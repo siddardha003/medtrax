@@ -176,7 +176,7 @@ body {
   }
   
   .med-book-now-btn {
-    background-color: #007aff;
+    background-color: #008b95;
     color: white;
     border: none;
     width: 365px;
@@ -260,7 +260,7 @@ body {
 }
 
 .medtab.active {
-  background-color: #007aff;
+  background-color: #008b95;
   color: white;
 }
 
@@ -438,15 +438,16 @@ body {
   .review-form button {
     margin-top: 10px;
     padding: 10px 20px;
-    background-color: #007bff;
+    background-color: #008b95;
     color: white;
     border: none;
     border-radius: 10px;
     cursor: pointer;
+    margin-bottom: 15px;
   }
   
   .review-form button:hover {
-    background-color: #0056b3;
+    background-color: #008b95;
   }
 
 
@@ -471,7 +472,7 @@ body {
     color: #2c3e50;
     margin-bottom: 1.5rem;
     font-weight: 600;
-    border-bottom: 2px solid #3498db;
+    border-bottom: 2px solid #02a2ae;
     padding-bottom: 0.5rem;
     display: inline-block;
 }
@@ -515,14 +516,13 @@ body {
 }
 
 .category-tab:hover {
-    background: #e9f5ff;
     border-color: #b8d8f8;
 }
 
 .category-tab.active {
-    background: #3498db;
+    background: #008b95;
     color: white;
-    border-color: #3498db;
+    border-color: #008b95;
     font-weight: 500;
 }
 
@@ -729,8 +729,6 @@ body {
 
 .product-info-actions {
     margin-top: 10px;
-    display: flex;
-    justify-content: space-between;
     align-items: center;
 }
 
@@ -763,7 +761,7 @@ body {
 }
 
 .contact-info {
-    text-align: right;
+    text-align: center;
 }
 
 .contact-info small {
@@ -805,7 +803,7 @@ body {
 /* Owner info styling */
 .medicalshop-owner-info {
     background-color: #f8f9fa;
-    border-left: 4px solid #007bff;
+    border-left: 4px solid #008b95;
     padding: 15px;
     margin-top: 15px;
     border-radius: 4px;
