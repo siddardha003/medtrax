@@ -3,7 +3,6 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 
 // Custom Marker Icon
-
 const customIcon = new L.Icon({
     iconUrl: 'https://cdn-icons-png.flaticon.com/512/684/684908.png',
     iconSize: [38, 38],
@@ -12,12 +11,20 @@ const customIcon = new L.Icon({
 });
 
 const MedicalshopMap = ({ latitude, longitude, medicalshopName }) => {
+    if (typeof latitude !== 'number' || typeof longitude !== 'number') {
+        return (
+            <div style={{ textAlign: 'center', color: '#888', margin: '20px 0' }}>
+                Location coordinates not available for this shop.
+            </div>
+        );
+    }
     return (
-        <div className="map-container">
+        <div className="map-container" style={{ height: '400px', width: '100%', borderRadius: '12px', overflow: 'hidden', margin: '0 auto' }}>
             <MapContainer
                 center={[latitude, longitude]}
                 zoom={15}
                 scrollWheelZoom={false}
+                style={{ height: '100%', width: '100%' }}
             >
                 <TileLayer
                     url="https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png"
@@ -25,7 +32,7 @@ const MedicalshopMap = ({ latitude, longitude, medicalshopName }) => {
                 />
                 <Marker position={[latitude, longitude]} icon={customIcon}>
                     <Popup>
-                        {medicalshopName}
+                        {medicalshopName || 'Medical Shop'}
                     </Popup>
                 </Marker>
             </MapContainer>
@@ -33,4 +40,4 @@ const MedicalshopMap = ({ latitude, longitude, medicalshopName }) => {
     );
 };
 
-export default MedicalshopMap;
+export default MedicalshopMap; 

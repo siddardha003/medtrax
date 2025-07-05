@@ -16,11 +16,6 @@ export const validateCoordinates = (lat, lng) => {
         return false;
     }
     
-    // Check if coordinates are not the default Hyderabad coordinates
-    if (lat === 17.4065 && lng === 78.4772) {
-        return false;
-    }
-    
     // Check if coordinates are not zero or null
     if (lat === 0 && lng === 0) {
         return false;

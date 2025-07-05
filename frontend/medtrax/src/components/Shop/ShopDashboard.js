@@ -79,16 +79,6 @@ const ShopDashboard = () => {
     isActive: true
   });
 
-  // --- PATCH: Add Latitude and Longitude fields to profile modal ---
-  // Add these fields to your shop profile modal/form JSX:
-  // ...existing profile fields...
-
-  // ...rest of your profile modal JSX...
-
-
-
-
-
   // Define stock status options for UI display and filtering
   // eslint-disable-next-line no-unused-vars
   const stockStatuses = [
@@ -644,15 +634,26 @@ const ShopDashboard = () => {
     }
   };
 
-
-
-
-
-
-
-
-
-
+  const handleLatLngChange = (e) => {
+    const { name, value } = e.target;
+    setProfileFormData(prev => {
+      // Parse the new value
+      const newVal = value === '' ? '' : parseFloat(value);
+      // Get current lat/lng from location if present
+      let lat = name === 'latitude' ? newVal : (prev.location && prev.location.coordinates ? prev.location.coordinates[1] : '');
+      let lng = name === 'longitude' ? newVal : (prev.location && prev.location.coordinates ? prev.location.coordinates[0] : '');
+      // Only update location if both are valid numbers
+      let location = prev.location;
+      if (lat !== '' && lng !== '' && !isNaN(lat) && !isNaN(lng)) {
+        location = { type: 'Point', coordinates: [lng, lat] };
+      }
+      return {
+        ...prev,
+        [name]: newVal,
+        location
+      };
+    });
+  };
 
   const handleLogout = async () => {
     
@@ -775,7 +776,7 @@ const ShopDashboard = () => {
               <div className="bg-white p-6 rounded-lg shadow">
                 <div className="flex items-center">
                   <div className="p-2 bg-green-100 rounded-lg">
-                    <span className="text-2xl">�</span>
+                    <span className="text-2xl"></span>
                   </div>
                   <div className="ml-4">
                     <p className="text-sm font-medium text-gray-600">Total Value</p>
@@ -1172,10 +1173,10 @@ const ShopDashboard = () => {
                         />
                         <input
                           type="number"
-                          placeholder="Price"
                           value={inlineEditItem.price}
                           onChange={e => setInlineEditItem(prev => ({ ...prev, price: e.target.value }))}
                           className="w-24 p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="Price"
                         />
                         <select
                           value={inlineEditItem.availability}
@@ -1756,9 +1757,9 @@ const ShopDashboard = () => {
                 <input
                   type="number"
                   id="latitude"
-                  name="selectedMedicalshop.latitude"
-                  value={profileFormData.selectedMedicalshop.latitude}
-                  onChange={handleProfileInputChange}
+                  name="latitude"
+                  value={profileFormData.location && profileFormData.location.coordinates ? profileFormData.location.coordinates[1] : ''}
+                  onChange={handleLatLngChange}
                   step="any"
                   placeholder="Latitude"
                   style={{ marginBottom: '8px', width: '100%' }}
@@ -1767,9 +1768,9 @@ const ShopDashboard = () => {
                 <input
                   type="number"
                   id="longitude"
-                  name="selectedMedicalshop.longitude"
-                  value={profileFormData.selectedMedicalshop.longitude}
-                  onChange={handleProfileInputChange}
+                  name="longitude"
+                  value={profileFormData.location && profileFormData.location.coordinates ? profileFormData.location.coordinates[0] : ''}
+                  onChange={handleLatLngChange}
                   step="any"
                   placeholder="Longitude"
                   style={{ marginBottom: '16px', width: '100%' }}

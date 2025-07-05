@@ -4,6 +4,7 @@ const Shop = require('../models/Shop');
 const User = require('../models/User');
 const Appointment = require('../models/Appointment');
 const { protect } = require('../middleware/auth');
+const mongoose = require('mongoose');
 
 const router = express.Router();
 
@@ -271,6 +272,9 @@ router.get('/shops', async (req, res, next) => {
 // @access  Public
 router.get('/shops/:id', async (req, res, next) => {
     try {
+        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+            return res.status(400).json({ success: false, error: 'Invalid shop ID format.' });
+        }
         const shop = await Shop.findById(req.params.id)
             .select('name address city state pincode phone contactPhone contactEmail ownerName ownerPhone ownerEmail services description closingTime location directionsLink images openingTimes selectedMedicalshop latitude longitude fullAddress');
 

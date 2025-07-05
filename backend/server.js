@@ -30,6 +30,18 @@ const PORT = process.env.PORT || 5003;
 // Connect to MongoDB
 connectDB();
 
+// CORS configuration - MUST BE FIRST
+app.use(cors({
+    origin: [
+        'http://localhost:3000',
+        'http://localhost:3001',
+        process.env.FRONTEND_URL
+    ].filter(Boolean),
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 // Security middleware
 app.use(helmet({
     crossOriginResourcePolicy: { policy: "cross-origin" }
@@ -44,18 +56,6 @@ const limiter = rateLimit({
     }
 });
 app.use('/api/', limiter);
-
-// CORS configuration
-app.use(cors({
-    origin: [
-        'http://localhost:3000',
-        'http://localhost:3001',
-        process.env.FRONTEND_URL
-    ].filter(Boolean),
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-}));
 
 // Body parsing middleware
 app.use(bodyParser.json({ limit: '10mb' }));
