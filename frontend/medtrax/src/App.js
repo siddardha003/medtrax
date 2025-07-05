@@ -38,6 +38,9 @@ import Signup from './user/components/Signup.jsx';
 
 import MedReminder from './user/pages/Medreminder';
 import SymptomChecker from './user/pages/SymptomChecker';
+import HealthBlog from './user/pages/HealthBlog';
+import Faq from './user/pages/FrequentQuestions.jsx';
+import PrivacyPolicy from './user/pages/PrivacyPolicy.jsx'
 // The push setup is now handled within MedReminder.jsx to ensure user is authenticated.
 // We can remove the imports and the useEffect hook from here to prevent duplicate/unauthorized calls.
 // import { registerServiceWorker, getVapidPublicKey, subscribeUserToPush } from './notifications';
@@ -82,6 +85,11 @@ function App() {
             <Route path="/Medreminder" element={<MedReminder />} />
             <Route path="/SymptomChecker" element={<SymptomChecker />} />
             <Route path="/EssentialTest" element={<EssentialTest />} />
+            <Route path="/HealthBlog" element={<HealthBlog />} />
+            <Route path="/Faq" element={<Faq />} />
+            <Route path="/PrivacyPolicy" element={<PrivacyPolicy />} />
+
+
             
             {/* Authentication Routes */}
             <Route path="/login" element={<UserLogin />} />

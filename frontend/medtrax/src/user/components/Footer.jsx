@@ -88,13 +88,13 @@ const Footer = ({ data, variant }) => {
                 <h2 className="st-footer-widget-title mb-3" style={{ color: '#02a2ae' }}>Help & Resources</h2>
                 <ul className="st-footer-widget-nav st-mp0">
                   <li className="mb-2">
-                    <ScrollLink to="/faqs" className="hover:text-gray-300 transition" style={{ color: '#000000' }}>
+                    <ScrollLink to="/Faq" className="hover:text-gray-300 transition" style={{ color: '#000000' }}>
                       <Icon icon="fa:angle-right" className="mr-2" />
                       FAQs
                     </ScrollLink>
                   </li>
                   <li className="mb-2">
-                    <ScrollLink to="/blog" className="hover:text-gray-300 transition" style={{ color: '#000000' }}>
+                    <ScrollLink to="/HealthBlog" className="hover:text-gray-300 transition" style={{ color: '#000000' }}>
                       <Icon icon="fa:angle-right" className="mr-2" />
                       Health Blog
                     </ScrollLink>
@@ -106,7 +106,7 @@ const Footer = ({ data, variant }) => {
                     </ScrollLink>
                   </li>
                   <li className="mb-2">
-                    <ScrollLink to="/privacy" className="hover:text-gray-300 transition" style={{ color: '#000000' }}>
+                    <ScrollLink to="/PrivacyPolicy" className="hover:text-gray-300 transition" style={{ color: '#000000' }}>
                       <Icon icon="fa:angle-right" className="mr-2" />
                       Privacy Policy
                     </ScrollLink>
