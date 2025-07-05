@@ -160,10 +160,7 @@ const MedReminder = () => {
       setReminders((prev) => [...prev, { ...formData, id: Date.now() }]);
       resetForm();
       alert('Please login to save your reminders permanently.');
-      showBrowserNotification('Medicine Reminder Set!', {
-        body: `You have set a reminder for ${formData.name}.`,
-        icon: '/images/Medtrax-logo.png',
-      });
+      // Removed notification for unauthenticated users
     }
   };
 

@@ -383,9 +383,7 @@ const Medicines = () => {
                             ? `${shop.address.city}, ${shop.address.state}`
                             : shop.city && shop.state
                               ? `${shop.city}, ${shop.state}`
-                              : (shop.location && shop.location.coordinates && shop.location.coordinates.length === 2)
-                                ? `Lat: ${shop.location.coordinates[1]}, Lng: ${shop.location.coordinates[0]}`
-                                : 'Location not available'}
+                              : 'Not provided'}
                         </span>
                       </Location>
                       <Contact>
