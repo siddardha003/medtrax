@@ -72,7 +72,7 @@ const Contact = () => {
       
       <SectionHeading 
         title="Stay connected with us"
-        subTitle="Lorem Ipsum is simply dummy text of the printing and typesetting industry. <br /> Lorem Ipsum the industry's standard dummy text."
+        subTitle="We’re here to support your health journey. <br /> Reach out with your questions or feedback — our team is ready to assist you."
       />
       
       <div className="container">
@@ -92,7 +92,7 @@ const Contact = () => {
                     type="text"
                     id="name"
                     name="name"
-                    placeholder="John Doe"
+                    placeholder="Your Name"
                     required
                     onChange={handleInputChange}
                     value={formData.name}
@@ -137,7 +137,7 @@ const Contact = () => {
                     type="tel"
                     id="phone"
                     name="phone"
-                    placeholder="+00 376 12 465"
+                    placeholder="+91 9876543210"
                     required
                     onChange={handleInputChange}
                     value={formData.phone}
@@ -153,7 +153,7 @@ const Contact = () => {
                     rows={10}
                     id="msg"
                     name="msg"
-                    placeholder="Write something here..."
+                    placeholder="Ask us anything..."
                     required
                     onChange={handleInputChange}
                     value={formData.msg}

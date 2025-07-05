@@ -4,6 +4,7 @@ import { Routes, Route } from 'react-router-dom';
 import 'leaflet/dist/leaflet.css';
 import Home2 from './user/pages/Homepage';
 import Layout from './user/components/Layout';
+import ScrollToTop from './user/components/ScrollToTop';
 
 import HospitalFinder from './user/pages/Hospital';
 import HospitalDetails from './user/pages/HospitalDetails';
@@ -59,6 +60,7 @@ function App() {
   return (
     <AuthInitializer>
       <div className="App">
+        <ScrollToTop />
         <Notification />
         <Routes>
           {/* Public and user-facing routes with Layout */}

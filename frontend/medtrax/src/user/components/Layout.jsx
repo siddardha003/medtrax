@@ -3,6 +3,7 @@ import Footer from './Footer'
 import { Outlet } from 'react-router-dom'
 import Header from './Header'
 import Preloader from './PreLoader'
+import ScrollToTop from './ScrollToTop'
 
 const headerData = {
   "logo": "/images/MED-removebg-preview.png"
@@ -28,6 +29,7 @@ const Layout = () => {
       {
         isLoading ? <Preloader /> : (
           <>
+            <ScrollToTop />
             <Header data={headerData}/>
             <Outlet />
             <Footer data={footerData}/>

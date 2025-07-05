@@ -1,7 +1,7 @@
 import React from 'react';
 import parse from 'html-react-parser';
 import SectionHeading from './SectionHeading';
-import { Link } from 'react-router-dom';
+import ScrollLink from './ScrollLink';
 
 
 const About = ({ data }) => {
@@ -35,7 +35,7 @@ const About = ({ data }) => {
                   </div>
                   <div className="st-height-b25 st-height-lg-b25" />
                   <div className="st-hero-btn-group">
-                    <Link to='/Hospital' className="st-btn st-style1 st-size-medium st-color1 st-smooth-move">Explore Now !!</Link>
+                    <ScrollLink to='/Hospital' className="st-btn st-style1 st-size-medium st-color1 st-smooth-move">Explore Now !!</ScrollLink>
                   </div>
                 </div>
               </div>
@@ -71,7 +71,7 @@ const About = ({ data }) => {
             </div>
                   <div className="st-height-b25 st-height-lg-b25" />
                   <div className="st-hero-btn-group">
-                    <Link to='/MedicalCare' className="st-btn st-style1 st-size-medium st-color1 st-smooth-move">Track Now !!</Link>
+                    <ScrollLink to='/MedicalCare' className="st-btn st-style1 st-size-medium st-color1 st-smooth-move">Track Now !!</ScrollLink>
                   </div>
                 </div>
               </div>
@@ -105,7 +105,7 @@ const About = ({ data }) => {
                   </div>
                   <div className="st-height-b25 st-height-lg-b25" />
                   <div className="st-hero-btn-group">
-                    <Link to='/Medicines' className="st-btn st-style1 st-size-medium st-color1 st-smooth-move">Order Now !!</Link>
+                    <ScrollLink to='/Medicines' className="st-btn st-style1 st-size-medium st-color1 st-smooth-move">Order Now !!</ScrollLink>
                   </div>
                 </div>
               </div>

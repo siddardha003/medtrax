@@ -2,14 +2,16 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { logOut } from '../../Redux/user/actions';
+import ScrollLink from './ScrollLink';
+import { Power } from 'lucide-react';
 
 const Header = ({ data }) => {
-  const {logo} = data;
+  const { logo } = data;
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { token, userInfo } = useSelector(state => state.user || {});
   const isLoggedIn = token && userInfo?.id;
-  
+
   const [mobileToggle, setMobileToggle] = useState(false);
   const [lastScrollTop, setLastScrollTop] = useState(0);
   const [isSticky, setIsSticky] = useState(false);
@@ -18,31 +20,31 @@ const Header = ({ data }) => {
 
   const handleMobileToggle = () => {
     setMobileToggle(!mobileToggle);
-  };  const [isLoggingOut, setIsLoggingOut] = useState(false);
-  
+  }; const [isLoggingOut, setIsLoggingOut] = useState(false);
+
   const handleLogout = () => {
     if (isLoggingOut) {
       console.log('Logout already in progress, ignoring duplicate call');
       return;
     }
-    
+
     console.log('Logout button clicked');
     setIsLoggingOut(true);
-    
+
     // Clear user data
     dispatch(logOut());
     // Close dropdown
     setShowProfileDropdown(false);
     // Navigate to home page
     navigate('/');
-    
+
     // Reset flag after a short delay
     setTimeout(() => {
       setIsLoggingOut(false);
     }, 1000);
-  };const navigateToDashboard = () => {
+  }; const navigateToDashboard = () => {
     console.log('Navigating to dashboard, user role:', userInfo?.role, 'isAdmin:', userInfo?.isAdmin);
-    
+
     if (userInfo?.isAdmin) {
       // Admin users go to their specific dashboard
       const userRole = userInfo?.role;
@@ -60,7 +62,8 @@ const Header = ({ data }) => {
           // Fallback to homepage for unknown admin roles
           navigate('/');
           break;
-      }    } else {
+      }
+    } else {
       // For regular users, go to homepage
       navigate('/');
     }
@@ -117,13 +120,13 @@ const Header = ({ data }) => {
                 >
                   <path d="m434.146 59.882h-389.234c-24.766 0-44.912 20.146-44.912 44.912v269.47c0 24.766 20.146 44.912 44.912 44.912h389.234c24.766 0 44.912-20.146 44.912-44.912v-269.47c0-24.766-20.146-44.912-44.912-44.912zm0 29.941c2.034 0 3.969.422 5.738 1.159l-200.355 173.649-200.356-173.649c1.769-.736 3.704-1.159 5.738-1.159zm0 299.411h-389.234c-8.26 0-14.971-6.71-14.971-14.971v-251.648l199.778 173.141c2.822 2.441 6.316 3.655 9.81 3.655s6.988-1.213 9.81-3.655l199.778-173.141v251.649c-.001 8.26-6.711 14.97-14.971 14.97z" />
                 </svg>
-                <Link to='/Contact'> medtrax_info@gmail.com </Link>
+                <ScrollLink to='/Contact'> medtrax_info@gmail.com </ScrollLink>
               </li>
             </ul>
             {isLoggedIn ? (
               <div className="relative flex items-center" ref={dropdownRef}>
-                <button 
-                  className="st-top-header-btn st-smooth-move flex items-center gap-2 mr-2" 
+                <button
+                  className="st-top-header-btn st-smooth-move flex items-center gap-2 mr-2"
                   onClick={() => setShowProfileDropdown(!showProfileDropdown)}
                 >
                   {userInfo?.isAdmin ? (
@@ -136,29 +139,28 @@ const Header = ({ data }) => {
                     </span>
                   )}
                 </button>
-                
-                <button 
+
+                <button
                   onClick={handleLogout}
-                  className="bg-red-600 text-white py-1 px-3 rounded text-sm hover:bg-red-700 transition-colors"
+                  className="w-8 h-8 bg-red-600 text-white py-1 px-1.5 rounded-full items-center justify-center text-sm hover:bg-red-700 transition-colors"
                 >
-                  Logout
-                </button>
-                  {showProfileDropdown && (
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-power-icon lucide-power"><path d="M12 2v10" /><path d="M18.4 6.6a9 9 0 1 1-12.77.04" /></svg>                </button>
+                {showProfileDropdown && (
                   <div className="absolute right-0 top-10 mt-2 w-64 bg-white rounded-md shadow-lg py-1 z-50">
                     <div className="px-4 py-2 border-b border-gray-100">
                       <p className="text-sm font-medium text-gray-900">{userInfo.name || userInfo.email}</p>
                       <p className="text-xs text-gray-500">{userInfo.email}</p>
                       {userInfo?.isAdmin && (
                         <p className="text-xs font-semibold text-blue-600 mt-1">
-                          {userInfo.role === 'super_admin' ? 'Super Admin' : 
-                           userInfo.role === 'hospital_admin' ? 'Hospital Admin' : 
-                           userInfo.role === 'shop_admin' ? 'Shop Admin' : 'Admin'}
+                          {userInfo.role === 'super_admin' ? 'Super Admin' :
+                            userInfo.role === 'hospital_admin' ? 'Hospital Admin' :
+                              userInfo.role === 'shop_admin' ? 'Shop Admin' : 'Admin'}
                         </p>
                       )}
                     </div>
-                    
-                    <button 
-                      onClick={navigateToDashboard} 
+
+                    <button
+                      onClick={navigateToDashboard}
                       className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     >
                       {userInfo?.isAdmin ? (
@@ -177,9 +179,9 @@ const Header = ({ data }) => {
                         </>
                       )}
                     </button>
-                    
-                    <button 
-                      onClick={handleLogout} 
+
+                    <button
+                      onClick={handleLogout}
                       className="flex items-center w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
                     >
                       <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -188,7 +190,7 @@ const Header = ({ data }) => {
                       Sign out
                     </button>
                   </div>
-                )}</div>            ) : (
+                )}</div>) : (
               <div className="flex items-center space-x-3">
                 <Link className="st-top-header-btn st-smooth-move" to="/login">Login</Link>
               </div>
@@ -200,34 +202,34 @@ const Header = ({ data }) => {
         <div className="container">
           <div className="st-main-header-in">
             <div className="st-main-header-left">
-              <Link to='/' className="st-site-branding" >
+              <ScrollLink to='/' className="st-site-branding" >
                 <img src={`/images/MED-removebg-preview.png`} alt={logo} />
-              </Link>
+              </ScrollLink>
             </div>
             <div className="st-main-header-right">
               <div className="st-nav">
                 <ul className={`st-nav-list st-onepage-nav ${mobileToggle ? "d-block" : "none"}`}>
                   <li>
-                    <Link to="/" spy="true" duration={500} onClick={() => setMobileToggle(false)} >Home</Link>
+                    <ScrollLink to="/" spy="true" duration={500} onClick={() => setMobileToggle(false)} >Home</ScrollLink>
                   </li>
-            
+
                   <li>
-                    <Link to="/Hospital" spy="true" duration={500} onClick={() => setMobileToggle(false)} >Hospitals</Link>
-                  </li>
-                  <li>
-                    <Link to="/Appointments" spy="true" duration={500} onClick={() => setMobileToggle(false)} >Appointment</Link>
+                    <ScrollLink to="/Hospital" spy="true" duration={500} onClick={() => setMobileToggle(false)} >Hospitals</ScrollLink>
                   </li>
                   <li>
-                    <Link to="/Medicines" spy="true" duration={500} onClick={() => setMobileToggle(false)} >Medicines</Link>
+                    <ScrollLink to="/Appointments" spy="true" duration={500} onClick={() => setMobileToggle(false)} >Appointment</ScrollLink>
                   </li>
                   <li>
-                    <Link to="/MedicalCare" spy="true" duration={500} onClick={() => setMobileToggle(false)} >Medical Care</Link>
+                    <ScrollLink to="/Medicines" spy="true" duration={500} onClick={() => setMobileToggle(false)} >Medicines</ScrollLink>
                   </li>
                   <li>
-                    <Link to="/About" spy="true" duration={500} onClick={() => setMobileToggle(false)} >About</Link>
+                    <ScrollLink to="/MedicalCare" spy="true" duration={500} onClick={() => setMobileToggle(false)} >Medical Care</ScrollLink>
                   </li>
                   <li>
-                    <Link to="/Contact" spy="true" duration={500} onClick={() => setMobileToggle(false)} >Contact</Link>
+                    <ScrollLink to="/About" spy="true" duration={500} onClick={() => setMobileToggle(false)} >About</ScrollLink>
+                  </li>
+                  <li>
+                    <ScrollLink to="/Contact" spy="true" duration={500} onClick={() => setMobileToggle(false)} >Contact</ScrollLink>
                   </li>
                 </ul>
                 <div className={`st-munu-toggle ${mobileToggle ? "st-toggle-active" : ""} `} onClick={handleMobileToggle}>

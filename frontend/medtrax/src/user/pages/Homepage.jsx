@@ -5,6 +5,7 @@ import About from '../components/About';
 import Iconbox from '../components/Iconbox';
 import BrandSlider from '../components/BrandSlider';
 import Funfact from '../components/Funfact';
+import { useScrollToTop } from '../../hooks/useScrollToTop';
 
 const heroData = [
   {
@@ -101,6 +102,8 @@ const brandData = [
 
 
 const Home2 = () => {
+  useScrollToTop(); // Add scroll to top functionality
+  
   return (
     <>
       <div className='st-height-b125 st-height-lg-b80' id='home'></div>
