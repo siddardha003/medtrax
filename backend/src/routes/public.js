@@ -403,7 +403,7 @@ router.get('/hospital/:hospitalId/doctor/:doctorId/available-slots', async (req,
         // Filter out booked slots
         const availableSlots = dayAvailability.slots.filter(slot => !bookedSlots.includes(slot));
 
-        res.json({ success: true, slots: availableSlots });
+        res.json({ success: true, slots: availableSlots, bookedSlots });
     } catch (error) {
         console.error('Get available slots error:', error);
         res.status(500).json({ success: false, error: 'Server error' });

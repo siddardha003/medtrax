@@ -79,13 +79,24 @@ export default function AppForm() {
     useEffect(() => {
         if (selectedDoctor && selectedDate) {
             fetchTimeSlots();
+            setFormData(prev => ({ ...prev, time: '' }));
         }
-    }, [selectedDoctor]);
+    }, [selectedDoctor, selectedDate]);
+
+    useEffect(() => {
+        setSelectedDoctor('');
+        setFormData(prev => ({ ...prev, time: '' }));
+    }, [department]);
 
     const fetchTimeSlots = async () => {
         try {
+            // Convert selectedDate (string) to Date object for formatting
+            const dateObj = new Date(selectedDate);
+            const formattedDate = !isNaN(dateObj) ? dateObj.toISOString().split('T')[0] : selectedDate; // fallback if invalid
+            const fetchUrl = `/api/public/hospital/${hospitalId}/doctor/${selectedDoctor}/available-slots?date=${formattedDate}`;
+            console.log('Fetching time slots from:', fetchUrl); // Debugging
             // Get the doctor's available slots for the selected date
-            const response = await fetch(`/api/public/hospital/${hospitalId}/doctor/${selectedDoctor}/available-slots?date=${selectedDate.toISOString().split('T')[0]}`);
+            const response = await fetch(fetchUrl);
             const data = await response.json();
             if (data.success) {
                 setTimeSlots(data.slots || []);
@@ -313,7 +324,7 @@ export default function AppForm() {
                                 >
                                     <option value="" disabled>Select Doctor</option>
                                     {doctors.map((doctor) => (
-                                        <option key={doctor.id} value={doctor.id}>
+                                        <option key={doctor._id || doctor.id} value={doctor._id || doctor.id}>
                                             {doctor.name} {doctor.degree && `- ${doctor.degree}`}
                                         </option>
                                     ))}
@@ -322,27 +333,55 @@ export default function AppForm() {
                         )}
 
                         {/* Time Slot Dropdown */}
-                        {selectedDoctor && selectedDate && (
+                        {(selectedDoctor && selectedDate) && (
                             <div className="form-group">
                                 <label className="form-label">Choose a Time Slot</label>
-                                <select
-                                    className="form-input form-select"
-                                    name="time"
-                                    value={formData.time}
-                                    onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-                                    required
-                                >
-                                    <option value="" disabled>Select Time Slot</option>
-                                    {timeSlots.concat(bookedSlots.filter(slot => !timeSlots.includes(slot))).map((slot, idx, arr) => {
-                                        if (arr.indexOf(slot) !== idx) return null; // remove duplicates
-                                        const isBooked = bookedSlots.includes(slot);
+                                {/* Compute all slots to render (union of available and booked, no duplicates) */}
+                                {timeSlots.length === 0 && bookedSlots.length === 0 && (
+                                    <div className="error-message">This doctor doesn't have any slots on that day, try for another doctor.</div>
+                                )}
+                                {(timeSlots.length > 0 || bookedSlots.length > 0) && (
+                                    (() => {
+                                        const allSlots = timeSlots.concat(bookedSlots.filter(slot => !timeSlots.includes(slot)));
+                                        const allBooked = allSlots.length > 0 && allSlots.every(slot => bookedSlots.includes(slot));
                                         return (
-                                            <option key={idx} value={slot} disabled={isBooked} style={isBooked ? { color: 'gray' } : {}}>
-                                                {slot} {isBooked ? '(already booked)' : ''}
-                                            </option>
+                                            <>
+                                                <select
+                                                    className="form-input form-select"
+                                                    name="time"
+                                                    value={formData.time}
+                                                    onChange={e => {
+                                                        const selectedSlot = e.target.value;
+                                                        setFormData({ ...formData, time: selectedSlot });
+                                                        // Show error if slot is booked
+                                                        if (timeSlots.includes(selectedSlot)) {
+                                                            setError('');
+                                                        } else if (bookedSlots.includes(selectedSlot)) {
+                                                            setError('This slot is already booked. Please select a different time.');
+                                                        } else {
+                                                            setError('This slot is not available. Please select a different time.');
+                                                        }
+                                                    }}
+                                                    required
+                                                >
+                                                    <option value="" disabled>Select Time Slot</option>
+                                                    {allSlots.map((slot, idx, arr) => {
+                                                        if (arr.indexOf(slot) !== idx) return null; // remove duplicates
+                                                        const isBooked = bookedSlots.includes(slot);
+                                                        return (
+                                                            <option key={slot + idx} value={slot} disabled={isBooked} style={isBooked ? { color: 'gray' } : {}}>
+                                                                {slot} {isBooked ? '(already booked)' : ''}
+                                                            </option>
+                                                        );
+                                                    })}
+                                                </select>
+                                                {allBooked && (
+                                                    <div className="error-message">All slots are booked for this day. Please select another date or doctor.</div>
+                                                )}
+                                            </>
                                         );
-                                    })}
-                                </select>
+                                    })()
+                                )}
                             </div>
                         )}
 
