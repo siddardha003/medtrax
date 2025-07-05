@@ -111,7 +111,6 @@ const Home2 = () => {
       <Iconbox data={iconboxData} />
       <About data={aboutData} />
       <hr />
-
       <Funfact />
       <BrandSlider data={brandData} />
       <Contact />

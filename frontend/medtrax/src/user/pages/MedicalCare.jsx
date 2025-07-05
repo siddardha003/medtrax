@@ -122,7 +122,7 @@ const MedicalCarePage = () => {
       <div className="tracker-card">
         <div className="card-content">
           <div className="tracke-imag-box">
-            <img src="images\prescription (2).png" alt="Health Tracker" className="tracker-img2" />
+            <img src="images\prescription2.png" alt="Health Tracker" className="tracker-img2" />
           </div>
           <div className="tracker-info">
             <h2>Prescription Prediction</h2>
