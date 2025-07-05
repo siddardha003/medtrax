@@ -12,10 +12,12 @@ export default function AppForm() {
     const { id } = useParams();
     const location = useLocation();
     const hospitalId = id || searchParams.get('hospitalId');
-    const passedHospital = location.state?.hospital;
+
+    // Debug log for hospitalId
+    console.log('hospitalId:', hospitalId);
 
     // const user = useSelector(state => state.user.user);
-    const [hospital, setHospital] = useState(passedHospital || null);
+    const [hospital, setHospital] = useState(null);
     const [selectedDate, setSelectedDate] = useState(null);
     const [department, setDepartment] = useState('');
     const [doctors, setDoctors] = useState([]);
@@ -34,10 +36,12 @@ export default function AppForm() {
 
     useEffect(() => {
         const fetchHospital = async () => {
-            if (hospitalId && !hospital) {
+            if (hospitalId && (!hospital || !hospital.services)) {
                 try {
+                    console.log('Fetching hospital for id:', hospitalId);
                     const response = await getPublicHospitalDetailsApi(hospitalId);
-                    setHospital(response.data);
+                    setHospital(response.data.data.hospital);
+                    console.log('Hospital state after set:', response.data.data.hospital);
                 } catch (err) {
                     console.error('Error fetching hospital:', err);
                     setError('Failed to load hospital details');
@@ -46,7 +50,7 @@ export default function AppForm() {
         };
 
         fetchHospital();
-    }, [hospitalId, hospital]);
+    }, [hospitalId]);
 
     useEffect(() => {
         if (department && selectedDate && hospital) {
@@ -56,19 +60,14 @@ export default function AppForm() {
 
     const fetchDoctors = async () => {
         try {
-            const serviceData = hospital.services?.find(service =>
+            const serviceData = hospital?.services?.find(service =>
                 service.category.toLowerCase() === department.toLowerCase()
             );
 
             if (serviceData && serviceData.doctors) {
                 setDoctors(serviceData.doctors);
             } else {
-                const availableDoctors = [
-                    { id: 'doctor1', name: 'Dr. Sarayu' },
-                    { id: 'doctor2', name: 'Dr. Siddhu' },
-                    { id: 'doctor3', name: 'Dr. Rishitha' },
-                ];
-                setDoctors(availableDoctors);
+                setDoctors([]); // No fallback to dummy doctors
             }
         } catch (err) {
             console.error('Error fetching doctors:', err);
@@ -186,26 +185,27 @@ export default function AppForm() {
         }
     };
 
+    console.log('Current hospital state:', hospital);
+
     return (
         <div>
-            {/* User Status Indicator */}
-            <div className="container">
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: 160, marginBottom: 16 }}>
                 <div className="user-status-indicator" style={{
                     textAlign: 'center',
                     padding: '10px',
-                    marginBottom: '20px',
                     backgroundColor: isAuthenticated ? '#e8f5e8' : '#fff3cd',
                     border: `1px solid ${isAuthenticated ? '#d4edda' : '#ffeaa7'}`,
                     borderRadius: '5px',
-                    fontSize: '14px'
+                    fontSize: '14px',
+                    minWidth: 480,
                 }}>
                     {isAuthenticated ? (
                         <span style={{ color: '#155724' }}>
-                            ✓ Logged in as {user?.name || 'User'} - Your health data will be saved permanently
+                            ✓ Logged in as {user?.name || 'User'} - You can book an Appointment now!!
                         </span>
                     ) : (
                         <span style={{ color: '#856404' }}>
-                            ⚠️ You're browsing as a guest - Please log in to save your health data permanently
+                            ⚠️ You're browsing as a guest - Please log in to book an appointment
                         </span>
                     )}
                 </div>
@@ -263,7 +263,7 @@ export default function AppForm() {
                             <input
                                 type="text"
                                 className="form-input"
-                                value={hospital ? hospital.name : 'Loading...'}
+                                value={hospital ? hospital.name : error ? error : 'Loading...'}
                                 disabled={true}
                                 style={{
                                     backgroundColor: '#f5f5f5',
