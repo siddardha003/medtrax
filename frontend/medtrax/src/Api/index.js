@@ -85,7 +85,7 @@ export const createAdminAppointmentApi = (formData) => API.post('/api/hospital/a
 // For regular users:
 export const createAppointmentApi = (formData) => API.post('/api/public/appointments', formData)
 export const updateAppointmentApi = (id, formData) => API.put(`/api/hospital/appointments/${id}`, formData)
-export const cancelAppointmentApi = (id, formData) => API.put(`/api/hospital/appointments/${id}/cancel`, formData)
+export const cancelAppointmentApi = (id) => API.delete(`/api/hospital/appointments/${id}`);
 export const getAppointmentStatsApi = () => API.get('/api/hospital/appointments/stats')
 export const searchPatientsApi = (query) => API.get(`/api/hospital/patients/search?q=${query}`)
 

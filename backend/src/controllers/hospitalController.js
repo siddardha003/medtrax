@@ -25,13 +25,12 @@ const getAppointments = async (req, res) => {
             query.appointmentDate = { $gte: startDate, $lt: endDate };
         }
 
-        // Add search functionality
+        // Add search functionality - search in flat patient fields
         if (search) {
             query.$or = [
-                { 'patient.firstName': { $regex: search, $options: 'i' } },
-                { 'patient.lastName': { $regex: search, $options: 'i' } },
-                { 'patient.email': { $regex: search, $options: 'i' } },
-                { 'patient.phone': { $regex: search, $options: 'i' } },
+                { patientName: { $regex: search, $options: 'i' } },
+                { patientEmail: { $regex: search, $options: 'i' } },
+                { patientPhone: { $regex: search, $options: 'i' } },
                 { confirmationCode: { $regex: search, $options: 'i' } }
             ];
         }
@@ -53,7 +52,10 @@ const getAppointments = async (req, res) => {
             message: 'Appointments retrieved successfully',
             data: {
                 appointments,
-                pagination
+                pagination: {
+                    ...pagination,
+                    total
+                }
             }
         });
 
@@ -61,7 +63,8 @@ const getAppointments = async (req, res) => {
         console.error('Get appointments error:', error);
         res.status(500).json({
             success: false,
-            error: 'Server error'
+            error: 'Server error',
+            details: error.message
         });
     }
 };
@@ -101,48 +104,65 @@ const getAppointment = async (req, res) => {
     }
 };
 
-// @desc    Create new appointment
+// @desc    Create a new appointment
 // @route   POST /api/hospital/appointments
 // @access  Private (Hospital Admin)
 const createAppointment = async (req, res) => {
     try {
         const hospitalId = req.user.hospitalId;
-        const appointmentData = {
-            ...req.body,
-            hospitalId,
-            createdBy: req.user._id,
-            bookedBy: 'hospital_staff'
-        };
+        const {
+            patientName,
+            patientEmail,
+            patientPhone,
+            department,
+            doctorId,
+            appointmentDate,
+            appointmentTime,
+            notes
+        } = req.body;
 
-        // Check if hospital exists and is active
-        const hospital = await Hospital.findById(hospitalId);
-        if (!hospital || !hospital.isActive) {
+        // Validate required fields
+        if (!patientName || !patientEmail || !patientPhone || !department || !doctorId || !appointmentDate || !appointmentTime) {
             return res.status(400).json({
                 success: false,
-                error: 'Hospital not found or inactive'
+                error: 'All required fields must be provided'
             });
         }
 
-        // Create appointment
-        const appointment = await Appointment.create(appointmentData);
+        // Check for double-booking
+        const existingAppointment = await Appointment.findOne({
+            hospitalId,
+            department,
+            doctorId,
+            appointmentDate: new Date(appointmentDate),
+            appointmentTime,
+            status: { $in: ['scheduled', 'confirmed'] }
+        });
 
-        // Populate hospital data for response
-        await appointment.populate('hospitalId', 'name address phone email');
-
-        // Send confirmation email
-        try {
-            await sendAppointmentConfirmation({
-                patient: appointment.patient,
-                hospital: appointment.hospitalId,
-                appointmentDate: appointment.appointmentDate,
-                appointmentTime: appointment.appointmentTime,
-                confirmationCode: appointment.confirmationCode,
-                department: appointment.department
+        if (existingAppointment) {
+            return res.status(409).json({
+                success: false,
+                error: 'This time slot is already booked. Please select a different time.'
             });
-        } catch (emailError) {
-            console.error('Failed to send appointment confirmation email:', emailError);
-            // Continue without failing the appointment creation
         }
+
+        // Create the appointment
+        const appointment = await Appointment.create({
+            hospitalId,
+            patientName,
+            patientEmail,
+            patientPhone,
+            department,
+            doctorId,
+            appointmentDate: new Date(appointmentDate),
+            appointmentTime,
+            notes,
+            status: 'scheduled',
+            createdBy: req.user._id
+        });
+
+        // Populate hospital details
+        await appointment.populate('hospitalId', 'name address phone');
 
         res.status(201).json({
             success: true,
@@ -152,9 +172,20 @@ const createAppointment = async (req, res) => {
 
     } catch (error) {
         console.error('Create appointment error:', error);
+        
+        if (error.name === 'ValidationError') {
+            const errors = Object.values(error.errors).map(err => err.message);
+            return res.status(400).json({
+                success: false,
+                error: 'Validation error',
+                details: errors
+            });
+        }
+        
         res.status(500).json({
             success: false,
-            error: 'Server error'
+            error: 'Server error',
+            details: error.message
         });
     }
 };
@@ -211,9 +242,8 @@ const cancelAppointment = async (req, res) => {
     try {
         const appointmentId = req.params.id;
         const hospitalId = req.user.hospitalId;
-        const { reason } = req.body;
 
-        const appointment = await Appointment.findOne({
+        const appointment = await Appointment.findOneAndDelete({
             _id: appointmentId,
             hospitalId
         });
@@ -225,32 +255,11 @@ const cancelAppointment = async (req, res) => {
             });
         }
 
-        // Check if appointment can be cancelled
-        if (!appointment.canBeCancelled()) {
-            return res.status(400).json({
-                success: false,
-                error: 'Appointment cannot be cancelled (less than 24 hours notice or already completed)'
-            });
-        }
-
-        // Update appointment status
-        appointment.status = 'cancelled';
-        appointment.cancellation = {
-            cancelledAt: new Date(),
-            cancelledBy: 'hospital',
-            reason: reason || 'Cancelled by hospital',
-            refundStatus: 'pending'
-        };
-        appointment.updatedBy = req.user._id;
-
-        await appointment.save();
-
         res.status(200).json({
             success: true,
-            message: 'Appointment cancelled successfully',
+            message: 'Appointment deleted successfully',
             data: { appointment }
         });
-
     } catch (error) {
         console.error('Cancel appointment error:', error);
         res.status(500).json({
@@ -266,112 +275,77 @@ const cancelAppointment = async (req, res) => {
 const getAppointmentStats = async (req, res) => {
     try {
         const hospitalId = req.user.hospitalId;
-        const { period = 'month' } = req.query;
-
-        // Calculate date range
         const now = new Date();
-        let startDate = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
 
-        switch (period) {
-            case 'today':
-                startDate.setHours(0, 0, 0, 0);
-                break;
-            case 'week':
-                startDate.setDate(now.getDate() - 7);
-                break;
-            case 'month':
-                startDate.setMonth(now.getMonth() - 1);
-                break;
-            case 'year':
-                startDate.setFullYear(now.getFullYear() - 1);
-                break;
-            default:
-                startDate.setMonth(now.getMonth() - 1);
-        }
+        // Get all appointments for this hospital
+        const allAppointments = await Appointment.find({ hospitalId });
+        
+        // Get today's appointments
+        const todayAppointments = await Appointment.find({
+            hospitalId,
+            appointmentDate: { $gte: today, $lt: tomorrow }
+        });
 
-        // Aggregate statistics
-        const stats = await Appointment.aggregate([
-            {
-                $match: {
-                    hospitalId: hospitalId,
-                    createdAt: { $gte: startDate }
-                }
-            },
-            {
-                $group: {
-                    _id: null,
-                    totalAppointments: { $sum: 1 },
-                    scheduledAppointments: {
-                        $sum: { $cond: [{ $eq: ['$status', 'scheduled'] }, 1, 0] }
-                    },
-                    confirmedAppointments: {
-                        $sum: { $cond: [{ $eq: ['$status', 'confirmed'] }, 1, 0] }
-                    },
-                    completedAppointments: {
-                        $sum: { $cond: [{ $eq: ['$status', 'completed'] }, 1, 0] }
-                    },
-                    cancelledAppointments: {
-                        $sum: { $cond: [{ $eq: ['$status', 'cancelled'] }, 1, 0] }
-                    },
-                    noShowAppointments: {
-                        $sum: { $cond: [{ $eq: ['$status', 'no_show'] }, 1, 0] }
-                    }
-                }
-            }
-        ]);
+        // Calculate statistics
+        const totalAppointments = allAppointments.length;
+        const todayAppointmentsCount = todayAppointments.length;
+        const completedAppointments = allAppointments.filter(apt => apt.status === 'completed').length;
+        const pendingAppointments = allAppointments.filter(apt => apt.status !== 'completed').length;
 
-        // Get department-wise breakdown
+        // Get department-wise statistics
         const departmentStats = await Appointment.aggregate([
-            {
-                $match: {
-                    hospitalId: hospitalId,
-                    createdAt: { $gte: startDate }
-                }
-            },
-            {
-                $group: {
-                    _id: '$department',
-                    count: { $sum: 1 }
-                }
-            },
+            { $match: { hospitalId: hospitalId } },
+            { $group: {
+                _id: '$department',
+                count: { $sum: 1 },
+                completed: { $sum: { $cond: [{ $eq: ['$status', 'completed'] }, 1, 0] } },
+                pending: { $sum: { $cond: [{ $ne: ['$status', 'completed'] }, 1, 0] } }
+            }},
             { $sort: { count: -1 } }
         ]);
 
-        // Get upcoming appointments (next 7 days)
-        const upcoming = await Appointment.countDocuments({
-            hospitalId,
-            status: { $in: ['scheduled', 'confirmed'] },
-            appointmentDate: {
-                $gte: now,
-                $lte: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
-            }
-        });
+        // Get monthly statistics for the current year
+        const currentYear = now.getFullYear();
+        const monthlyStats = await Appointment.aggregate([
+            { 
+                $match: { 
+                    hospitalId: hospitalId,
+                    appointmentDate: { 
+                        $gte: new Date(currentYear, 0, 1),
+                        $lt: new Date(currentYear + 1, 0, 1)
+                    }
+                } 
+            },
+            { 
+                $group: {
+                    _id: { $month: '$appointmentDate' },
+                    count: { $sum: 1 },
+                    completed: { $sum: { $cond: [{ $eq: ['$status', 'completed'] }, 1, 0] } }
+                }
+            },
+            { $sort: { _id: 1 } }
+        ]);
+
+        const stats = {
+            totalAppointments,
+            todayAppointments: todayAppointmentsCount,
+            pendingAppointments,
+            completedAppointments,
+            departmentStats,
+            monthlyStats
+        };
 
         res.status(200).json({
             success: true,
             message: 'Appointment statistics retrieved successfully',
-            data: {
-                summary: stats[0] || {
-                    totalAppointments: 0,
-                    scheduledAppointments: 0,
-                    confirmedAppointments: 0,
-                    completedAppointments: 0,
-                    cancelledAppointments: 0,
-                    noShowAppointments: 0
-                },
-                departmentBreakdown: departmentStats,
-                upcomingAppointments: upcoming,
-                period,
-                dateRange: { startDate, endDate: now }
-            }
+            data: { summary: stats }
         });
-
     } catch (error) {
         console.error('Get appointment stats error:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Server error'
-        });
+        res.status(500).json({ success: false, error: 'Server error' });
     }
 };
 
@@ -390,23 +364,26 @@ const searchPatients = async (req, res) => {
             });
         }
 
-        // Search in appointments for patients
+        // Search in appointments for patients using flat structure
         const patients = await Appointment.aggregate([
             {
                 $match: {
                     hospitalId: hospitalId,
                     $or: [
-                        { 'patient.firstName': { $regex: q, $options: 'i' } },
-                        { 'patient.lastName': { $regex: q, $options: 'i' } },
-                        { 'patient.email': { $regex: q, $options: 'i' } },
-                        { 'patient.phone': { $regex: q, $options: 'i' } }
+                        { patientName: { $regex: q, $options: 'i' } },
+                        { patientEmail: { $regex: q, $options: 'i' } },
+                        { patientPhone: { $regex: q, $options: 'i' } }
                     ]
                 }
             },
             {
                 $group: {
-                    _id: '$patient.email',
-                    patient: { $first: '$patient' },
+                    _id: '$patientEmail',
+                    patient: {
+                        name: { $first: '$patientName' },
+                        email: { $first: '$patientEmail' },
+                        phone: { $first: '$patientPhone' }
+                    },
                     lastVisit: { $max: '$appointmentDate' },
                     totalVisits: { $sum: 1 }
                 }
@@ -617,6 +594,91 @@ const uploadHospitalImage = async (req, res) => {
     }
 };
 
+// @desc    Update a doctor's availability (time slots)
+// @route   PUT /api/hospital/department/:deptIndex/doctor/:docIndex/slots
+// @access  Private (Hospital Admin)
+const updateDoctorSlots = async (req, res) => {
+    console.log('Slot update: req.user =', req.user);
+    try {
+        const hospitalId = req.user.hospitalId;
+        const { deptIndex, docIndex } = req.params;
+        const { day, slots } = req.body;
+        const hospital = await Hospital.findById(hospitalId);
+        if (!hospital) {
+            return res.status(404).json({ success: false, error: 'Hospital not found' });
+        }
+        const department = hospital.services[deptIndex];
+        if (!department) {
+            return res.status(404).json({ success: false, error: 'Department not found' });
+        }
+        const doctor = department.doctors[docIndex];
+        if (!doctor) {
+            return res.status(404).json({ success: false, error: 'Doctor not found' });
+        }
+        // Update or add the day's slots
+        const dayIndex = doctor.availability.findIndex(a => a.day === day);
+        if (dayIndex > -1) {
+            doctor.availability[dayIndex].slots = slots;
+        } else {
+            doctor.availability.push({ day, slots });
+        }
+        await hospital.save();
+        res.json({ success: true, data: doctor });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+};
+
+// @desc    Get available slots for a doctor on a given date
+// @route   GET /api/hospital/department/:deptIndex/doctor/:docIndex/available-slots?date=YYYY-MM-DD
+// @access  Private (Hospital Admin)
+const getDoctorAvailableSlots = async (req, res) => {
+    try {
+        const hospitalId = req.user.hospitalId;
+        const { deptIndex, docIndex } = req.params;
+        const { date } = req.query;
+        const hospital = await Hospital.findById(hospitalId);
+        if (!hospital) {
+            return res.status(404).json({ success: false, error: 'Hospital not found' });
+        }
+        const department = hospital.services[deptIndex];
+        if (!department) {
+            return res.status(404).json({ success: false, error: 'Department not found' });
+        }
+        const doctor = department.doctors[docIndex];
+        if (!doctor) {
+            return res.status(404).json({ success: false, error: 'Doctor not found' });
+        }
+        // Get day of week from date
+        const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const dayOfWeek = days[new Date(date).getDay()];
+        const dayAvailability = doctor.availability.find(a => a.day === dayOfWeek);
+        console.log('--- getDoctorAvailableSlots DEBUG ---');
+        console.log('doctor:', doctor.name);
+        console.log('department:', department.category);
+        console.log('date:', date);
+        console.log('dayOfWeek:', dayOfWeek);
+        console.log('dayAvailability:', dayAvailability);
+        if (!dayAvailability) return res.json({ success: true, slots: [] });
+        // Get already booked slots for this doctor and date
+        const appointments = await Appointment.find({
+            hospitalId,
+            department: department.category,
+            doctorId: doctor._id,
+            appointmentDate: new Date(date)
+        });
+        console.log('appointments:', appointments);
+        const bookedSlots = appointments.map(a => a.appointmentTime);
+        console.log('bookedSlots:', bookedSlots);
+        // Filter out booked slots
+        const availableSlots = dayAvailability.slots.filter(slot => !bookedSlots.includes(slot));
+        console.log('availableSlots:', availableSlots);
+        res.json({ success: true, slots: availableSlots, bookedSlots });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+};
+
 module.exports = {
     getAppointments,
     getAppointment,
@@ -627,5 +689,7 @@ module.exports = {
     searchPatients,
     getHospitalProfile,
     updateHospitalProfile,
-    uploadHospitalImage
+    uploadHospitalImage,
+    updateDoctorSlots,
+    getDoctorAvailableSlots
 };

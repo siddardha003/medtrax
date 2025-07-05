@@ -15,7 +15,13 @@ const doctorSchema = new mongoose.Schema({
     image: {
         type: String,
         default: 'https://via.placeholder.com/150'
-    }
+    },
+    availability: [
+        {
+          day: { type: String, required: true }, // e.g., "Monday"
+          slots: [String] // e.g., ["09:00", "09:30", "10:00"]
+        }
+      ]
 }, { _id: true });
 
 // Define department/service schema
