@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Icon } from '@iconify/react';
-import { Link } from 'react-router-dom';
+import ScrollLink from './ScrollLink';
 
 // Simple Social component for displaying social links
 const Social = ({ data }) => (
@@ -88,28 +88,28 @@ const Footer = ({ data, variant }) => {
                 <h2 className="st-footer-widget-title mb-3" style={{ color: '#02a2ae' }}>Help & Resources</h2>
                 <ul className="st-footer-widget-nav st-mp0">
                   <li className="mb-2">
-                    <Link to="/faqs" className="hover:text-gray-300 transition" style={{ color: '#000000' }}>
+                    <ScrollLink to="/faqs" className="hover:text-gray-300 transition" style={{ color: '#000000' }}>
                       <Icon icon="fa:angle-right" className="mr-2" />
                       FAQs
-                    </Link>
+                    </ScrollLink>
                   </li>
                   <li className="mb-2">
-                    <Link to="/blog" className="hover:text-gray-300 transition" style={{ color: '#000000' }}>
+                    <ScrollLink to="/blog" className="hover:text-gray-300 transition" style={{ color: '#000000' }}>
                       <Icon icon="fa:angle-right" className="mr-2" />
                       Health Blog
-                    </Link>
+                    </ScrollLink>
                   </li>
                   <li className="mb-2">
-                    <Link to="/about" className="hover:text-gray-300 transition" style={{ color: '#000000' }}>
+                    <ScrollLink to="/about" className="hover:text-gray-300 transition" style={{ color: '#000000' }}>
                       <Icon icon="fa:angle-right" className="mr-2" />
                       About Us
-                    </Link>
+                    </ScrollLink>
                   </li>
                   <li className="mb-2">
-                    <Link to="/privacy" className="hover:text-gray-300 transition" style={{ color: '#000000' }}>
+                    <ScrollLink to="/privacy" className="hover:text-gray-300 transition" style={{ color: '#000000' }}>
                       <Icon icon="fa:angle-right" className="mr-2" />
                       Privacy Policy
-                    </Link>
+                    </ScrollLink>
                   </li>
                 </ul>
               </div>
@@ -121,28 +121,28 @@ const Footer = ({ data, variant }) => {
                 <h2 className="st-footer-widget-title mb-3" style={{ color: '#02a2ae' }}>Quick Links</h2>
                 <ul className="st-footer-widget-nav st-mp0">
                   <li className="mb-2">
-                    <Link to="/" className="hover:text-gray-300 transition" style={{ color: '#000000' }}>
+                    <ScrollLink to="/" className="hover:text-gray-300 transition" style={{ color: '#000000' }}>
                       <Icon icon="fa:angle-right" className="mr-2" />
                       Home
-                    </Link>
+                    </ScrollLink>
                   </li>
                   <li className="mb-2">
-                    <Link to="/hospital" className="hover:text-gray-300 transition" style={{ color: '#000000' }}>
+                    <ScrollLink to="/hospital" className="hover:text-gray-300 transition" style={{ color: '#000000' }}>
                       <Icon icon="fa:angle-right" className="mr-2" />
                       Hospitals
-                    </Link>
+                    </ScrollLink>
                   </li>
                   <li className="mb-2">
-                    <Link to="/medicalshop" className="hover:text-gray-300 transition" style={{ color: '#000000' }}>
+                    <ScrollLink to="/medicalshop" className="hover:text-gray-300 transition" style={{ color: '#000000' }}>
                       <Icon icon="fa:angle-right" className="mr-2" />
                       Medical Shops
-                    </Link>
+                    </ScrollLink>
                   </li>
                   <li className="mb-2">
-                    <Link to="/medicalcare" className="hover:text-gray-300 transition" style={{ color: '#000000' }}>
+                    <ScrollLink to="/medicalcare" className="hover:text-gray-300 transition" style={{ color: '#000000' }}>
                       <Icon icon="fa:angle-right" className="mr-2" />
                       Medical Care
-                    </Link>
+                    </ScrollLink>
                   </li>
                 </ul>
               </div>

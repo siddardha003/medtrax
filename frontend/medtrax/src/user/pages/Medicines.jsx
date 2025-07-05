@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 import { MapPin, Star, Phone, ArrowRight, Search } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
-import { getPublicShopsApi } from '../../Api';
+import { getPublicShopsApi, getShopReviewsApi } from '../../Api';
 import { useNavigate } from 'react-router-dom';
 
 const AppContainer = styled.div`
@@ -187,14 +187,15 @@ const Medicines = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [shops, setShops] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null); const navigate = useNavigate();
+  const [error, setError] = useState(null);
+  const [shopRatings, setShopRatings] = useState({});
+  const navigate = useNavigate();
 
   // Enhanced fallback data for when API fails
   const fallbackShopsData = [
     {
       _id: 'shop-fallback1',
       name: 'MediCare Pharmacy',
-      rating: 4.6,
       address: {
         city: 'Mumbai',
         state: 'Maharashtra'
@@ -205,7 +206,6 @@ const Medicines = () => {
     {
       _id: 'shop-fallback2',
       name: 'HealthPlus Medical Store',
-      rating: 4.4,
       address: {
         city: 'Delhi',
         state: 'Delhi'
@@ -216,7 +216,6 @@ const Medicines = () => {
     {
       _id: 'shop-fallback3',
       name: 'City Pharmacy',
-      rating: 4.2,
       address: {
         city: 'Bangalore',
         state: 'Karnataka'
@@ -225,6 +224,52 @@ const Medicines = () => {
       images: ['https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&h=200&fit=crop']
     }
   ];
+
+  // Function to calculate rating from reviews
+  const calculateRatingFromReviews = (reviews) => {
+    if (!reviews || reviews.length === 0) {
+      return null; // Return null to indicate no rating available
+    }
+    
+    const totalRating = reviews.reduce((sum, review) => sum + (review.rating || 0), 0);
+    const averageRating = totalRating / reviews.length;
+    
+    return parseFloat(averageRating.toFixed(1));
+  };
+
+  // Function to fetch reviews for a shop
+  const fetchShopReviews = async (shopId) => {
+    try {
+      const response = await getShopReviewsApi(shopId);
+      if (response.data && response.data.success) {
+        const reviews = response.data.data.reviews || [];
+        const rating = calculateRatingFromReviews(reviews);
+        return rating;
+      }
+    } catch (error) {
+      console.log(`Error fetching reviews for shop ${shopId}:`, error.message);
+    }
+    return null;
+  };
+
+  // Function to fetch reviews for all shops
+  const fetchAllShopRatings = async (shopsData) => {
+    const ratings = {};
+    
+    // Fetch reviews for each shop in parallel
+    const ratingPromises = shopsData.map(async (shop) => {
+      const shopId = shop._id || shop.id;
+      if (shopId && !shopId.startsWith('shop-fallback') && !shopId.startsWith('shop-dummy')) {
+        const rating = await fetchShopReviews(shopId);
+        if (rating !== null) {
+          ratings[shopId] = rating;
+        }
+      }
+    });
+
+    await Promise.all(ratingPromises);
+    return ratings;
+  };
 
   useEffect(() => {
     const fetchShops = async () => {
@@ -235,7 +280,12 @@ const Medicines = () => {
         if (response.data && response.data.success) {
           const shopsData = response.data.data.shops || [];
           // Ensure we always set an array
-          setShops(Array.isArray(shopsData) ? shopsData : []);
+          const validShops = Array.isArray(shopsData) ? shopsData : [];
+          setShops(validShops);
+
+          // Fetch ratings for all shops
+          const ratings = await fetchAllShopRatings(validShops);
+          setShopRatings(ratings);
         } else {
           throw new Error('Invalid API response structure');
         }
@@ -243,6 +293,7 @@ const Medicines = () => {
         setError(error.message);
         // Fallback to static data if API fails
         setShops(fallbackShopsData);
+        setShopRatings({}); // No ratings for fallback data
       } finally {
         setLoading(false);
       }
@@ -254,9 +305,12 @@ const Medicines = () => {
   const handleSearch = (e) => {
     setSearchTerm(e.target.value.toLowerCase());
   };
+
   const handleShopClick = (shopId) => {
     navigate(`/MedicalshopDetails?shopId=${shopId}`);
-  }; const filteredShops = Array.isArray(shops) ? shops.filter(shop => {
+  };
+
+  const filteredShops = Array.isArray(shops) ? shops.filter(shop => {
     const name = shop.name || '';
     const phone = shop.phone || shop.contactPhone || '';
     const address = shop.address || {};
@@ -266,6 +320,24 @@ const Medicines = () => {
       location.toLowerCase().includes(searchTerm) ||
       phone.includes(searchTerm);
   }) : [];
+
+  // Function to get rating display value
+  const getRatingDisplay = (shop) => {
+    const shopId = shop._id || shop.id;
+    
+    // Check if we have a calculated rating
+    if (shopRatings[shopId] !== undefined) {
+      return shopRatings[shopId];
+    }
+    
+    // Check if shop has a hardcoded rating (for fallback/dummy data)
+    if (shop.rating !== undefined) {
+      return shop.rating;
+    }
+    
+    // No rating available
+    return 'N/A';
+  };
 
   return (
     <AppContainer>
@@ -281,7 +353,9 @@ const Medicines = () => {
             onChange={handleSearch}
           />
         </SearchWrapper>
-      </SearchContainer>      {loading ? (
+      </SearchContainer>
+
+      {loading ? (
         <NoShopsMessage>Loading medical shops...</NoShopsMessage>
       ) : error ? (
         <NoShopsMessage>Error loading shops. Please try again later.</NoShopsMessage>
@@ -289,6 +363,8 @@ const Medicines = () => {
         <ShopsGrid>
           {filteredShops.length > 0 ? (
             filteredShops.map((shop) => {
+              const ratingDisplay = getRatingDisplay(shop);
+              
               return (
                 <MedicalShopCard key={shop._id || shop.id} onClick={() => handleShopClick(shop._id || shop.id)}>
                   <ShopImage image={shop.images?.[0] || shop.image} />
@@ -298,8 +374,9 @@ const Medicines = () => {
                     <div>
                       <Rating style={{ marginBottom: '8px' }}>
                         <Star size={16} fill="currentColor" />
-                        <span >{shop.rating || 'N/A'}</span>
-                      </Rating>                      <Location>
+                        <span>{ratingDisplay}</span>
+                      </Rating>
+                      <Location>
                         <MapPin size={14} />
                         <span>{
                           shop.address && shop.address.city && shop.address.state
@@ -330,7 +407,8 @@ const Medicines = () => {
           ) : (
             <NoShopsMessage>
               <Search size={48} color="#008b95" style={{ marginBottom: '1rem' }} />
-              <p>No medical shops found matching your search.</p>              <p>Please try different keywords.</p>
+              <p>No medical shops found matching your search.</p>
+              <p>Please try different keywords.</p>
             </NoShopsMessage>
           )}
         </ShopsGrid>
@@ -340,4 +418,3 @@ const Medicines = () => {
 };
 
 export default Medicines;
-// Sample medical shop data

@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import VideoBlock from './VideoBlock';
+import ImageBlock from './VideoBlock';
 import { getPublicStatsApi } from '../../Api';
 
-const videoBlockData = {
-  "videoThumb": '/images/video-block-img.jpg',
-  "videoSrc": 'https://www.youtube.com/watch?v=Ord3vFzvRW8',
-  "myVideoKey": "funfactVideo"
+const imageBlockData = {
+  "imageSrc": '/images/hos_image.png',
+  "altText": "Healthcare Services"
 }
 
 const Funfact = () => {
@@ -292,7 +291,7 @@ const Funfact = () => {
             </div>
           </div>
           <div className="col-xl-6 wow fadeInRight" data-wow-duration="0.8s" data-wow-delay="0.2s" >
-            <VideoBlock data={videoBlockData} />
+            <ImageBlock data={imageBlockData} />
           </div>
         </div>
       </div>
