@@ -21,6 +21,7 @@ export default function AppForm() {
     const [doctors, setDoctors] = useState([]);
     const [selectedDoctor, setSelectedDoctor] = useState('');
     const [timeSlots, setTimeSlots] = useState([]);
+    const [bookedSlots, setBookedSlots] = useState([]);
     const [formData, setFormData] = useState({
         name: user?.name || '',
         email: user?.email || '',
@@ -82,8 +83,26 @@ export default function AppForm() {
     }, [selectedDoctor]);
 
     const fetchTimeSlots = async () => {
-        const availableTimeSlots = ['10:00 AM', '11:00 AM', '1:00 PM', '2:00 PM'];
-        setTimeSlots(availableTimeSlots);
+        try {
+            // Get the doctor's available slots for the selected date
+            const response = await fetch(`/api/public/hospital/${hospitalId}/doctor/${selectedDoctor}/available-slots?date=${selectedDate.toISOString().split('T')[0]}`);
+            const data = await response.json();
+            if (data.success) {
+                setTimeSlots(data.slots || []);
+                setBookedSlots(data.bookedSlots || []);
+            } else {
+                // Fallback to default slots if API fails
+                const availableTimeSlots = ['10:00 AM', '11:00 AM', '1:00 PM', '2:00 PM'];
+                setTimeSlots(availableTimeSlots);
+                setBookedSlots([]);
+            }
+        } catch (error) {
+            console.error('Error fetching time slots:', error);
+            // Fallback to default slots
+            const availableTimeSlots = ['10:00 AM', '11:00 AM', '1:00 PM', '2:00 PM'];
+            setTimeSlots(availableTimeSlots);
+            setBookedSlots([]);
+        }
     };
 
     const handleInputChange = (e) => {
@@ -144,7 +163,13 @@ export default function AppForm() {
 
         } catch (err) {
             console.error('Error booking appointment:', err);
-            setError('Failed to book appointment. Please try again.');
+            if (err.response?.status === 409) {
+                setError('This time slot is already booked. Please select a different time.');
+                // Refresh available slots
+                fetchTimeSlots();
+            } else {
+                setError('Failed to book appointment. Please try again.');
+            }
         } finally {
             setLoading(false);
         }
@@ -308,9 +333,15 @@ export default function AppForm() {
                                     required
                                 >
                                     <option value="" disabled>Select Time Slot</option>
-                                    {timeSlots.map((slot, idx) => (
-                                        <option key={idx} value={slot}>{slot}</option>
-                                    ))}
+                                    {timeSlots.concat(bookedSlots.filter(slot => !timeSlots.includes(slot))).map((slot, idx, arr) => {
+                                        if (arr.indexOf(slot) !== idx) return null; // remove duplicates
+                                        const isBooked = bookedSlots.includes(slot);
+                                        return (
+                                            <option key={idx} value={slot} disabled={isBooked} style={isBooked ? { color: 'gray' } : {}}>
+                                                {slot} {isBooked ? '(already booked)' : ''}
+                                            </option>
+                                        );
+                                    })}
                                 </select>
                             </div>
                         )}

@@ -344,6 +344,72 @@ router.get('/stats', async (req, res, next) => {
     }
 });
 
+// @route   GET /api/public/hospital/:hospitalId/doctor/:doctorId/available-slots
+// @desc    Get available slots for a doctor on a given date (public)
+// @access  Public
+router.get('/hospital/:hospitalId/doctor/:doctorId/available-slots', async (req, res) => {
+    try {
+        const { hospitalId, doctorId } = req.params;
+        const { date } = req.query;
+
+        if (!date) {
+            return res.status(400).json({ success: false, error: 'Date parameter is required' });
+        }
+
+        // Check if hospital exists and is active
+        const hospital = await Hospital.findById(hospitalId);
+        if (!hospital || !hospital.isActive) {
+            return res.status(404).json({ success: false, error: 'Hospital not found or inactive' });
+        }
+
+        // Get day of week from date
+        const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const dayOfWeek = days[new Date(date).getDay()];
+
+        // Find the doctor in hospital services
+        let doctor = null;
+        let department = null;
+        
+        for (const service of hospital.services || []) {
+            const foundDoctor = service.doctors?.find(d => d._id?.toString() === doctorId || d.id === doctorId);
+            if (foundDoctor) {
+                doctor = foundDoctor;
+                department = service.category;
+                break;
+            }
+        }
+
+        if (!doctor) {
+            return res.status(404).json({ success: false, error: 'Doctor not found' });
+        }
+
+        // Get doctor's availability for the day
+        const dayAvailability = doctor.availability?.find(a => a.day === dayOfWeek);
+        if (!dayAvailability || !dayAvailability.slots) {
+            return res.json({ success: true, slots: [] });
+        }
+
+        // Get already booked slots for this doctor and date
+        const appointments = await Appointment.find({
+            hospitalId,
+            department,
+            doctorId,
+            appointmentDate: new Date(date),
+            status: { $in: ['scheduled', 'confirmed'] }
+        });
+
+        const bookedSlots = appointments.map(a => a.appointmentTime);
+        
+        // Filter out booked slots
+        const availableSlots = dayAvailability.slots.filter(slot => !bookedSlots.includes(slot));
+
+        res.json({ success: true, slots: availableSlots });
+    } catch (error) {
+        console.error('Get available slots error:', error);
+        res.status(500).json({ success: false, error: 'Server error' });
+    }
+});
+
 // @route   POST /api/public/appointments
 // @desc    Book an appointment (logged-in users only)
 // @access  Private (User)
@@ -371,6 +437,23 @@ router.post('/appointments', protect, async (req, res, next) => {
         const hospital = await Hospital.findById(hospitalId);
         if (!hospital || !hospital.isActive) {
             return res.status(400).json({ success: false, error: 'Hospital not found or inactive' });
+        }
+
+        // Check for double-booking
+        const existingAppointment = await Appointment.findOne({
+            hospitalId,
+            department,
+            doctorId,
+            appointmentDate: new Date(appointmentDate),
+            appointmentTime,
+            status: { $in: ['scheduled', 'confirmed'] }
+        });
+
+        if (existingAppointment) {
+            return res.status(409).json({
+                success: false,
+                error: 'This time slot is already booked. Please select a different time.'
+            });
         }
 
         // Create appointment with flat structure

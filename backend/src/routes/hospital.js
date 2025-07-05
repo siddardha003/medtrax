@@ -9,7 +9,9 @@ const {
     searchPatients,
     getHospitalProfile,
     updateHospitalProfile,
-    uploadHospitalImage
+    uploadHospitalImage,
+    updateDoctorSlots,
+    getDoctorAvailableSlots
 } = require('../controllers/hospitalController');
 
 const { protect, authorize, validateUserRole } = require('../middleware/auth');
@@ -241,5 +243,21 @@ router.get('/patients/search', [
         .withMessage('Limit must be between 1 and 50'),
     handleValidationErrors
 ], searchPatients);
+
+// Doctor Slot Management Routes
+// @route   PUT /api/hospital/department/:deptIndex/doctor/:docIndex/slots
+// @desc    Update a doctor's availability (time slots)
+router.put('/department/:deptIndex/doctor/:docIndex/slots', updateDoctorSlots);
+
+// @route   GET /api/hospital/department/:deptIndex/doctor/:docIndex/available-slots
+// @desc    Get available slots for a doctor on a given date
+router.get('/department/:deptIndex/doctor/:docIndex/available-slots', getDoctorAvailableSlots);
+
+// TEST AUTH ROUTE
+// @route   GET /api/hospital/test-auth
+// @desc    Test authentication and req.user
+router.get('/test-auth', (req, res) => {
+  res.json({ user: req.user || null });
+});
 
 module.exports = router;

@@ -48,6 +48,24 @@ const appointmentSchema = new mongoose.Schema({
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
+    },
+    confirmationCode: {
+        type: String,
+        unique: true,
+        default: function() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let code = '';
+            for (let i = 0; i < 6; i++) {
+                code += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return code;
+        }
+    },
+    status: {
+        type: String,
+        enum: ['scheduled', 'confirmed', 'completed'],
+        default: 'scheduled',
+        required: true
     }
 }, { timestamps: true });
 
@@ -97,20 +115,6 @@ appointmentSchema.index({ createdAt: 1 });
 appointmentSchema.index({ hospitalId: 1, appointmentDate: 1 });
 appointmentSchema.index({ hospitalId: 1, status: 1 });
 appointmentSchema.index({ appointmentDate: 1, status: 1 });
-
-// Pre-save middleware to generate confirmation code
-appointmentSchema.pre('save', function(next) {
-    if (this.isNew && !this.confirmationCode) {
-        // Generate 6-character alphanumeric confirmation code
-        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-        let code = '';
-        for (let i = 0; i < 6; i++) {
-            code += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-        this.confirmationCode = code;
-    }
-    next();
-});
 
 // Static method to find appointments by date range
 appointmentSchema.statics.findByDateRange = function(startDate, endDate, hospitalId = null) {

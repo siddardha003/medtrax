@@ -3,6 +3,7 @@ import { useDispatch } from 'react-redux';
 import { showNotification } from '../../Redux/notification/actions';
 import { getHospitalProfileApi, updateHospitalProfileApi, uploadHospitalImageApi } from '../../Api';
 import './HospitalProfile.css';
+import Modal from 'react-modal';
 
 const HospitalProfile = () => {
   const dispatch = useDispatch();
@@ -47,6 +48,15 @@ const HospitalProfile = () => {
     degree: '',
     image: 'https://via.placeholder.com/150'
   });
+
+  const [slotModalOpen, setSlotModalOpen] = useState(false);
+  const [selectedDoctor, setSelectedDoctor] = useState(null);
+  const [selectedDeptIndex, setSelectedDeptIndex] = useState(null);
+  const [selectedDocIndex, setSelectedDocIndex] = useState(null);
+  const [slotState, setSlotState] = useState({}); // { Monday: ["09:00", ...], ... }
+  const [slotSaveLoading, setSlotSaveLoading] = useState(false);
+
+  const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
   useEffect(() => {
     fetchHospitalProfile();
@@ -296,6 +306,85 @@ const HospitalProfile = () => {
     }
   };
 
+  const openSlotModal = (serviceIndex, doctorIndex) => {
+    setSelectedDeptIndex(serviceIndex);
+    setSelectedDocIndex(doctorIndex);
+    const doctor = services[serviceIndex].doctors[doctorIndex];
+    setSelectedDoctor(doctor);
+    // Build slot state from doctor's availability
+    const slotObj = {};
+    daysOfWeek.forEach(day => {
+      const found = doctor.availability?.find(a => a.day === day);
+      slotObj[day] = found ? [...found.slots] : [];
+    });
+    setSlotState(slotObj);
+    setSlotModalOpen(true);
+  };
+
+  const closeSlotModal = () => {
+    setSlotModalOpen(false);
+    setSelectedDoctor(null);
+    setSelectedDeptIndex(null);
+    setSelectedDocIndex(null);
+    setSlotState({});
+  };
+
+  const handleSlotChange = (day, idx, value) => {
+    setSlotState(prev => ({
+      ...prev,
+      [day]: prev[day].map((slot, i) => (i === idx ? value : slot))
+    }));
+  };
+
+  const addSlot = (day) => {
+    setSlotState(prev => ({
+      ...prev,
+      [day]: [...prev[day], '']
+    }));
+  };
+
+  const removeSlot = (day, idx) => {
+    setSlotState(prev => ({
+      ...prev,
+      [day]: prev[day].filter((_, i) => i !== idx)
+    }));
+  };
+
+  const saveSlots = async () => {
+    setSlotSaveLoading(true);
+    try {
+      const profile = JSON.parse(localStorage.getItem('profile') || '{}');
+      const token = profile.token;
+      for (const day of daysOfWeek) {
+        await fetch(`/api/hospital/department/${selectedDeptIndex}/doctor/${selectedDocIndex}/slots`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ day, slots: slotState[day].filter(Boolean) }),
+          credentials: 'include'
+        });
+      }
+      // Re-fetch hospital profile to update UI
+      await fetchHospitalProfile();
+      setSuccess('Doctor slots updated successfully');
+      dispatch(showNotification({
+        message: 'Doctor slots updated successfully',
+        messageType: 'success'
+      }));
+      closeSlotModal();
+    } catch (err) {
+      setError('Failed to update slots');
+      dispatch(showNotification({
+        message: 'Failed to update doctor slots',
+        messageType: 'error'
+      }));
+    } finally {
+      setSlotSaveLoading(false);
+    }
+  };
+
   if (loading && !hospital) {
     return <div className="p-4 text-center">Loading hospital profile...</div>;
   }
@@ -539,6 +628,13 @@ const HospitalProfile = () => {
                     >
                       Remove
                     </button>
+                    <button
+                      type="button"
+                      onClick={() => openSlotModal(serviceIndex, doctorIndex)}
+                      className="ml-2 text-blue-500 hover:text-blue-700 border border-blue-500 rounded px-2 py-1 text-xs"
+                    >
+                      Manage Slots
+                    </button>
                   </div>
                 ))}
                 
@@ -690,6 +786,46 @@ const HospitalProfile = () => {
           {loading ? 'Saving...' : 'Save Changes'}
         </button>
       </div>
+
+      <Modal
+        isOpen={slotModalOpen}
+        onRequestClose={closeSlotModal}
+        contentLabel="Manage Doctor Slots"
+        ariaHideApp={false}
+        className="fixed inset-0 flex items-center justify-center z-50"
+        overlayClassName="fixed inset-0 bg-black bg-opacity-40 z-40"
+      >
+        <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-2xl">
+          <h3 className="text-lg font-bold mb-4">Manage Slots for {selectedDoctor?.name}</h3>
+          <div className="space-y-4 max-h-96 overflow-y-auto">
+            {daysOfWeek.map(day => (
+              <div key={day} className="mb-2">
+                <div className="font-medium mb-1">{day}</div>
+                <div className="flex flex-wrap gap-2">
+                  {slotState[day]?.map((slot, idx) => (
+                    <div key={idx} className="flex items-center gap-1">
+                      <input
+                        type="time"
+                        value={slot}
+                        onChange={e => handleSlotChange(day, idx, e.target.value)}
+                        className="border p-1 rounded"
+                      />
+                      <button onClick={() => removeSlot(day, idx)} className="text-red-500">×</button>
+                    </div>
+                  ))}
+                  <button onClick={() => addSlot(day)} className="text-green-600 border border-green-600 rounded px-2 py-1 text-xs">+ Add Slot</button>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="flex justify-end gap-2 mt-6">
+            <button onClick={closeSlotModal} className="px-4 py-2 border rounded">Cancel</button>
+            <button onClick={saveSlots} disabled={slotSaveLoading} className="px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50">
+              {slotSaveLoading ? 'Saving...' : 'Save Slots'}
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

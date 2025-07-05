@@ -39,21 +39,29 @@ const HospitalDashboard = () => {
 
   // Form data for appointments
   const [formData, setFormData] = useState({
-    patient: {
-      firstName: '',
-      lastName: '',
+    name: '',
       email: '',
-      phone: ''
-    },
+    phone: '',
     department: '',
+    doctorIndex: '',
     appointmentDate: '',
     appointmentTime: '',
-    reasonForVisit: '',
     notes: ''
   });
   // Error and success message states
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  // Add at the top of HospitalDashboard component state:
+  const [selectedDoctorIndex, setSelectedDoctorIndex] = useState('');
+  const [availableSlots, setAvailableSlots] = useState([]);
+  const [doctorList, setDoctorList] = useState([]);
+
+  // Add state for slot error message
+  const [slotError, setSlotError] = useState('');
+
+  // Add state for booked slots
+  const [bookedSlots, setBookedSlots] = useState([]);
 
   const departments = [
     'cardiology', 'neurology', 'orthopedics', 'pediatrics', 
@@ -147,8 +155,12 @@ const HospitalDashboard = () => {
   const fetchAppointments = async () => {
     setLoading(true);
     try {
-      const params = { ...filters };
-      if (searchQuery) params.search = searchQuery;
+      // Only include non-empty filters
+      const params = {};
+      if (filters.status) params.status = filters.status;
+      if (filters.department) params.department = filters.department;
+      if (filters.date) params.date = filters.date;
+      if (searchQuery.trim()) params.search = searchQuery.trim();
       
       const { data } = await HospitalApi.getAppointmentsApi(params);
       if (data.success) {
@@ -224,18 +236,17 @@ const HospitalDashboard = () => {
   const validateForm = () => {
     const errors = [];
     
-    if (!formData.patient.firstName.trim()) errors.push('Patient first name is required');
-    if (!formData.patient.lastName.trim()) errors.push('Patient last name is required');
-    if (!formData.patient.email.trim()) errors.push('Patient email is required');
-    if (!formData.patient.phone.trim()) errors.push('Patient phone is required');
+    if (!formData.name.trim()) errors.push('Patient name is required');
+    if (!formData.email.trim()) errors.push('Patient email is required');
+    if (!formData.phone.trim()) errors.push('Patient phone is required');
     if (!formData.department) errors.push('Department is required');
+    if (formData.doctorIndex === '') errors.push('Doctor is required');
     if (!formData.appointmentDate) errors.push('Appointment date is required');
     if (!formData.appointmentTime) errors.push('Appointment time is required');
-    if (!formData.reasonForVisit.trim()) errors.push('Reason for visit is required');
     
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (formData.patient.email && !emailRegex.test(formData.patient.email)) {
+    if (formData.email && !emailRegex.test(formData.email)) {
       errors.push('Please enter a valid email address');
     }
     
@@ -248,77 +259,190 @@ const HospitalDashboard = () => {
     return errors;
   };
 
+  // Helper to get department and doctor indices
+  const getDeptAndDoctorIndices = () => {
+    const deptIndex = hospitalProfile?.services?.findIndex(
+      s => s.category === formData.department
+    );
+    const docIndex = deptIndex > -1 ? hospitalProfile.services[deptIndex].doctors.findIndex(
+      d => d.name === doctorList[selectedDoctorIndex]?.name
+    ) : -1;
+    return { deptIndex, docIndex };
+  };
+
+  // Fetch doctors when department changes
+  useEffect(() => {
+    if (formData.department && hospitalProfile) {
+      const dept = hospitalProfile.services.find(s => s.category === formData.department);
+      setDoctorList(dept ? dept.doctors : []);
+      setFormData(f => ({ ...f, doctorIndex: '', appointmentTime: '' }));
+      setAvailableSlots([]);
+    }
+  }, [formData.department, hospitalProfile]);
+
+  // Fetch slots when doctor and date are selected
+  useEffect(() => {
+    if (
+      formData.department &&
+      formData.doctorIndex !== '' &&
+      formData.appointmentDate &&
+      hospitalProfile
+    ) {
+      const deptIndex = hospitalProfile.services.findIndex(s => s.category === formData.department);
+      const docIndex = formData.doctorIndex;
+      if (deptIndex > -1 && docIndex !== '') {
+        const profile = JSON.parse(localStorage.getItem('profile') || '{}');
+        const token = profile.token;
+        fetch(`/api/hospital/department/${deptIndex}/doctor/${docIndex}/available-slots?date=${formData.appointmentDate}`, {
+          headers: { 'Authorization': `Bearer ${token}` },
+          credentials: 'include'
+        })
+          .then(res => res.json())
+          .then(data => {
+            if (data.success) {
+              setAvailableSlots(data.slots || []);
+              setBookedSlots(data.bookedSlots || []);
+              setSlotError('');
+              console.log('Fetched availableSlots:', data.slots);
+              console.log('Fetched bookedSlots:', data.bookedSlots);
+            } else {
+              setAvailableSlots([]);
+              setBookedSlots([]);
+              setSlotError('Failed to fetch available slots');
+            }
+          })
+          .catch(err => {
+            console.error('Error fetching slots:', err);
+            setAvailableSlots([]);
+            setBookedSlots([]);
+            setSlotError('Failed to fetch available slots');
+          });
+      }
+    } else {
+      setAvailableSlots([]);
+      setBookedSlots([]);
+      setSlotError('');
+    }
+  }, [formData.department, formData.doctorIndex, formData.appointmentDate, hospitalProfile]);
+
   // Form handlers
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Clear previous errors
     setError('');
     setSuccess('');
     
     // Validate form
-    const validationErrors = validateForm();
-    if (validationErrors.length > 0) {
-      setError(validationErrors.join('. '));
+    const errors = validateForm();
+    if (errors.length > 0) {
+      setError(errors.join(', '));
       return;
     }
-    
+
+    // Validate slot availability
+    if (!availableSlots.includes(formData.appointmentTime)) {
+      setSlotError('Selected time slot is not available. Please choose a different time.');
+      return;
+    }
+
     setLoading(true);
     
     try {
-      // Add missing fields for backend validation
+      const doctor = doctorList[formData.doctorIndex];
       const appointmentData = {
-        ...formData,
-        patient: {
-          ...formData.patient,
-          dateOfBirth: '1990-01-01', // Default for now
-          gender: 'other' // Default for now
-        },
-        hospitalId: userInfo?.hospitalId || '68550a000ed19e0791906641' // Default hospital ID
+        patientName: formData.name,
+        patientEmail: formData.email,
+        patientPhone: formData.phone,
+        department: formData.department,
+        doctorId: doctor?._id || doctor?.id,
+        appointmentDate: formData.appointmentDate,
+        appointmentTime: formData.appointmentTime,
+        notes: formData.notes,
+        hospitalId: hospitalProfile?._id
       };
-      
       const { data } = await HospitalApi.createAppointmentApi(appointmentData);
       if (data.success) {
         setAppointments([data.data.appointment, ...appointments]);
         setFormData({
-          patient: {
-            firstName: '',
-            lastName: '',
+          name: '',
             email: '',
-            phone: ''
-          },
+          phone: '',
           department: '',
+          doctorIndex: '',
           appointmentDate: '',
           appointmentTime: '',
-          reasonForVisit: '',
           notes: ''
         });
         setShowCreateForm(false);
         setSuccess('Appointment created successfully!');
         fetchStats();
+        // Refresh available slots
+        if (formData.department && formData.doctorIndex !== '' && formData.appointmentDate) {
+          const deptIndex = hospitalProfile.services.findIndex(s => s.category === formData.department);
+          const docIndex = formData.doctorIndex;
+          if (deptIndex > -1 && docIndex !== '') {
+            const profile = JSON.parse(localStorage.getItem('profile') || '{}');
+            const token = profile.token;
+            fetch(`/api/hospital/department/${deptIndex}/doctor/${docIndex}/available-slots?date=${formData.appointmentDate}`, {
+              headers: { 'Authorization': `Bearer ${token}` },
+              credentials: 'include'
+            })
+              .then(res => res.json())
+              .then(data => {
+                if (data.success) {
+                  setAvailableSlots(data.slots || []);
+                }
+              });
+          }
+        }
       } else {
         setError(data.error || 'Failed to create appointment');
       }
     } catch (error) {
       console.error('Error creating appointment:', error);
-      setError(error.response?.data?.error || error.message || 'Failed to create appointment');
+      if (error.response?.status === 409) {
+        setError('This time slot is already booked. Please select a different time.');
+        // Refresh available slots to show current availability
+        if (formData.department && formData.doctorIndex !== '' && formData.appointmentDate) {
+          const deptIndex = hospitalProfile.services.findIndex(s => s.category === formData.department);
+          const docIndex = formData.doctorIndex;
+          if (deptIndex > -1 && docIndex !== '') {
+            const profile = JSON.parse(localStorage.getItem('profile') || '{}');
+            const token = profile.token;
+            fetch(`/api/hospital/department/${deptIndex}/doctor/${docIndex}/available-slots?date=${formData.appointmentDate}`, {
+              headers: { 'Authorization': `Bearer ${token}` },
+              credentials: 'include'
+            })
+              .then(res => res.json())
+              .then(data => {
+                if (data.success) {
+                  setAvailableSlots(data.slots || []);
+                }
+              });
+          }
+        }
+      } else {
+        setError(error.response?.data?.error || error.message || 'Failed to create appointment');
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  const handleUpdateAppointment = async (appointmentId, updateData) => {
+  const handleDeleteAppointment = async (appointmentId) => {
+    if (!window.confirm('Are you sure you want to delete this appointment?')) return;
     setLoading(true);
     try {
-      const { data } = await HospitalApi.updateAppointmentApi(appointmentId, updateData);
+      const { data } = await HospitalApi.cancelAppointmentApi(appointmentId, {});
       if (data.success) {
-        setAppointments(appointments.map(apt => 
-          apt._id === appointmentId ? data.data : apt
-        ));
-        alert('Appointment updated successfully!');
+        setAppointments(appointments.filter(apt => apt._id !== appointmentId));
+        alert('Appointment deleted successfully!');
         fetchStats();
       }
     } catch (error) {
-      console.error('Error updating appointment:', error);
-      alert('Error updating appointment: ' + (error.response?.data?.error || error.message));
+      console.error('Error deleting appointment:', error);
+      alert('Error deleting appointment: ' + (error.response?.data?.error || error.message));
     } finally {
       setLoading(false);
     }
@@ -389,6 +513,12 @@ const HospitalDashboard = () => {
       hour12: true
     });
   };
+
+  // Add this before rendering the dashboard cards
+  const todayStr = new Date().toISOString().split('T')[0];
+  const todaysAppointments = stats.todayAppointments || 0;
+  const completedAppointments = stats.completedAppointments || 0;
+  const pendingAppointments = stats.pendingAppointments || 0;
 
   // Render Dashboard Tab
   const renderDashboard = () => (
@@ -470,7 +600,7 @@ const HospitalDashboard = () => {
                 </div>
               ) : (
                 <>
-                  <h3 className="text-2xl font-bold text-gray-900">{stats.todayAppointments || 0}</h3>
+                  <h3 className="text-2xl font-bold text-gray-900">{todaysAppointments || 0}</h3>
                   <p className="text-sm text-gray-600">Today's Appointments</p>
                 </>
               )}
@@ -486,7 +616,7 @@ const HospitalDashboard = () => {
               </svg>
             </div>
             <div className="ml-4">
-              <h3 className="text-lg font-semibold text-gray-900">{stats.pendingAppointments || 0}</h3>
+              <h3 className="text-2xl font-semibold text-gray-900">{pendingAppointments || 0}</h3>
               <p className="text-sm text-gray-600">Pending Appointments</p>
             </div>
           </div>
@@ -500,7 +630,7 @@ const HospitalDashboard = () => {
               </svg>
             </div>
             <div className="ml-4">
-              <h3 className="text-lg font-semibold text-gray-900">{stats.completedAppointments || 0}</h3>
+              <h3 className="text-2xl font-semibold text-gray-900">{completedAppointments || 0}</h3>
               <p className="text-sm text-gray-600">Completed Appointments</p>
             </div>
           </div>
@@ -544,7 +674,7 @@ const HospitalDashboard = () => {
           <h3 className="text-lg font-medium text-gray-900">Quick Actions</h3>
         </div>
         <div className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <button
               onClick={() => setShowCreateForm(true)}
               className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-colors"
@@ -568,18 +698,6 @@ const HospitalDashboard = () => {
                 <span className="mt-2 block text-sm font-medium text-gray-700">View All Appointments</span>
               </div>
             </button>
-            
-            <button
-              onClick={() => window.print()}
-              className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-purple-400 hover:bg-purple-50 transition-colors"
-            >
-              <div className="text-center">
-                <svg className="mx-auto h-8 w-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
-                </svg>
-                <span className="mt-2 block text-sm font-medium text-gray-700">Print Reports</span>
-              </div>
-            </button>
           </div>
         </div>
       </div>
@@ -593,45 +711,52 @@ const HospitalDashboard = () => {
       <div className="bg-white p-6 rounded-lg shadow">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
           <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
-            <input
-              type="text"
-              placeholder="Search patients..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
+            <div className="flex space-x-2">
+              <input
+                type="text"
+                placeholder="Search patients..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyPress={handleSearchKeyPress}
+                className="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#008b95] focus:border-transparent"
+              />
+              <button
+                onClick={handleSearch}
+                className="px-4 py-2 bg-[#008b95] text-white rounded-md hover:bg-[#008b95]focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              >
+                Search
+              </button>
+            </div>
             <select
               value={filters.status}
               onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-              className="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#008b95] focus:border-transparent"
             >
               <option value="">All Status</option>
               <option value="scheduled">Scheduled</option>
               <option value="confirmed">Confirmed</option>
-              <option value="in_progress">In Progress</option>
               <option value="completed">Completed</option>
-              <option value="cancelled">Cancelled</option>
             </select>
             <select
               value={filters.department}
               onChange={(e) => setFilters({ ...filters, department: e.target.value })}
-              className="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#008b95] focus:border-transparent"
             >
               <option value="">All Departments</option>
-              {departments.map(dept => (
-                <option key={dept} value={dept}>{dept.replace('_', ' ').toUpperCase()}</option>
+              {hospitalProfile?.services?.map(dept => (
+                <option key={dept.category} value={dept.category}>{dept.category.replace('_', ' ').toUpperCase()}</option>
               ))}
             </select>
             <input
               type="date"
               value={filters.date}
               onChange={(e) => setFilters({ ...filters, date: e.target.value })}
-              className="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#008b95] focus:border-transparent"
             />
           </div>
           <button
             onClick={() => setShowCreateForm(true)}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            className="px-4 py-2 ml-4 bg-[#008b95] text-white rounded-md hover:bg-[#008b95] focus:ring-2 focus:[#008b95] focus:ring-offset-2"
           >
             New Appointment
           </button>
@@ -648,214 +773,73 @@ const HospitalDashboard = () => {
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Patient</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Doctor</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Department</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date & Time</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Delete</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {appointments.map((appointment) => (
+              {appointments.map((appointment) => {
+                // Find doctor name from hospitalProfile.services using doctorId
+                let doctorName = '';
+                if (hospitalProfile && Array.isArray(hospitalProfile.services) && appointment.doctorId) {
+                  for (const service of hospitalProfile.services) {
+                    const doc = (service.doctors || []).find(d => String(d._id) === String(appointment.doctorId) || String(d.id) === String(appointment.doctorId));
+                    if (doc) {
+                      doctorName = doc.name;
+                      break;
+                    }
+                  }
+                }
+                return (
                 <tr key={appointment._id}>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div>
-                      <div className="text-sm font-medium text-gray-900">
-                        {appointment.patient?.firstName} {appointment.patient?.lastName}
-                      </div>
-                      <div className="text-sm text-gray-500">{appointment.patient?.email}</div>
-                    </div>
+                      <div className="text-sm font-medium text-gray-900">{appointment.patientName}</div>
+                      <div className="text-sm text-gray-500">{appointment.patientEmail}</div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {appointment.department?.replace('_', ' ').toUpperCase()}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {formatDate(appointment.appointmentDate)}<br />
-                    {formatTime(appointment.appointmentTime)}
-                  </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{doctorName || '-'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{appointment.department?.replace('_', ' ').toUpperCase()}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatDate(appointment.appointmentDate)}<br />{formatTime(appointment.appointmentTime)}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(appointment.status)}`}>
-                      {appointment.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                    {appointment.status === 'scheduled' && (
-                      <button
-                        onClick={() => handleUpdateAppointment(appointment._id, { status: 'confirmed' })}
-                        className="text-green-600 hover:text-green-900"
-                      >
-                        Confirm
-                      </button>
-                    )}
-                    {appointment.status === 'confirmed' && (
-                      <button
-                        onClick={() => handleUpdateAppointment(appointment._id, { status: 'in_progress' })}
-                        className="text-blue-600 hover:text-blue-900"
-                      >
-                        Start
-                      </button>
-                    )}
-                    {appointment.status === 'in_progress' && (
-                      <button
-                        onClick={() => handleUpdateAppointment(appointment._id, { status: 'completed' })}
-                        className="text-purple-600 hover:text-purple-900"
-                      >
-                        Complete
-                      </button>
-                    )}
-                    {!['completed', 'cancelled'].includes(appointment.status) && (
-                      <button
-                        onClick={() => handleCancelAppointment(appointment._id)}
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        Cancel
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  );
-
-  // Render Patients Tab
-  const renderPatients = () => (
-    <div className="space-y-6">
-      {/* Search and Filter */}
-      <div className="bg-white p-6 rounded-lg shadow">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
-          <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
-            <input
-              type="text"
-              placeholder="Search patients by name, email, or phone..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-          <span className="text-sm text-gray-600">{patients.length} patients found</span>
-        </div>
-      </div>
-
-      {/* Patients List */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-medium text-gray-900">All Patients</h3>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Patient</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Visit</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Appointments</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {patients.map((patient, index) => (
-                <tr key={patient.email || index}>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div>
-                      <div className="text-sm font-medium text-gray-900">
-                        {patient.firstName} {patient.lastName}
-                      </div>
-                      <div className="text-sm text-gray-500">ID: {patient.id || 'N/A'}</div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{patient.email}</div>
-                    <div className="text-sm text-gray-500">{patient.phone}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {patient.lastVisit ? formatDate(patient.lastVisit) : 'No visits'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {patient.totalAppointments || 0}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                    <button
-                      onClick={() => {
-                        setFormData({
-                          ...formData,
-                          patient: {
-                            firstName: patient.firstName || '',
-                            lastName: patient.lastName || '',
-                            email: patient.email || '',
-                            phone: patient.phone || ''
+                      <select
+                        value={appointment.status}
+                        onChange={async (e) => {
+                          const newStatus = e.target.value;
+                          if (newStatus !== appointment.status) {
+                            setLoading(true);
+                            try {
+                              const { data } = await HospitalApi.updateAppointmentApi(appointment._id, { status: newStatus });
+                              if (data.success) {
+                                setAppointments(appointments.map(a => a._id === appointment._id ? { ...a, status: newStatus } : a));
+                              }
+                            } catch (error) {
+                              alert('Failed to update status: ' + (error.response?.data?.error || error.message));
+                            } finally {
+                              setLoading(false);
+                            }
                           }
-                        });
-                        setShowCreateForm(true);
-                      }}
-                      className="text-blue-600 hover:text-blue-900"
-                    >
-                      Book Appointment
-                    </button>
-                    <button className="text-green-600 hover:text-green-900">
-                      View History
-                    </button>
+                        }}
+                        className={
+                          appointment.status === 'completed' ? 'px-2 py-1 border rounded bg-green-100 text-green-800 font-semibold' :
+                          appointment.status === 'confirmed' ? 'px-2 py-1 border rounded bg-blue-100 text-blue-800 font-semibold' :
+                          'px-2 py-1 border rounded bg-yellow-100 text-yellow-800 font-semibold'
+                        }
+                      >
+                        <option value="scheduled">Scheduled</option>
+                        <option value="confirmed">Confirmed</option>
+                        <option value="completed">Completed</option>
+                      </select>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                      <button onClick={() => handleDeleteAppointment(appointment._id)} className="text-red-600 hover:text-red-900">Delete</button>
                   </td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
-        </div>
-      </div>
-    </div>
-  );
-
-  // Render Analytics Tab
-  const renderAnalytics = () => (
-    <div className="space-y-6">
-      {/* Analytics Overview */}
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Department Analytics</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {analytics.departmentStats.map((dept, index) => (
-            <div key={index} className="bg-gray-50 p-4 rounded-lg">
-              <h4 className="font-medium text-gray-900">{dept.department?.replace('_', ' ').toUpperCase()}</h4>
-              <p className="text-2xl font-bold text-blue-600">{dept.appointments || 0}</p>
-              <p className="text-sm text-gray-600">appointments</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Monthly Trends */}
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Monthly Appointment Trends</h3>
-        <div className="space-y-4">
-          {analytics.monthlyStats.map((month, index) => (
-            <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded">
-              <span className="font-medium">{month.month}</span>
-              <span className="text-blue-600 font-bold">{month.appointments || 0} appointments</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Recent Activity */}
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Recent Activity</h3>
-        <div className="space-y-3">
-          {analytics.recentActivity.map((activity, index) => (
-            <div key={index} className="flex items-center space-x-3 p-3 bg-gray-50 rounded">
-              <div className="flex-shrink-0">
-                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                  <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                  </svg>
-                </div>
-              </div>
-              <div className="flex-1">
-                <p className="text-sm text-gray-900">{activity.description}</p>
-                <p className="text-xs text-gray-500">{activity.timestamp}</p>
-              </div>
-            </div>
-          ))}
         </div>
       </div>
     </div>
@@ -878,102 +862,117 @@ const HospitalDashboard = () => {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <input
               type="text"
-              placeholder="Patient First Name"
-              value={formData.patient.firstName}
-              onChange={(e) => setFormData({
-                ...formData,
-                patient: { ...formData.patient, firstName: e.target.value }
-              })}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder="Patient Name"
+            value={formData.name}
+            onChange={e => setFormData({ ...formData, name: e.target.value })}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               required
             />
-            <input
-              type="text"
-              placeholder="Patient Last Name"
-              value={formData.patient.lastName}
-              onChange={(e) => setFormData({
-                ...formData,
-                patient: { ...formData.patient, lastName: e.target.value }
-              })}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              required
-            />
-          </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <input
               type="email"
               placeholder="Patient Email"
-              value={formData.patient.email}
-              onChange={(e) => setFormData({
-                ...formData,
-                patient: { ...formData.patient, email: e.target.value }
-              })}
+              value={formData.email}
+              onChange={e => setFormData({ ...formData, email: e.target.value })}
               className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               required
             />
             <input
               type="tel"
               placeholder="Patient Phone"
-              value={formData.patient.phone}
-              onChange={(e) => setFormData({
-                ...formData,
-                patient: { ...formData.patient, phone: e.target.value }
-              })}
+              value={formData.phone}
+              onChange={e => setFormData({ ...formData, phone: e.target.value })}
               className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               required
             />
           </div>
-
           <select
             value={formData.department}
-            onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+            onChange={e => setFormData({ ...formData, department: e.target.value })}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             required
           >
             <option value="">Select Department</option>
-            {departments.map(dept => (
-              <option key={dept} value={dept}>{dept.replace('_', ' ').toUpperCase()}</option>
+            {hospitalProfile?.services?.map((dept, idx) => (
+              <option key={dept.category} value={dept.category}>{dept.category.replace('_', ' ').toUpperCase()}</option>
             ))}
           </select>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {doctorList.length > 0 && (
+            <select
+              value={formData.doctorIndex}
+              onChange={e => setFormData({ ...formData, doctorIndex: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              required
+            >
+              <option value="">Select Doctor</option>
+              {doctorList.map((doc, idx) => (
+                <option key={doc.name + idx} value={idx}>{doc.name} ({doc.degree})</option>
+              ))}
+            </select>
+          )}
             <input
               type="date"
               value={formData.appointmentDate}
-              onChange={(e) => setFormData({ ...formData, appointmentDate: e.target.value })}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              required
-            />
-            <input
-              type="time"
-              value={formData.appointmentTime}
-              onChange={(e) => setFormData({ ...formData, appointmentTime: e.target.value })}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              required
-            />
-          </div>
-
-          <textarea
-            placeholder="Reason for Visit"
-            value={formData.reasonForVisit}
-            onChange={(e) => setFormData({ ...formData, reasonForVisit: e.target.value })}
+            onChange={e => setFormData({ ...formData, appointmentDate: e.target.value })}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            rows="3"
-            required
-          />
-
+              required
+            />
+          {formData.appointmentDate && formData.doctorIndex !== '' && availableSlots.length === 0 && (
+            <div className="text-red-600 text-sm mb-2">This doctor doesn't have slot on that day, try for another doctor.</div>
+          )}
+          {availableSlots.length > 0 && (
+            (() => {
+              // Compute all slots to render (union of available and booked, no duplicates)
+              const allSlots = availableSlots.concat(bookedSlots.filter(slot => !availableSlots.includes(slot)));
+              console.log('Rendering slot dropdown. availableSlots:', availableSlots);
+              console.log('Rendering slot dropdown. bookedSlots:', bookedSlots);
+              console.log('Rendering slot dropdown. allSlots:', allSlots);
+              return (
+                <select
+                  value={formData.appointmentTime}
+                  onChange={e => {
+                    const selectedSlot = e.target.value;
+                    setFormData({ ...formData, appointmentTime: selectedSlot });
+                    // Clear any previous slot error when selecting a valid slot
+                    if (availableSlots.includes(selectedSlot)) {
+                      setSlotError('');
+                    } else if (bookedSlots.includes(selectedSlot)) {
+                      setSlotError('This slot is already booked. Please select a different time.');
+                    } else {
+                      setSlotError('This slot is not available. Please select a different time.');
+                    }
+                    console.log('Selected slot:', selectedSlot);
+                    console.log('Current slotError:', slotError);
+                  }}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
+                >
+                  <option value="">Select Time Slot</option>
+                  {allSlots.map((slot, idx, arr) => {
+                    // Remove duplicates by only rendering the first occurrence
+                    if (arr.indexOf(slot) !== idx) return null;
+                    const isBooked = bookedSlots.includes(slot);
+                    console.log(`Slot: ${slot}, isBooked: ${isBooked}`);
+                    return (
+                      <option key={slot + idx} value={slot} disabled={isBooked} style={isBooked ? { color: 'gray' } : {}}>
+                        {slot} {isBooked ? '(already booked)' : ''}
+                      </option>
+                    );
+                  })}
+                </select>
+              );
+            })()
+          )}
+          {slotError && <div className="text-red-600 text-sm mb-2">{slotError}</div>}
           <textarea
             placeholder="Additional Notes"
             value={formData.notes}
-            onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+            onChange={e => setFormData({ ...formData, notes: e.target.value })}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             rows="2"
           />
-
           <div className="flex justify-end space-x-3">
             <button
               type="button"
@@ -1002,6 +1001,18 @@ const HospitalDashboard = () => {
       <HospitalProfile />
     </div>
   );
+
+  // Add search handler
+  const handleSearch = () => {
+    fetchAppointments();
+  };
+
+  // Add search on Enter key
+  const handleSearchKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -1050,26 +1061,6 @@ const HospitalDashboard = () => {
               Appointments
             </button>
             <button
-              onClick={() => setActiveTab('patients')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'patients'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              Patients
-            </button>
-            <button
-              onClick={() => setActiveTab('analytics')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'analytics'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              Analytics
-            </button>
-            <button
               onClick={() => setActiveTab('profile')}
               className={`py-4 px-1 border-b-2 font-medium text-sm ${
                 activeTab === 'profile'
@@ -1093,8 +1084,6 @@ const HospitalDashboard = () => {
           )}
             {!loading && activeTab === 'dashboard' && renderDashboard()}
           {!loading && activeTab === 'appointments' && renderAppointments()}
-          {!loading && activeTab === 'patients' && renderPatients()}
-          {!loading && activeTab === 'analytics' && renderAnalytics()}
           {!loading && activeTab === 'profile' && renderProfile()}
         </div>
       </main>
