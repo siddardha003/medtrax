@@ -1,7 +1,7 @@
 const errorHandler = (err, req, res, next) => {
     // Prevent duplicate error responses
     if (res.headersSent) {
-        console.log('⚠️  Headers already sent, skipping duplicate error response');
+        
         return next(err);
     }
 

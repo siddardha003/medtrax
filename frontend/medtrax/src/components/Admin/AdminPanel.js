@@ -30,7 +30,7 @@ const AdminPanel = () => {
   const [showPassword, setShowPassword] = useState(false); // Add password visibility state
   
   const handleLogout = async () => {
-    console.log('Admin logout clicked');
+    
     try {
       const result = await dispatch(logOut());
       if (result && result.success) {

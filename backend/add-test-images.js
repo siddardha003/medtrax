@@ -10,12 +10,11 @@ async function testShopImages() {
     // Find the first shop
     const shop = await Shop.findOne({});
     if (!shop) {
-      console.log('No shops found');
+      
       process.exit(1);
     }
     
-    console.log(`Found shop: ${shop.name}`);
-    console.log(`Current images: ${JSON.stringify(shop.images)}`);
+    
     
     // Add some test image URLs (mix of valid and invalid ones to test error handling)
     const testImages = [
@@ -31,9 +30,8 @@ async function testShopImages() {
       { new: true }
     );
     
-    console.log(`Updated shop images: ${JSON.stringify(updatedShop.images)}`);
-    console.log(`Shop ID for testing: ${shop._id}`);
-    console.log('✅ Test images added successfully!');
+    
+    
     
     process.exit(0);
   } catch (error) {

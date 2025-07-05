@@ -4,6 +4,74 @@ import { getPublicShopDetailsApi, getShopReviewsApi, submitShopReviewApi } from 
 import "../css/MedicalshopDetails.css";
 import "../css/Reviews.css";
 import MedicalshopMap from "../components/Medicalshopmap";
+import CoordinateDebugger from "../components/CoordinateDebugger";
+
+// Pure fallback data for when no shop data is available
+const pureFallbackShopData = {
+    name: "Apollo Pharmacy",
+    rating: 4.4,
+    reviewsCount: 156,
+    closingTime: "10:00 PM",
+    address: "Main Street, Bhimavaram",
+    city: "Bhimavaram",
+    state: "West Godavari",
+    formattedLocation: "Main Street, Bhimavaram, West Godavari",
+    phone: "080 4628 6939",
+    directionsLink: "https://maps.google.com",
+    images: [
+        "https://www.apollopharmacy.in/cdn/shop/files/Store_1200x.jpg?v=1614323335",
+        "https://www.apollopharmacy.in/cdn/shop/files/Store_2_1200x.jpg?v=1614323335",
+        "https://www.apollopharmacy.in/cdn/shop/files/Store_3_1200x.jpg?v=1614323335",
+        "https://www.apollopharmacy.in/cdn/shop/files/Store_4_1200x.jpg?v=1614323335"
+    ],
+    services: [
+        {
+            category: "Prescription Medicines",
+            items: [
+                { name: "Paracetamol 500mg (10 tablets)", price: 25, availability: "In Stock" },
+                { name: "Azithromycin 500mg (5 tablets)", price: 150, availability: "In Stock" },
+                { name: "Amoxicillin 500mg (10 capsules)", price: 120, availability: "In Stock" },
+                { name: "Cetirizine 10mg (10 tablets)", price: 35, availability: "In Stock" }
+            ]
+        },
+        {
+            category: "OTC Medicines",
+            items: [
+                { name: "Vitamin C 500mg (30 tablets)", price: 150, availability: "In Stock" },
+                { name: "Calcium + Vitamin D3 (60 tablets)", price: 200, availability: "Limited Stock" },
+                { name: "Multivitamins (30 capsules)", price: 250, availability: "In Stock" },
+                { name: "Digene Antacid (10 tablets)", price: 45, availability: "In Stock" }
+            ]
+        },
+        {
+            category: "Ointments & Creams",
+            items: [
+                { name: "Moov Pain Relief Cream 30g", price: 85, availability: "In Stock" },
+                { name: "Boroline Antiseptic Cream 20g", price: 45, availability: "In Stock" },
+                { name: "Betadine Ointment 20g", price: 95, availability: "In Stock" },
+                { name: "Volini Gel 30g", price: 110, availability: "In Stock" }
+            ]
+        },
+        {
+            category: "Baby Care",
+            items: [
+                { name: "Himalaya Baby Powder 100g", price: 120, availability: "In Stock" },
+                { name: "Johnson's Baby Oil 100ml", price: 150, availability: "In Stock" },
+                { name: "Pampers Diapers (M, 10 pcs)", price: 350, availability: "In Stock" },
+                { name: "Dexolac Baby Formula 400g", price: 450, availability: "In Stock" }
+            ]
+        },
+        {
+            category: "Medical Devices",
+            items: [
+                { name: "Digital Thermometer", price: 250, availability: "In Stock" },
+                { name: "Blood Pressure Monitor", price: 1200, availability: "In Stock" },
+                { name: "Oximeter", price: 800, availability: "Limited Stock" },
+                { name: "Nebulizer", price: 1800, availability: "In Stock" }
+            ]
+        }
+    ]
+};
 
 // Helper function to ensure valid image URLs
 const getValidImageUrl = (url) => {
@@ -22,6 +90,147 @@ const getValidImageUrl = (url) => {
     // If it's just a path without leading slash
     return `${window.location.origin}/${url}`;
 };
+
+// Function to transform backend services data to frontend format
+const transformServices = (backendServices) => {
+    console.log('=== TRANSFORM SERVICES DEBUG ===');
+    console.log('Input backendServices:', backendServices);
+    console.log('Type of backendServices:', typeof backendServices);
+    console.log('Is array:', Array.isArray(backendServices));
+
+    // Handle case where services is already in the correct format (array of objects with category and items)
+    if (backendServices && Array.isArray(backendServices) && backendServices.length > 0) {
+        // Check if it's already in the frontend format
+        if (backendServices[0].category && backendServices[0].items) {
+            console.log('Services already in frontend format');
+            return backendServices;
+        }
+
+        // Check if it's an array of service keys (strings)
+        if (typeof backendServices[0] === 'string') {
+            console.log('Services in string array format, transforming...');
+
+            const serviceMapping = {
+                'prescription_dispensing': {
+                    category: "Prescription Medicines",
+                    items: [
+                        { name: "Paracetamol 500mg (10 tablets)", price: 25, availability: "In Stock" },
+                        { name: "Azithromycin 500mg (5 tablets)", price: 150, availability: "In Stock" },
+                        { name: "Amoxicillin 500mg (10 capsules)", price: 120, availability: "In Stock" },
+                        { name: "Cetirizine 10mg (10 tablets)", price: 35, availability: "In Stock" }
+                    ]
+                },
+                'otc_medicines': {
+                    category: "OTC Medicines",
+                    items: [
+                        { name: "Vitamin C 500mg (30 tablets)", price: 150, availability: "In Stock" },
+                        { name: "Calcium + Vitamin D3 (60 tablets)", price: 200, availability: "Limited Stock" },
+                        { name: "Multivitamins (30 capsules)", price: 250, availability: "In Stock" },
+                        { name: "Digene Antacid (10 tablets)", price: 45, availability: "In Stock" }
+                    ]
+                },
+                'health_supplements': {
+                    category: "Health Supplements",
+                    items: [
+                        { name: "Protein Powder 1kg", price: 2500, availability: "In Stock" },
+                        { name: "Omega-3 Fish Oil (60 capsules)", price: 800, availability: "In Stock" },
+                        { name: "Whey Protein 2kg", price: 3500, availability: "In Stock" },
+                        { name: "BCAA Powder 300g", price: 1200, availability: "In Stock" }
+                    ]
+                },
+                'medical_devices': {
+                    category: "Medical Devices",
+                    items: [
+                        { name: "Digital Thermometer", price: 250, availability: "In Stock" },
+                        { name: "Blood Pressure Monitor", price: 1200, availability: "In Stock" },
+                        { name: "Oximeter", price: 800, availability: "Limited Stock" },
+                        { name: "Nebulizer", price: 1800, availability: "In Stock" }
+                    ]
+                },
+                'baby_care': {
+                    category: "Baby Care",
+                    items: [
+                        { name: "Himalaya Baby Powder 100g", price: 120, availability: "In Stock" },
+                        { name: "Johnson's Baby Oil 100ml", price: 150, availability: "In Stock" },
+                        { name: "Pampers Diapers (M, 10 pcs)", price: 350, availability: "In Stock" },
+                        { name: "Dexolac Baby Formula 400g", price: 450, availability: "In Stock" }
+                    ]
+                },
+                'elderly_care': {
+                    category: "Elderly Care",
+                    items: [
+                        { name: "Adult Diapers (L, 10 pcs)", price: 400, availability: "In Stock" },
+                        { name: "Walking Stick", price: 600, availability: "In Stock" },
+                        { name: "Blood Sugar Monitor", price: 1500, availability: "In Stock" },
+                        { name: "Compression Stockings", price: 800, availability: "In Stock" }
+                    ]
+                },
+                'home_delivery': {
+                    category: "Home Delivery",
+                    items: [
+                        { name: "Standard Delivery (Same Day)", price: 50, availability: "Available" },
+                        { name: "Express Delivery (2 Hours)", price: 100, availability: "Available" },
+                        { name: "Prescription Refill Service", price: 30, availability: "Available" },
+                        { name: "Emergency Medicine Delivery", price: 150, availability: "24/7 Available" }
+                    ]
+                },
+                'online_consultation': {
+                    category: "Online Consultation",
+                    items: [
+                        { name: "General Physician Consultation", price: 500, availability: "Available" },
+                        { name: "Specialist Doctor Consultation", price: 1000, availability: "Available" },
+                        { name: "Pharmacist Consultation", price: 200, availability: "Available" },
+                        { name: "Health Checkup Package", price: 2000, availability: "Available" }
+                    ]
+                }
+            };
+
+            const transformedServices = [];
+            backendServices.forEach(serviceKey => {
+                if (serviceMapping[serviceKey]) {
+                    transformedServices.push(serviceMapping[serviceKey]);
+                } else {
+                    console.log(`Unknown service key: ${serviceKey}`);
+                }
+            });
+
+            console.log('Transformed services:', transformedServices);
+            return transformedServices.length > 0 ? transformedServices : pureFallbackShopData.services;
+        }
+    }
+
+    console.log('No backend services found or invalid format, using fallback data');
+    console.log('=== END TRANSFORM SERVICES DEBUG ===');
+    return pureFallbackShopData.services;
+};
+
+// Utility to extract latitude and longitude from shopData (GeoJSON or direct fields)
+function extractLatLng(data) {
+    if (!data) return { latitude: null, longitude: null };
+    if (data.location) {
+        if (Array.isArray(data.location.coordinates)) {
+            // GeoJSON: [lng, lat]
+            return {
+                latitude: data.location.coordinates[1],
+                longitude: data.location.coordinates[0]
+            };
+        }
+        if (typeof data.location.latitude === 'number' && typeof data.location.longitude === 'number') {
+            return {
+                latitude: data.location.latitude,
+                longitude: data.location.longitude
+            };
+        }
+    }
+    // Fallback: direct fields
+    if (typeof data.latitude === 'number' && typeof data.longitude === 'number') {
+        return {
+            latitude: data.latitude,
+            longitude: data.longitude
+        };
+    }
+    return { latitude: null, longitude: null };
+}
 
 const MedicalshopDetails = () => {
     // Get id from URL params - unified approach
@@ -100,73 +309,6 @@ const MedicalshopDetails = () => {
         },
     };
 
-    // Pure fallback data for when no shop data is available
-    const pureFallbackShopData = {
-        name: "Apollo Pharmacy",
-        rating: 4.4,
-        reviewsCount: 156,
-        closingTime: "10:00 PM",
-        address: "Main Street, Bhimavaram",
-        city: "Bhimavaram",
-        state: "West Godavari",
-        formattedLocation: "Main Street, Bhimavaram, West Godavari",
-        phone: "080 4628 6939",
-        directionsLink: "https://maps.google.com",
-        images: [
-            "https://www.apollopharmacy.in/cdn/shop/files/Store_1200x.jpg?v=1614323335",
-            "https://www.apollopharmacy.in/cdn/shop/files/Store_2_1200x.jpg?v=1614323335",
-            "https://www.apollopharmacy.in/cdn/shop/files/Store_3_1200x.jpg?v=1614323335",
-            "https://www.apollopharmacy.in/cdn/shop/files/Store_4_1200x.jpg?v=1614323335"
-        ],
-        services: [
-            {
-                category: "Prescription Medicines",
-                items: [
-                    { name: "Paracetamol 500mg (10 tablets)", price: 25, availability: "In Stock" },
-                    { name: "Azithromycin 500mg (5 tablets)", price: 150, availability: "In Stock" },
-                    { name: "Amoxicillin 500mg (10 capsules)", price: 120, availability: "In Stock" },
-                    { name: "Cetirizine 10mg (10 tablets)", price: 35, availability: "In Stock" }
-                ]
-            },
-            {
-                category: "OTC Medicines",
-                items: [
-                    { name: "Vitamin C 500mg (30 tablets)", price: 150, availability: "In Stock" },
-                    { name: "Calcium + Vitamin D3 (60 tablets)", price: 200, availability: "Limited Stock" },
-                    { name: "Multivitamins (30 capsules)", price: 250, availability: "In Stock" },
-                    { name: "Digene Antacid (10 tablets)", price: 45, availability: "In Stock" }
-                ]
-            },
-            {
-                category: "Ointments & Creams",
-                items: [
-                    { name: "Moov Pain Relief Cream 30g", price: 85, availability: "In Stock" },
-                    { name: "Boroline Antiseptic Cream 20g", price: 45, availability: "In Stock" },
-                    { name: "Betadine Ointment 20g", price: 95, availability: "In Stock" },
-                    { name: "Volini Gel 30g", price: 110, availability: "In Stock" }
-                ]
-            },
-            {
-                category: "Baby Care",
-                items: [
-                    { name: "Himalaya Baby Powder 100g", price: 120, availability: "In Stock" },
-                    { name: "Johnson's Baby Oil 100ml", price: 150, availability: "In Stock" },
-                    { name: "Pampers Diapers (M, 10 pcs)", price: 350, availability: "In Stock" },
-                    { name: "Dexolac Baby Formula 400g", price: 450, availability: "In Stock" }
-                ]
-            },
-            {
-                category: "Medical Devices",
-                items: [
-                    { name: "Digital Thermometer", price: 250, availability: "In Stock" },
-                    { name: "Blood Pressure Monitor", price: 1200, availability: "In Stock" },
-                    { name: "Oximeter", price: 800, availability: "Limited Stock" },
-                    { name: "Nebulizer", price: 1800, availability: "In Stock" }
-                ]
-            }
-        ]
-    };
-
     // Use real shop data if available, otherwise use pure fallback data
     const displayData = shopData ? {
         // Use backend data directly - NO FALLBACKS except for missing fields
@@ -178,7 +320,11 @@ const MedicalshopDetails = () => {
         city: shopData.city,
         state: shopData.state,
         phone: shopData.phone,
-        directionsLink: shopData.directionsLink || 'https://maps.google.com',
+        // Dynamically generate directionsLink if not provided and coordinates are present
+        directionsLink: shopData.directionsLink ||
+            ((shopData.latitude && shopData.longitude)
+                ? `https://www.google.com/maps/search/?api=1&query=${shopData.latitude},${shopData.longitude}`
+                : null),
         images: shopData.images || [],
         services: shopData.services || [],
         // Include owner fields from backend
@@ -330,119 +476,6 @@ const MedicalshopDetails = () => {
     const [showPhoneNumber, setShowPhoneNumber] = useState(false);
     const handleContactNowClick = () => setShowPhoneNumber(true);
 
-    // Function to transform backend services data to frontend format
-    const transformServices = (backendServices) => {
-        console.log('=== TRANSFORM SERVICES DEBUG ===');
-        console.log('Input backendServices:', backendServices);
-        console.log('Type of backendServices:', typeof backendServices);
-        console.log('Is array:', Array.isArray(backendServices));
-
-        // Handle case where services is already in the correct format (array of objects with category and items)
-        if (backendServices && Array.isArray(backendServices) && backendServices.length > 0) {
-            // Check if it's already in the frontend format
-            if (backendServices[0].category && backendServices[0].items) {
-                console.log('Services already in frontend format');
-                return backendServices;
-            }
-
-            // Check if it's an array of service keys (strings)
-            if (typeof backendServices[0] === 'string') {
-                console.log('Services in string array format, transforming...');
-
-                const serviceMapping = {
-                    'prescription_dispensing': {
-                        category: "Prescription Medicines",
-                        items: [
-                            { name: "Paracetamol 500mg (10 tablets)", price: 25, availability: "In Stock" },
-                            { name: "Azithromycin 500mg (5 tablets)", price: 150, availability: "In Stock" },
-                            { name: "Amoxicillin 500mg (10 capsules)", price: 120, availability: "In Stock" },
-                            { name: "Cetirizine 10mg (10 tablets)", price: 35, availability: "In Stock" }
-                        ]
-                    },
-                    'otc_medicines': {
-                        category: "OTC Medicines",
-                        items: [
-                            { name: "Vitamin C 500mg (30 tablets)", price: 150, availability: "In Stock" },
-                            { name: "Calcium + Vitamin D3 (60 tablets)", price: 200, availability: "Limited Stock" },
-                            { name: "Multivitamins (30 capsules)", price: 250, availability: "In Stock" },
-                            { name: "Digene Antacid (10 tablets)", price: 45, availability: "In Stock" }
-                        ]
-                    },
-                    'health_supplements': {
-                        category: "Health Supplements",
-                        items: [
-                            { name: "Protein Powder 1kg", price: 2500, availability: "In Stock" },
-                            { name: "Omega-3 Fish Oil (60 capsules)", price: 800, availability: "In Stock" },
-                            { name: "Whey Protein 2kg", price: 3500, availability: "In Stock" },
-                            { name: "BCAA Powder 300g", price: 1200, availability: "In Stock" }
-                        ]
-                    },
-                    'medical_devices': {
-                        category: "Medical Devices",
-                        items: [
-                            { name: "Digital Thermometer", price: 250, availability: "In Stock" },
-                            { name: "Blood Pressure Monitor", price: 1200, availability: "In Stock" },
-                            { name: "Oximeter", price: 800, availability: "Limited Stock" },
-                            { name: "Nebulizer", price: 1800, availability: "In Stock" }
-                        ]
-                    },
-                    'baby_care': {
-                        category: "Baby Care",
-                        items: [
-                            { name: "Himalaya Baby Powder 100g", price: 120, availability: "In Stock" },
-                            { name: "Johnson's Baby Oil 100ml", price: 150, availability: "In Stock" },
-                            { name: "Pampers Diapers (M, 10 pcs)", price: 350, availability: "In Stock" },
-                            { name: "Dexolac Baby Formula 400g", price: 450, availability: "In Stock" }
-                        ]
-                    },
-                    'elderly_care': {
-                        category: "Elderly Care",
-                        items: [
-                            { name: "Adult Diapers (L, 10 pcs)", price: 400, availability: "In Stock" },
-                            { name: "Walking Stick", price: 600, availability: "In Stock" },
-                            { name: "Blood Sugar Monitor", price: 1500, availability: "In Stock" },
-                            { name: "Compression Stockings", price: 800, availability: "In Stock" }
-                        ]
-                    },
-                    'home_delivery': {
-                        category: "Home Delivery",
-                        items: [
-                            { name: "Standard Delivery (Same Day)", price: 50, availability: "Available" },
-                            { name: "Express Delivery (2 Hours)", price: 100, availability: "Available" },
-                            { name: "Prescription Refill Service", price: 30, availability: "Available" },
-                            { name: "Emergency Medicine Delivery", price: 150, availability: "24/7 Available" }
-                        ]
-                    },
-                    'online_consultation': {
-                        category: "Online Consultation",
-                        items: [
-                            { name: "General Physician Consultation", price: 500, availability: "Available" },
-                            { name: "Specialist Doctor Consultation", price: 1000, availability: "Available" },
-                            { name: "Pharmacist Consultation", price: 200, availability: "Available" },
-                            { name: "Health Checkup Package", price: 2000, availability: "Available" }
-                        ]
-                    }
-                };
-
-                const transformedServices = [];
-                backendServices.forEach(serviceKey => {
-                    if (serviceMapping[serviceKey]) {
-                        transformedServices.push(serviceMapping[serviceKey]);
-                    } else {
-                        console.log(`Unknown service key: ${serviceKey}`);
-                    }
-                });
-
-                console.log('Transformed services:', transformedServices);
-                return transformedServices.length > 0 ? transformedServices : pureFallbackShopData.services;
-            }
-        }
-
-        console.log('No backend services found or invalid format, using fallback data');
-        console.log('=== END TRANSFORM SERVICES DEBUG ===');
-        return pureFallbackShopData.services;
-    };
-
     // Get logged in user info from localStorage
     useEffect(() => {
         try {
@@ -543,44 +576,25 @@ const MedicalshopDetails = () => {
                 console.log('Response structure:', response.data);
 
                 // Extract the actual shop data from the nested response
-                const shopData = response.data.data;  // Backend returns { success: true, data: shopData }
-
-                console.log('=== BACKEND DATA DEBUG ===');
-                console.log('Raw shop data from backend:', shopData);
-                console.log('Backend name:', shopData.name);
-                console.log('Backend images:', shopData.images);
-                console.log('Backend services:', shopData.services);
-                console.log('Backend location:', shopData.location);
-                console.log('Backend address:', shopData.address);
-                console.log('Backend fullAddress:', shopData.fullAddress);
-                console.log('Backend ownerName:', shopData.ownerName);
-                console.log('Backend ownerPhone:', shopData.ownerPhone);
-                console.log('Backend ownerEmail:', shopData.ownerEmail);
-                console.log('Backend phone:', shopData.phone);
-                console.log('Backend latitude:', shopData.latitude);
-                console.log('Backend longitude:', shopData.longitude);
-                console.log('=== END DEBUG ===');
+                const shopData = response.data.data;  
 
                 // Extract coordinates from backend data
-                let latitude = 17.4065; // fallback
-                let longitude = 78.4772; // fallback
+                const { latitude, longitude } = extractLatLng(shopData || {});
 
-                if (shopData.location && shopData.location.coordinates && Array.isArray(shopData.location.coordinates)) {
-                    // GeoJSON format: [longitude, latitude]
-                    longitude = shopData.location.coordinates[0];
-                    latitude = shopData.location.coordinates[1];
-                } else if (shopData.latitude && shopData.longitude) {
-                    // Direct lat/lng fields
-                    latitude = shopData.latitude;
-                    longitude = shopData.longitude;
+                // Only set selectedMedicalshop if coordinates are valid
+                if (latitude && longitude) {
+                    setSelectedMedicalshop({
+                        name: shopData.name || 'Medical Shop',
+                        latitude: latitude,
+                        longitude: longitude,
+                    });
+                } else {
+                    setSelectedMedicalshop({
+                        name: shopData.name || 'Medical Shop',
+                        latitude: null,
+                        longitude: null,
+                    });
                 }
-
-                // Update map state with backend data
-                setSelectedMedicalshop({
-                    name: shopData.name || 'Medical Shop',
-                    latitude: latitude,
-                    longitude: longitude,
-                });
 
                 // Transform the services data to match frontend expectations
                 const transformedShopData = {
@@ -595,7 +609,10 @@ const MedicalshopDetails = () => {
                             (shopData.address || 'Location not available')),
                     // Handle phone field mapping
                     phone: shopData.phone || shopData.contactPhone || 'Phone not available',
-                    directionsLink: shopData.directionsLink || 'https://maps.google.com',
+                    directionsLink: shopData.directionsLink ||
+                        ((shopData.latitude && shopData.longitude)
+                            ? `https://www.google.com/maps/search/?api=1&query=${shopData.latitude},${shopData.longitude}`
+                            : `https://maps.google.com`),
                     // Use backend images if available, otherwise use empty array (placeholders will be shown)
                     images: shopData.images && shopData.images.length > 0 ? shopData.images : [],
                     // Include owner fields from backend
@@ -626,8 +643,8 @@ const MedicalshopDetails = () => {
                 setShopData(null); // Use pure fallback on error
                 setSelectedMedicalshop({
                     name: pureFallbackShopData.name,
-                    latitude: 17.4065,
-                    longitude: 78.4772,
+                    latitude: null,
+                    longitude: null,
                 });
             } finally {
                 setLoading(false);
@@ -741,10 +758,11 @@ const MedicalshopDetails = () => {
                     🕒 Open until {finalDisplayData.closingTime || '10:00 PM'}
                 </p>
                 <p className="medicalshop-location">
-                    📍 {finalDisplayData.formattedLocation || finalDisplayData.location || 'Location not available'}{" "}
-                    <a style={{ color: "#008b95" }} href={finalDisplayData.directionsLink || '#'} target="_blank" rel="noreferrer">
-                        Get directions
-                    </a>
+                    📍 {(displayData.location || 'Location not available') + ((displayData.directionsLink && displayData.latitude && displayData.longitude) ? (
+                        <a style={{ color: "#008b95", marginLeft: "1%" }} href={displayData.directionsLink} target="_blank" rel="noreferrer">
+                            Get directions
+                        </a>
+                    ) : null)}
                 </p>
                 {/* Owner/Admin Contact Info */}
                 {/* {(finalDisplayData.ownerName || finalDisplayData.ownerPhone || finalDisplayData.ownerEmail) && (
@@ -762,7 +780,7 @@ const MedicalshopDetails = () => {
                 {/* Main Image */}
                 <img
                     src={getValidImageUrl(finalDisplayData.images?.[0]) || "data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22800%22%20height%3D%22400%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20800%20400%22%20preserveAspectRatio%3D%22none%22%3E%3Cdefs%3E%3Cstyle%20type%3D%22text%2Fcss%22%3E%23holder_18bb8f38116%20text%20%7B%20fill%3A%23AAAAAA%3Bfont-weight%3Abold%3Bfont-family%3AArial%2C%20Helvetica%2C%20Open%20Sans%2C%20sans-serif%2C%20monospace%3Bfont-size%3A40pt%20%7D%20%3C%2Fstyle%3E%3C%2Fdefs%3E%3Cg%20id%3D%22holder_18bb8f38116%22%3E%3Crect%20width%3D%22800%22%20height%3D%22400%22%20fill%3D%22%23EEEEEE%22%3E%3C%2Frect%3E%3Cg%3E%3Ctext%20x%3D%22285.4296875%22%20y%3D%22217.76%22%3ENo%20Image%20Available%3C%2Ftext%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E"}
-                    alt="Main"
+                    alt={finalDisplayData.name}
                     className="main-image"
                     onError={(e) => {
                         e.target.onerror = null; // Prevent infinite loop
@@ -885,7 +903,12 @@ const MedicalshopDetails = () => {
                                     <div key={idx} className="product-card">
                                         <div className="product-image-placeholder">
                                             {item.image ? (
-                                                <img src={item.image} alt={item.name} className="product-image" />
+                                                <img
+                                                    src={item.image}
+                                                    alt={item.name}
+                                                    className="product-image"
+                                                    onError={e => { e.target.src = 'https://placehold.co/100x100?text=No+Image'; }}
+                                                />
                                             ) : (
                                                 <>
                                                     {item.name.includes("Tablet") && "💊"}
@@ -1042,11 +1065,17 @@ const MedicalshopDetails = () => {
                     {/* Location Map */}
                     <div className="map-section">
                         <h2>Our Location</h2>
-                        <MedicalshopMap
-                            latitude={selectedMedicalshop.latitude}
-                            longitude={selectedMedicalshop.longitude}
-                            medicalshopName={selectedMedicalshop.name}
-                        />
+                        {(selectedMedicalshop.latitude && selectedMedicalshop.longitude) ? (
+                            <MedicalshopMap
+                                latitude={selectedMedicalshop.latitude}
+                                longitude={selectedMedicalshop.longitude}
+                                medicalshopName={selectedMedicalshop.name}
+                            />
+                        ) : (
+                            <div style={{ textAlign: 'center', color: '#888', margin: '20px 0' }}>
+                                Location coordinates not available for this shop.
+                            </div>
+                        )}
                         {/* Show coordinates if available from backend */}
                         {(selectedMedicalshop.latitude && selectedMedicalshop.longitude) && (
                             <div className="shop-coordinates" style={{ marginTop: '10px', textAlign: 'center', color: '#666', fontSize: '12px' }}>
@@ -1103,10 +1132,11 @@ const MedicalshopDetails = () => {
                             <p>🕒 Open until {displayData.closingTime || '10:00 PM'}</p>
                         </div>
                         <p className="location-info">
-                            📍 {displayData.location || 'Location not available'}{" "}
-                            <a style={{ color: "#008b95", marginLeft: "1%" }} href={displayData.directionsLink || '#'} target="_blank" rel="noreferrer">
-                                Get directions
-                            </a>
+                            📍 {(displayData.location || 'Location not available') + ((displayData.directionsLink && displayData.latitude && displayData.longitude) ? (
+                                <a style={{ color: "#008b95", marginLeft: "1%" }} href={displayData.directionsLink} target="_blank" rel="noreferrer">
+                                    Get directions
+                                </a>
+                            ) : null)}
                         </p>
                         {/* Owner/Admin Info in booking card */}
                         {(displayData.ownerName || displayData.ownerPhone || displayData.ownerEmail) && (

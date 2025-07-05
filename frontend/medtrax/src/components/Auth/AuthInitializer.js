@@ -19,7 +19,7 @@ const AuthInitializer = ({ children }) => {
     // Only redirect if we're at the root or user layout path and the user is an admin
     if (token && userInfo?.role && userInfo?.isAdmin && 
         (location.pathname === '/' || location.pathname === '/user-home')) {
-      console.log('AuthInitializer: Admin detected, redirecting to appropriate dashboard');
+      
       
       switch (userInfo.role) {
         case 'super_admin':

@@ -129,7 +129,7 @@ const EnhancedLogin = () => {
   // Redirect if already logged in
   useEffect(() => {
     if (userInfo && userInfo.id) {
-      console.log('User already logged in, redirecting appropriately');
+      
       if (userInfo.isAdmin) {
         // Admin users - redirect to their dashboard
         switch (userInfo.role) {
@@ -170,7 +170,7 @@ const EnhancedLogin = () => {
           password,
           role: selectedRole
         };
-        console.log('Admin login attempt with data:', loginData);
+        
         await dispatch(loginAdminAccount(loginData, navigate));
       } else {
         // Regular user login
@@ -178,7 +178,7 @@ const EnhancedLogin = () => {
           email,
           password
         };
-        console.log('User login attempt with data:', loginData);
+        
         await dispatch(loginUserAccount(loginData, navigate));
       }
     } catch (err) {

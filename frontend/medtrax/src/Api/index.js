@@ -11,9 +11,9 @@ API.interceptors.request.use(req => {
       
       if (token) {
         req.headers.Authorization = `Bearer ${token}`;
-        console.log('Added auth token to request');
+        
       } else {
-        console.log('No auth token found in profile');
+        
       }
     }
   } catch (error) {
@@ -48,7 +48,7 @@ API.interceptors.response.use(
     if (error.response?.status === 403 &&
         error.response?.data?.error?.includes('inactive') &&
         error.response?.data?.error?.includes('hospital')) {
-      console.log('❌ Hospital access error detected. This may be due to an inactive hospital.');
+      
     }
     
     // Enhance generic error messages
@@ -115,7 +115,7 @@ export const deleteShopApi = (id) => API.delete(`/api/admin/shops/${id}`)
 // Shop Profile APIs
 export const getShopProfileApi = () => API.get('/api/shop/profile')
 export const updateShopProfileApi = (formData) => API.put('/api/shop/profile', formData)
-export const updateShopStatusApi = (isActive) => API.patch('/api/shop/status', { isActive })
+export const updateShopStatusApi = (isActive) => API.patch('/api/shop/status', { isActive: Boolean(isActive) })
 export const uploadShopImageApi = (formData) => {
   const config = {
     headers: {
@@ -141,6 +141,12 @@ export const getOrdersApi = (params) => API.get('/api/shop/orders', { params })
 export const getOrderApi = (id) => API.get(`/api/shop/orders/${id}`)
 export const updateOrderStatusApi = (id, formData) => API.put(`/api/shop/orders/${id}/status`, formData)
 export const getShopStatsApi = () => API.get('/api/shop/stats')
+
+// Shop Services APIs
+export const getShopServicesApi = () => API.get('/api/shop/services')
+export const addServiceCategoryApi = (formData) => API.post('/api/shop/services', formData)
+export const updateServiceCategoryApi = (categoryIndex, formData) => API.put(`/api/shop/services/${categoryIndex}`, formData)
+export const deleteServiceCategoryApi = (categoryIndex) => API.delete(`/api/shop/services/${categoryIndex}`)
 
 // Admin User Management APIs
 export const getAdminUsersApi = (params) => API.get('/api/admin/users', { params })
@@ -169,7 +175,7 @@ export const deleteAdminShopApi = (id) => API.delete(`/api/admin/shops/${id}`)
 export const getPublicHospitalsApi = (params) => API.get('/api/public/hospitals', { params })
 export const getPublicShopsApi = (params) => API.get('/api/public/shops', { params })
 export const getPublicHospitalDetailsApi = (id) => {
-  console.log(`Calling API for hospital details with ID: ${id}`);
+  
   return API.get(`/api/public/hospitals/${id}`);
 }
 export const getPublicShopDetailsApi = (id) => API.get(`/api/public/shops/${id}?t=${Date.now()}`)

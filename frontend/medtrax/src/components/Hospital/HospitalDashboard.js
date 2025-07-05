@@ -344,7 +344,7 @@ const HospitalDashboard = () => {
       setLoading(false);
     }
   };  const handleLogout = async () => {
-    console.log('Hospital admin logout clicked');
+    
     try {
       const result = await dispatch(logOut());
       if (result && result.success) {

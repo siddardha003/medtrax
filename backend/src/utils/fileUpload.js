@@ -11,7 +11,7 @@ if (!fs.existsSync(uploadDir)) {
 // Function to upload directly to Cloudinary
 const uploadToCloudinary = async (file) => {
   try {
-    console.log('Uploading to Cloudinary directly...');
+    
     
     // If file is a path, upload the file at that path
     if (typeof file === 'string') {

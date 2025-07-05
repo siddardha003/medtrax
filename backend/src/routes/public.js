@@ -4,6 +4,7 @@ const Shop = require('../models/Shop');
 const User = require('../models/User');
 const Appointment = require('../models/Appointment');
 const { protect } = require('../middleware/auth');
+const mongoose = require('mongoose');
 
 const router = express.Router();
 
@@ -199,7 +200,7 @@ router.get('/shops', async (req, res, next) => {
         if (state) {
             filter.state = { $regex: state, $options: 'i' };
         }        const shops = await Shop.find(filter)
-            .select('name address city state pincode contactPhone contactEmail ownerName services')
+            .select('name address city state pincode contactPhone contactEmail ownerName services location phone images')
             .limit(limit * 1)
             .skip((page - 1) * limit)
             .sort({ name: 1 });
@@ -242,14 +243,22 @@ router.get('/shops', async (req, res, next) => {
             }
         ];
 
-        const finalShops = shops.length > 0 ? shops : dummyShops;        res.status(200).json({
+        const finalShops = shops.length > 0 ? shops : dummyShops;
+        // Ensure images field is always present
+        const shopsWithImages = finalShops.map(shop => {
+            // Convert to plain object if needed
+            const plainShop = shop.toObject ? shop.toObject() : shop;
+            if (!plainShop.images) plainShop.images = [];
+            return plainShop;
+        });
+        res.status(200).json({
             success: true,
             data: {
-                shops: finalShops,
+                shops: shopsWithImages,
                 pagination: {
                     current: page,
-                    pages: Math.ceil((total || finalShops.length) / limit),
-                    total: total || finalShops.length
+                    pages: Math.ceil((total || shopsWithImages.length) / limit),
+                    total: total || shopsWithImages.length
                 }
             }
         });
@@ -263,6 +272,9 @@ router.get('/shops', async (req, res, next) => {
 // @access  Public
 router.get('/shops/:id', async (req, res, next) => {
     try {
+        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+            return res.status(400).json({ success: false, error: 'Invalid shop ID format.' });
+        }
         const shop = await Shop.findById(req.params.id)
             .select('name address city state pincode phone contactPhone contactEmail ownerName ownerPhone ownerEmail services description closingTime location directionsLink images openingTimes selectedMedicalshop latitude longitude fullAddress');
 
@@ -296,14 +308,14 @@ router.get('/stats', async (req, res, next) => {
         const usersCollection = User.collection;
         
         const totalHospitals = await hospitalsCollection.countDocuments();
-        console.log(`Found ${totalHospitals} hospitals in database`);
+        
         
         const totalShops = await shopsCollection.countDocuments();
-        console.log(`Found ${totalShops} shops in database`);
+        
         
         // Get total users who are patients
         const totalPatients = await usersCollection.countDocuments({ role: 'user' });
-        console.log(`Found ${totalPatients} patients in database`);
+        
         
         // Calculate years of experience (assuming service started in 2020)
         const currentYear = new Date().getFullYear();
@@ -317,8 +329,6 @@ router.get('/stats', async (req, res, next) => {
             totalShops: totalShops > 0 ? totalShops : 10,
             totalHospitals: totalHospitals > 0 ? totalHospitals : 15
         };
-
-        console.log('Public stats fetched from DB:', stats);
 
         res.status(200).json({
             success: true,

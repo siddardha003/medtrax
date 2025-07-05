@@ -8,7 +8,7 @@ const connectDB = async () => {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
-    console.log('MongoDB Connected');
+    
   } catch (error) {
     console.error('MongoDB connection error:', error);
     process.exit(1);
@@ -19,13 +19,13 @@ const completelyFixServices = async () => {
   try {
     await connectDB();
     
-    console.log('=== COMPLETELY FIXING ALL SHOP SERVICES ===\n');
+    
     
     // Find all shops
     const shops = await Shop.find({});
     
     for (const shop of shops) {
-      console.log(`Processing ${shop.name}...`);
+      
       
       let needsUpdate = false;
       
@@ -33,14 +33,14 @@ const completelyFixServices = async () => {
       if (shop.services && shop.services.length > 0) {
         const firstService = shop.services[0];
         if (firstService && (firstService['0'] || firstService.hasOwnProperty('0'))) {
-          console.log(`  🔧 Services are corrupted, fixing...`);
+          
           needsUpdate = true;
         } else if (!firstService.category || !Array.isArray(firstService.items)) {
-          console.log(`  🔧 Services format is incorrect, fixing...`);
+          
           needsUpdate = true;
         }
       } else {
-        console.log(`  🔧 No services found, adding...`);
+        
         needsUpdate = true;
       }
       
@@ -149,35 +149,30 @@ const completelyFixServices = async () => {
           }
         );
         
-        console.log(`  ✅ ${shop.name} services updated successfully`);
+        
       } else {
-        console.log(`  ✅ ${shop.name} services are already correct`);
+        
       }
     }
     
-    console.log('\n=== VERIFICATION ===');
+    
     const updatedShops = await Shop.find({}).select('name services ownerName location profileComplete');
     
     for (const shop of updatedShops) {
-      console.log(`\n${shop.name}:`);
-      console.log(`  Owner: ${shop.ownerName || 'Not set'}`);
-      console.log(`  Location: ${shop.location?.coordinates ? shop.location.coordinates.join(', ') : 'Not set'}`);
-      console.log(`  Services: ${shop.services?.length || 0} categories`);
+      
+      
+                 
       
       if (shop.services && shop.services.length > 0) {
         shop.services.forEach((service, index) => {
-          if (service.category) {
-            console.log(`    ${index + 1}. ${service.category} (${service.items?.length || 0} items)`);
-          } else {
-            console.log(`    ${index + 1}. CORRUPTED SERVICE:`, Object.keys(service).slice(0, 5));
-          }
+          
         });
       }
       
-      console.log(`  Profile Complete: ${shop.profileComplete}`);
+      
     }
     
-    console.log('\n=== SHOP SERVICES COMPLETELY FIXED ===');
+    
     process.exit(0);
     
   } catch (error) {

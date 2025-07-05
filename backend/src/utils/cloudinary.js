@@ -11,11 +11,7 @@ cloudinary.config({
 });
 
 // Verify cloudinary configuration is correct
-console.log('Cloudinary Configuration:', {
-  cloud_name: cloudinary.config().cloud_name,
-  api_key: cloudinary.config().api_key ? 'Set correctly' : 'NOT SET',
-  api_secret: cloudinary.config().api_secret ? 'Set correctly' : 'NOT SET'
-});
+
 
 // Set up storage engine for multer
 const storage = new CloudinaryStorage({
@@ -31,7 +27,7 @@ const storage = new CloudinaryStorage({
     format: 'jpg', // Convert all images to JPG for consistency
     public_id: (req, file) => {
       const filename = `hospital_${Date.now()}-${file.originalname.split('.')[0]}`;
-      console.log(`Generated public_id for Cloudinary: ${filename}`);
+      
       return filename;
     }
   }

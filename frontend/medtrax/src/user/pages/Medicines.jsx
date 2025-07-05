@@ -62,8 +62,6 @@ const SearchIcon = styled(Search)`
   z-index: 1;
 `;
 
-
-
 const MedicalShopCard = styled.div`
   background: white;
   padding: 10px;
@@ -82,16 +80,15 @@ const MedicalShopCard = styled.div`
 `;
 
 const ShopImage = styled.div`
-  width: calc(100% - 20px); /* Adjust for the padding */
+  width: calc(100% - 20px);
   height: 200px;
-  margin: 0 auto; /* Center the image */
+  margin: 0 auto;
   background: ${props => props.image ? `url(${props.image})` : 'linear-gradient(90deg, #008b95 0%, #86c2c6 100%)'};
   background-size: cover;
   background-position: center;
   position: relative;
-  border-radius: 12px; /* Slightly less than card radius for inner border effect */
+  border-radius: 12px;
   overflow: hidden;
-  
   &::after {
     content: '';
     position: absolute;
@@ -190,8 +187,8 @@ const Medicines = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [shops, setShops] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);  const navigate = useNavigate();
-  
+  const [error, setError] = useState(null); const navigate = useNavigate();
+
   // Enhanced fallback data for when API fails
   const fallbackShopsData = [
     {
@@ -225,26 +222,24 @@ const Medicines = () => {
         state: 'Karnataka'
       },
       contactPhone: '+91-9876543222',
-      images: ['https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&h=200&fit=crop']    }
+      images: ['https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&h=200&fit=crop']
+    }
   ];
-  
+
   useEffect(() => {
     const fetchShops = async () => {
       try {
         setLoading(true);
         const response = await getPublicShopsApi();
-        console.log('Medicines API Response:', response.data); // Debug log
-        
+
         if (response.data && response.data.success) {
           const shopsData = response.data.data.shops || [];
           // Ensure we always set an array
           setShops(Array.isArray(shopsData) ? shopsData : []);
-          console.log('Shops loaded for medicines:', shopsData.length); // Debug log
         } else {
           throw new Error('Invalid API response structure');
         }
       } catch (error) {
-        console.error('Error fetching shops:', error);
         setError(error.message);
         // Fallback to static data if API fails
         setShops(fallbackShopsData);
@@ -252,7 +247,7 @@ const Medicines = () => {
         setLoading(false);
       }
     };
-    
+
     fetchShops();
   }, []);
 
@@ -261,15 +256,15 @@ const Medicines = () => {
   };
   const handleShopClick = (shopId) => {
     navigate(`/MedicalshopDetails?shopId=${shopId}`);
-  };const filteredShops = Array.isArray(shops) ? shops.filter(shop => {
+  }; const filteredShops = Array.isArray(shops) ? shops.filter(shop => {
     const name = shop.name || '';
     const phone = shop.phone || shop.contactPhone || '';
     const address = shop.address || {};
     const location = `${address.city || shop.city || ''} ${address.state || shop.state || ''}`.trim();
-    
+
     return name.toLowerCase().includes(searchTerm) ||
-           location.toLowerCase().includes(searchTerm) ||
-           phone.includes(searchTerm);
+      location.toLowerCase().includes(searchTerm) ||
+      phone.includes(searchTerm);
   }) : [];
 
   return (
@@ -293,36 +288,45 @@ const Medicines = () => {
       ) : (
         <ShopsGrid>
           {filteredShops.length > 0 ? (
-            filteredShops.map((shop) => (
-              <MedicalShopCard key={shop._id || shop.id} onClick={() => handleShopClick(shop._id || shop.id)}>
-                <ShopImage image={shop.images?.[0] || shop.image} />
-                
-                <ShopInfo>
-                  <ShopName>{shop.name}</ShopName>
-                  
-                  <div>
-                    <Rating style={{marginBottom: '8px'}}>
-                      <Star size={16} fill="currentColor" />
-                      <span >{shop.rating || 'N/A'}</span>
-                    </Rating>                    <Location>
-                      <MapPin size={14} />
-                      <span>{shop.address ? `${shop.address.city}, ${shop.address.state}` : shop.city ? `${shop.city}, ${shop.state}` : shop.location}</span>
-                    </Location>
-                    <Contact>
-                      <Phone size={14} />
-                      <span>{shop.phone || shop.contactPhone}</span>
-                    </Contact>
-                  </div>
-                  
-                  <ShopDetails>
-                    <ViewButton>
-                      View Details
-                      <ArrowRight size={16} />
-                    </ViewButton>
-                  </ShopDetails>
-                </ShopInfo>
-              </MedicalShopCard>
-            ))
+            filteredShops.map((shop) => {
+              return (
+                <MedicalShopCard key={shop._id || shop.id} onClick={() => handleShopClick(shop._id || shop.id)}>
+                  <ShopImage image={shop.images?.[0] || shop.image} />
+                  <ShopInfo>
+                    <ShopName>{shop.name}</ShopName>
+
+                    <div>
+                      <Rating style={{ marginBottom: '8px' }}>
+                        <Star size={16} fill="currentColor" />
+                        <span >{shop.rating || 'N/A'}</span>
+                      </Rating>                      <Location>
+                        <MapPin size={14} />
+                        <span>{
+                          shop.address && shop.address.city && shop.address.state
+                            ? `${shop.address.city}, ${shop.address.state}`
+                            : shop.city && shop.state
+                              ? `${shop.city}, ${shop.state}`
+                              : (shop.location && shop.location.coordinates && shop.location.coordinates.length === 2)
+                                ? `Lat: ${shop.location.coordinates[1]}, Lng: ${shop.location.coordinates[0]}`
+                                : 'Location not available'}
+                        </span>
+                      </Location>
+                      <Contact>
+                        <Phone size={14} />
+                        <span>{shop.phone || shop.contactPhone || shop.ownerPhone || 'Phone not available'}</span>
+                      </Contact>
+                    </div>
+
+                    <ShopDetails>
+                      <ViewButton>
+                        View Details
+                        <ArrowRight size={16} />
+                      </ViewButton>
+                    </ShopDetails>
+                  </ShopInfo>
+                </MedicalShopCard>
+              );
+            })
           ) : (
             <NoShopsMessage>
               <Search size={48} color="#008b95" style={{ marginBottom: '1rem' }} />

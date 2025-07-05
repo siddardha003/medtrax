@@ -9,23 +9,17 @@ const { sendOrderInvoice } = require('../utils/email');
 // @access  Private (Shop Admin)
 const getInventory = async (req, res) => {
     try {
-        console.log('🔍 Get inventory request received');
-        console.log('👤 User ID:', req.user._id);
-        console.log('🏪 User Shop ID:', req.user.shopId);
-        console.log('📋 Query params:', req.query);
-        
+
         const { page = 1, limit = 10, category, status, search, lowStock, expiring } = req.query;
         const shopId = req.user.shopId;
 
         if (!shopId) {
-            console.log('❌ No shopId found for user');
             return res.status(400).json({
                 success: false,
                 error: 'User is not associated with any shop'
             });
         }
 
-        console.log('🔍 Building query for shopId:', shopId);
 
         // Build query
         const query = { shopId };
@@ -121,15 +115,11 @@ const getInventoryItem = async (req, res) => {
 // @access  Private (Shop Admin)
 const addInventoryItem = async (req, res) => {
     try {
-        console.log('🏪 Add inventory item request received');
-        console.log('👤 User ID:', req.user._id);
-        console.log('🏪 User Shop ID:', req.user.shopId);
-        console.log('📦 Request body:', JSON.stringify(req.body, null, 2));
+
         
         const shopId = req.user.shopId;
         
         if (!shopId) {
-            console.log('❌ No shopId found for user');
             return res.status(400).json({
                 success: false,
                 error: 'User is not associated with any shop'
@@ -142,18 +132,14 @@ const addInventoryItem = async (req, res) => {
             createdBy: req.user._id
         };
 
-        console.log('📦 Final item data:', JSON.stringify(itemData, null, 2));
 
         // Generate SKU if not provided
         if (!itemData.sku) {
             itemData.sku = generateUniqueId('SKU', 6);
-            console.log('🏷️ Generated SKU:', itemData.sku);
         }
 
         // Create inventory item
-        console.log('💾 Creating inventory item...');
         const item = await Inventory.create(itemData);
-        console.log('✅ Inventory item created:', item._id);
 
         res.status(201).json({
             success: true,
@@ -168,7 +154,6 @@ const addInventoryItem = async (req, res) => {
         // Handle duplicate key error
         if (error.code === 11000) {
             const field = Object.keys(error.keyValue)[0];
-            console.log('❌ Duplicate key error for field:', field);
             return res.status(400).json({
                 success: false,
                 error: `${field} already exists`
@@ -178,7 +163,6 @@ const addInventoryItem = async (req, res) => {
         // Handle validation errors
         if (error.name === 'ValidationError') {
             const validationErrors = Object.values(error.errors).map(err => err.message);
-            console.log('❌ Validation errors:', validationErrors);
             return res.status(400).json({
                 success: false,
                 error: `Validation failed: ${validationErrors.join(', ')}`
@@ -766,8 +750,7 @@ const getShopProfile = async (req, res) => {
 // @access  Private (Shop Admin)
 const updateShopProfile = async (req, res) => {
     try {
-        console.log('🔄 UPDATE SHOP PROFILE - START');
-        console.log('📨 Full request body:', JSON.stringify(req.body, null, 2));
+
         
         const shopId = req.user.shopId;
         
@@ -787,15 +770,6 @@ const updateShopProfile = async (req, res) => {
             });
         }
 
-        console.log('🏪 Current shop before update:', {
-            name: shop.name,
-            ownerName: shop.ownerName,
-            ownerPhone: shop.ownerPhone,
-            ownerEmail: shop.ownerEmail,
-            services: shop.services,
-            location: shop.location
-        });
-
         // Extract specific fields from request body
         const { 
             images, 
@@ -807,45 +781,29 @@ const updateShopProfile = async (req, res) => {
             ownerPhone,
             ownerEmail,
             directionsLink,
-            description
+            description,
+            latitude,
+            longitude
         } = req.body;
 
-        console.log('📋 Extracted fields:', {
-            images: images ? `Array of ${images.length} items` : 'undefined',
-            closingTime,
-            openingTimes,
-            services: services ? `Type: ${typeof services}, Length: ${Array.isArray(services) ? services.length : 'N/A'}, Content: ${JSON.stringify(services)}` : 'undefined',
-            location: location ? JSON.stringify(location) : 'undefined',
-            ownerName,
-            ownerPhone,
-            ownerEmail,
-            directionsLink,
-            description
-        });
 
         // Update fields if provided
         if (images) {
-            console.log('✅ Updating images:', images);
             shop.images = images;
         }
         if (closingTime) {
-            console.log('✅ Updating closingTime:', closingTime);
             shop.closingTime = closingTime;
         }
         if (openingTimes) {
-            console.log('✅ Updating openingTimes:', openingTimes);
             shop.openingTimes = openingTimes;
         }
         if (services) {
-            console.log('✅ Updating services - Before:', typeof services, services);
             // Fix: Handle different service formats
             if (Array.isArray(services)) {
                 // Check if it's already in the correct format (array of objects with category and items)
                 if (services.length > 0 && services[0].category && Array.isArray(services[0].items)) {
-                    console.log('Services are already in correct format');
                     shop.services = services;
                 } else {
-                    console.log('Services are simple strings, converting to object format');
                     // Convert simple string array to object format expected by schema
                     const convertedServices = services.map(serviceKey => ({
                         category: serviceKey.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
@@ -854,47 +812,38 @@ const updateShopProfile = async (req, res) => {
                     shop.services = convertedServices;
                 }
             } else if (typeof services === 'string') {
-                console.log('Single service string, converting to object format');
                 shop.services = [{
                     category: services.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
                     items: []
                 }];
             }
-            console.log('✅ Services after processing:', shop.services);
         }
         if (location) {
-            console.log('✅ Updating location:', location);
             shop.location = location;
         }
+        // Update latitude and longitude if provided
+        if (latitude !== undefined) {
+            shop.latitude = latitude;
+        }
+        if (longitude !== undefined) {
+            shop.longitude = longitude;
+        }
         if (ownerName !== undefined) {
-            console.log('✅ Updating ownerName:', ownerName);
             shop.ownerName = ownerName;
         }
         if (ownerPhone !== undefined) {
-            console.log('✅ Updating ownerPhone:', ownerPhone);
             shop.ownerPhone = ownerPhone;
         }
         if (ownerEmail !== undefined) {
-            console.log('✅ Updating ownerEmail:', ownerEmail);
             shop.ownerEmail = ownerEmail;
         }
         if (directionsLink !== undefined) {
-            console.log('✅ Updating directionsLink:', directionsLink);
             shop.directionsLink = directionsLink;
         }
         if (description !== undefined) {
-            console.log('✅ Updating description:', description);
             shop.description = description;
         }
         
-        console.log('🏪 Shop after field updates:', {
-            name: shop.name,
-            ownerName: shop.ownerName,
-            ownerPhone: shop.ownerPhone,
-            ownerEmail: shop.ownerEmail,
-            services: shop.services,
-            location: shop.location
-        });
         
         // Mark profile as complete if all required fields are filled
         shop.profileComplete = Boolean(
@@ -906,22 +855,12 @@ const updateShopProfile = async (req, res) => {
             shop.ownerPhone
         );
         
-        console.log('✅ Profile complete check:', {
-            hasImages: shop.images?.length > 0,
-            hasServices: shop.services?.length > 0,
-            hasLocation: shop.location?.coordinates?.length === 2,
-            hasClosingTime: !!shop.closingTime,
-            hasOwnerName: !!shop.ownerName,
-            hasOwnerPhone: !!shop.ownerPhone,
-            profileComplete: shop.profileComplete
-        });
+
         
         shop.updatedBy = req.user._id;
         
         // Save updated shop
-        console.log('💾 Saving shop...');
         await shop.save();
-        console.log('✅ Shop saved successfully');
 
         res.status(200).json({
             success: true,
@@ -952,6 +891,8 @@ const updateShopProfile = async (req, res) => {
 // @route   PATCH /api/shop/status
 // @access  Private (Shop Admin)
 const updateShopStatus = async (req, res) => {
+    // Debug log for user and request body
+
     try {
         const shopId = req.user.shopId;
         const { isActive } = req.body;
@@ -1024,7 +965,6 @@ const uploadShopImage = async (req, res) => {
                 }
                 
                 // Access Cloudinary upload result directly
-                console.log('File uploaded to Cloudinary:', req.file);
                 
                 if (!req.file.path && !req.file.secure_url) {
                     return res.status(500).json({
@@ -1116,6 +1056,257 @@ const debugShopAccess = async (req, res) => {
     }
 };
 
+// @desc    Get shop services
+// @route   GET /api/shop/services
+// @access  Private (Shop Admin)
+const getShopServices = async (req, res) => {
+    try {
+ 
+        
+        const shopId = req.user.shopId;
+
+        if (!shopId) {
+            return res.status(400).json({
+                success: false,
+                error: 'User is not associated with any shop'
+            });
+        }
+
+        const shop = await Shop.findById(shopId);
+        
+        if (!shop) {
+            return res.status(404).json({
+                success: false,
+                error: 'Shop not found'
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Shop services retrieved successfully',
+            data: { services: shop.services || [] }
+        });
+
+    } catch (error) {
+        console.error('Get shop services error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Server error'
+        });
+    }
+};
+
+// @desc    Add new service category
+// @route   POST /api/shop/services
+// @access  Private (Shop Admin)
+const addServiceCategory = async (req, res) => {
+    try {
+
+        
+        const shopId = req.user.shopId;
+        const { category, items } = req.body;
+        
+        if (!shopId) {
+            return res.status(400).json({
+                success: false,
+                error: 'User is not associated with any shop'
+            });
+        }
+        
+        if (!category || !category.trim()) {
+            return res.status(400).json({
+                success: false,
+                error: 'Service category is required'
+            });
+        }
+        
+        const shop = await Shop.findById(shopId);
+        
+        if (!shop) {
+            return res.status(404).json({
+                success: false,
+                error: 'Shop not found'
+            });
+        }
+        
+        // Check if category already exists
+        const existingCategory = shop.services.find(s => s.category.toLowerCase() === category.toLowerCase());
+        if (existingCategory) {
+            return res.status(400).json({
+                success: false,
+                error: 'Service category already exists'
+            });
+        }
+        
+        // Add new service category
+        shop.services.push({
+            category: category.trim(),
+            items: items || []
+        });
+        
+        shop.updatedBy = req.user._id;
+        await shop.save();
+        
+        
+        res.status(201).json({
+            success: true,
+            message: 'Service category added successfully',
+            data: { 
+                category: shop.services[shop.services.length - 1],
+                totalServices: shop.services.length
+            }
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: 'Server error'
+        });
+    }
+};
+
+// @desc    Update service category
+// @route   PUT /api/shop/services/:categoryIndex
+// @access  Private (Shop Admin)
+const updateServiceCategory = async (req, res) => {
+    try {
+
+        
+        const shopId = req.user.shopId;
+        const categoryIndex = parseInt(req.params.categoryIndex);
+        const { category, items } = req.body;
+        
+        if (!shopId) {
+            return res.status(400).json({
+                success: false,
+                error: 'User is not associated with any shop'
+            });
+        }
+        
+        if (isNaN(categoryIndex) || categoryIndex < 0) {
+            return res.status(400).json({
+                success: false,
+                error: 'Invalid category index'
+            });
+        }
+        
+        const shop = await Shop.findById(shopId);
+        
+        if (!shop) {
+            return res.status(404).json({
+                success: false,
+                error: 'Shop not found'
+            });
+        }
+        
+        if (categoryIndex >= shop.services.length) {
+            return res.status(404).json({
+                success: false,
+                error: 'Service category not found'
+            });
+        }
+        
+        // Update category name if provided
+        if (category && category.trim()) {
+            // Check if new name conflicts with existing category
+            const existingCategory = shop.services.find((s, index) => 
+                index !== categoryIndex && s.category.toLowerCase() === category.toLowerCase()
+            );
+            if (existingCategory) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Service category name already exists'
+                });
+            }
+            shop.services[categoryIndex].category = category.trim();
+        }
+        
+        // Update items if provided
+        if (items && Array.isArray(items)) {
+            shop.services[categoryIndex].items = items;
+        }
+        
+        shop.updatedBy = req.user._id;
+        await shop.save();
+        
+        
+        res.status(200).json({
+            success: true,
+            message: 'Service category updated successfully',
+            data: { category: shop.services[categoryIndex] }
+        });
+
+    } catch (error) {
+        console.error('❌ Update service category error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Server error'
+        });
+    }
+};
+
+// @desc    Delete service category
+// @route   DELETE /api/shop/services/:categoryIndex
+// @access  Private (Shop Admin)
+const deleteServiceCategory = async (req, res) => {
+    try {
+
+        const shopId = req.user.shopId;
+        const categoryIndex = parseInt(req.params.categoryIndex);
+        
+        if (!shopId) {
+            return res.status(400).json({
+                success: false,
+                error: 'User is not associated with any shop'
+            });
+        }
+        
+        if (isNaN(categoryIndex) || categoryIndex < 0) {
+            return res.status(400).json({
+                success: false,
+                error: 'Invalid category index'
+            });
+        }
+        
+        const shop = await Shop.findById(shopId);
+        
+        if (!shop) {
+            return res.status(404).json({
+                success: false,
+                error: 'Shop not found'
+            });
+        }
+        
+        if (categoryIndex >= shop.services.length) {
+            return res.status(404).json({
+                success: false,
+                error: 'Service category not found'
+            });
+        }
+        
+        const deletedCategory = shop.services[categoryIndex].category;
+        shop.services.splice(categoryIndex, 1);
+        shop.updatedBy = req.user._id;
+        await shop.save();
+                
+        res.status(200).json({
+            success: true,
+            message: 'Service category deleted successfully',
+            data: { 
+                deletedCategory,
+                totalServices: shop.services.length
+            }
+        });
+
+    } catch (error) {
+        console.error('❌ Delete service category error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Server error'
+        });
+    }
+};
+
 module.exports = {
     getInventory,
     getInventoryItem,
@@ -1134,5 +1325,9 @@ module.exports = {
     updateShopProfile,
     updateShopStatus,
     uploadShopImage,
-    debugShopAccess
+    debugShopAccess,
+    getShopServices,
+    addServiceCategory,
+    updateServiceCategory,
+    deleteServiceCategory
 };

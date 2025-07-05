@@ -7,16 +7,12 @@ const Shop = require('./src/models/Shop');
 
 async function testShopUpdate() {
   try {
-    console.log('=== TESTING SHOP UPDATE ===');
+    
     
     // Find first shop
     const shop = await Shop.findOne({});
-    if (!shop) {
-      console.log('No shops found in database');
-      return;
-    }
     
-    console.log('Testing with shop:', shop.name, '(ID:', shop._id, ')');
+    
     
     // Test data to update
     const testData = {
@@ -44,7 +40,7 @@ async function testShopUpdate() {
       }
     };
     
-    console.log('Updating with test data:', testData);
+    
     
     // Update the shop
     const updatedShop = await Shop.findByIdAndUpdate(
@@ -53,14 +49,14 @@ async function testShopUpdate() {
       { new: true, runValidators: true }
     );
     
-    console.log('Update successful!');
-    console.log('Updated shop data:');
-    console.log('- Owner Name:', updatedShop.ownerName);
-    console.log('- Owner Phone:', updatedShop.ownerPhone);
-    console.log('- Owner Email:', updatedShop.ownerEmail);
-    console.log('- Services:', updatedShop.services);
-    console.log('- Location:', updatedShop.location);
-    console.log('- Profile Complete:', updatedShop.profileComplete);
+    
+    
+    
+    
+    
+    
+    
+    
     
     process.exit(0);
   } catch (error) {

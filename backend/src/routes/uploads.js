@@ -18,7 +18,7 @@ router.post('/hospital-image', protect, authorize('hospital_admin'), upload.sing
     }
 
     const result = req.file;
-    console.log('Cloudinary upload result:', result);
+    
 
     // Return the URL and other metadata
     res.status(200).json({

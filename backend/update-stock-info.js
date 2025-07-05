@@ -8,7 +8,7 @@ const connectDB = async () => {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
-    console.log('MongoDB Connected');
+    
   } catch (error) {
     console.error('MongoDB connection error:', error);
     process.exit(1);
@@ -19,7 +19,7 @@ const updateShopsWithStockInfo = async () => {
   try {
     await connectDB();
     
-    console.log('=== UPDATING SHOPS WITH STOCK INFORMATION ===\n');
+    
     
     // Update Apollo Pharmacy with stock info
     await Shop.updateOne(
@@ -227,23 +227,23 @@ const updateShopsWithStockInfo = async () => {
       }
     );
 
-    console.log('✅ All shops updated with stock information');
+    
     
     // Verify updates
     const shops = await Shop.find({}).select('name services');
     for (const shop of shops) {
-      console.log(`\n${shop.name}:`);
+      
       if (shop.services && shop.services.length > 0) {
         shop.services.forEach((service) => {
-          console.log(`  ${service.category}:`);
+          
           service.items?.forEach((item) => {
-            console.log(`    - ${item.name}: ₹${item.price} | ${item.availability} | Stock: ${item.stockCount || 'N/A'}`);
+            
           });
         });
       }
     }
     
-    console.log('\n=== STOCK INFO UPDATE COMPLETE ===');
+    
     process.exit(0);
     
   } catch (error) {

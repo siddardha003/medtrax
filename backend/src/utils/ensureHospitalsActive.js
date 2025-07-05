@@ -3,7 +3,7 @@ const Hospital = require('../models/Hospital');
 
 const ensureAllHospitalsActive = async () => {
   try {
-    console.log('🏥 Checking for inactive hospitals on server startup...');
+    
     
     // Find all inactive hospitals or where isActive is not set
     const result = await Hospital.updateMany(
@@ -19,9 +19,9 @@ const ensureAllHospitalsActive = async () => {
     );
     
     if (result.modifiedCount > 0) {
-      console.log(`✅ Activated ${result.modifiedCount} previously inactive hospitals`);
+      
     } else {
-      console.log('✅ All hospitals are already active');
+      
     }
     
     return result;

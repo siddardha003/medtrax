@@ -10,8 +10,8 @@ async function resetPassword() {
         const email = 'msiri@gmail.com';
         const newPassword = 'Test123!'; // Easy to remember password
         
-        console.log('🔧 Resetting password for:', email);
-        console.log('🔑 New password will be:', newPassword);
+        
+        
         
         // Hash the new password
         const salt = await bcrypt.genSalt(12);
@@ -24,15 +24,7 @@ async function resetPassword() {
             { new: true }
         );
         
-        if (result) {
-            console.log('✅ Password reset successful!');
-            console.log('📧 Email:', email);
-            console.log('🔑 Password:', newPassword);
-            console.log('');
-            console.log('You can now log in with these credentials.');
-        } else {
-            console.log('❌ User not found');
-        }
+        
         
         await mongoose.connection.close();
     } catch (error) {
