@@ -526,10 +526,10 @@ const HospitalDashboard = () => {
       {/* Welcome Message */}
       <div className="bg-white p-6 rounded-lg shadow">
         <h2 className="text-2xl font-bold text-gray-900 mb-2">
-          Welcome to Hospital Dashboard
+          Welcome Admin!!
         </h2>
         <p className="text-gray-600">
-          Manage your hospital appointments, view statistics, and streamline your operations.
+          Manage your hospital appointments, and streamline your operations.
         </p>
       </div>
 
@@ -919,16 +919,11 @@ const HospitalDashboard = () => {
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               required
             />
-          {formData.appointmentDate && formData.doctorIndex !== '' && availableSlots.length === 0 && (
-            <div className="text-red-600 text-sm mb-2">This doctor doesn't have slot on that day, try for another doctor.</div>
-          )}
-          {availableSlots.length > 0 && (
+          {/* Time Slot Dropdown */}
+          {formData.appointmentDate && formData.doctorIndex !== '' && (availableSlots.length > 0 || bookedSlots.length > 0) && (
             (() => {
               // Compute all slots to render (union of available and booked, no duplicates)
               const allSlots = availableSlots.concat(bookedSlots.filter(slot => !availableSlots.includes(slot)));
-              console.log('Rendering slot dropdown. availableSlots:', availableSlots);
-              console.log('Rendering slot dropdown. bookedSlots:', bookedSlots);
-              console.log('Rendering slot dropdown. allSlots:', allSlots);
               return (
                 <select
                   value={formData.appointmentTime}
@@ -943,8 +938,6 @@ const HospitalDashboard = () => {
                     } else {
                       setSlotError('This slot is not available. Please select a different time.');
                     }
-                    console.log('Selected slot:', selectedSlot);
-                    console.log('Current slotError:', slotError);
                   }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   required
@@ -954,7 +947,6 @@ const HospitalDashboard = () => {
                     // Remove duplicates by only rendering the first occurrence
                     if (arr.indexOf(slot) !== idx) return null;
                     const isBooked = bookedSlots.includes(slot);
-                    console.log(`Slot: ${slot}, isBooked: ${isBooked}`);
                     return (
                       <option key={slot + idx} value={slot} disabled={isBooked} style={isBooked ? { color: 'gray' } : {}}>
                         {slot} {isBooked ? '(already booked)' : ''}
@@ -964,6 +956,10 @@ const HospitalDashboard = () => {
                 </select>
               );
             })()
+          )}
+          {/* Show message if no slots at all */}
+          {formData.appointmentDate && formData.doctorIndex !== '' && availableSlots.length === 0 && bookedSlots.length === 0 && (
+            <div className="text-red-600 text-sm mb-2">This doctor doesn't have slot on that day, try for another doctor.</div>
           )}
           {slotError && <div className="text-red-600 text-sm mb-2">{slotError}</div>}
           <textarea
@@ -1021,7 +1017,9 @@ const HospitalDashboard = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
-              <h1 className="text-xl font-semibold text-gray-900">Hospital Dashboard</h1>
+              <h1 className="text-2xl font-bold text-gray-900">
+                {hospitalProfile?.name || 'Hospital Dashboard'}
+              </h1>
             </div>
             <div className="flex items-center space-x-4">
               <span className="text-sm text-gray-700">Welcome, {userInfo?.name || 'Admin'}</span>

@@ -4,7 +4,6 @@
 .appointment-form-container {
   max-width: 1000px;
   margin: 0 auto;
-  margin-top: 150px;
   padding: 2rem;
   display: flex;
   gap: 100px;
@@ -27,7 +26,7 @@
 }
 
 .form-sub-heading {
-  font-size: 2rem;
+  font-size: 2.2rem;
   font-weight: 600;
   color: #21272c;
   margin-top: 0;
