@@ -1,3 +1,6 @@
+// Load environment variables as early as possible
+require('dotenv').config();
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -6,7 +9,6 @@ const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 const connectDB = require('./src/config/database');
 const ensureAllHospitalsActive = require('./src/utils/ensureHospitalsActive');
-require('dotenv').config();
 const path = require('path');
 
 // Import routes
@@ -27,8 +29,7 @@ const errorHandler = require('./src/middleware/errorHandler');
 const app = express();
 const PORT = process.env.PORT || 5003;
 
-// Connect to MongoDB
-connectDB();
+// Database connection will be awaited in start()
 
 // CORS configuration - MUST BE FIRST
 app.use(cors({
@@ -117,23 +118,25 @@ app.use('*', (req, res) => {
 // Error handling middleware (should be last)
 app.use(errorHandler);
 
-// Start server
-const server = app.listen(PORT, async () => {
-    
-    
-    
-    
-    
-    await ensureAllHospitalsActive();
-});
+// Start server only after DB is connected to avoid buffering timeouts
+async function start() {
+  try {
+    await connectDB();
 
-// Handle unhandled promise rejections
-process.on('unhandledRejection', (err, promise) => {
-    
-    // Close server & exit process
-    server.close(() => {
-        process.exit(1);
+    const server = app.listen(PORT, async () => {
+      await ensureAllHospitalsActive();
     });
-});
+
+    // Handle unhandled promise rejections
+    process.on('unhandledRejection', () => {
+      server.close(() => process.exit(1));
+    });
+  } catch (err) {
+    console.error('Failed to start server:', err);
+    process.exit(1);
+  }
+}
+
+start();
 
 module.exports = app;
