@@ -32,12 +32,14 @@ const PORT = process.env.PORT || 5003;
 // Database connection will be awaited in start()
 
 // CORS configuration - MUST BE FIRST
+const corsOrigins = [
+  'http://localhost:3000',
+  'http://localhost:3001',
+  ...(process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',') : [])
+].filter(Boolean);
+
 app.use(cors({
-    origin: [
-        'http://localhost:3000',
-        'http://localhost:3001',
-        process.env.FRONTEND_URL
-    ].filter(Boolean),
+    origin: corsOrigins,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
     allowedHeaders: ['Content-Type', 'Authorization']
@@ -124,6 +126,7 @@ async function start() {
     await connectDB();
 
     const server = app.listen(PORT, async () => {
+      console.log(`Server listening on port ${PORT} (env: ${process.env.NODE_ENV})`);
       await ensureAllHospitalsActive();
     });
 
