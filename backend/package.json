@@ -9,6 +9,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
+    "postinstall": "npm dedupe",
     "seed": "node seeders/seed.js",
     "seed:admin": "node seeders/seed.js admin",
     "seed:sample": "node seeders/seed.js sample",
