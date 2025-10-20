@@ -4,78 +4,12 @@ A comprehensive backend API for the Centralized Hospital Management System built
 
 ## 🏗️ Architecture
 
-### Tech Stack
-- **Runtime**: Node.js
-- **Framework**: Express.js
-- **Database**: MongoDB with Mongoose ODM
-- **Authentication**: JWT (JSON Web Tokens)
-- **Validation**: Express Validator
-- **Email**: Nodemailer
-- **Security**: Helmet, CORS, bcryptjs
-
 ### User Roles
 1. **Super Admin**: Full system control, manages hospital and shop admins
 2. **Hospital Admin**: Manages appointments and hospital operations
 3. **Shop Admin**: Manages inventory and billing
 
 ## 🚀 Quick Start
-
-### Prerequisites
-- Node.js (v14 or higher)
-- MongoDB (v4.0 or higher)
-- npm or yarn
-
-### Installation
-
-1. **Clone and navigate to backend directory**
-   ```bash
-   cd medtrax/backend
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Environment Setup**
-   ```bash
-   # Copy example environment file
-   cp .env.example .env
-   
-   # Edit .env file with your configurations
-   ```
-
-4. **Configure Environment Variables**
-   ```env
-   PORT=5000
-   NODE_ENV=development
-   MONGODB_URI=mongodb://localhost:27017/medtrax
-   JWT_SECRET=your_super_secret_jwt_key
-   JWT_EXPIRE=7d
-   EMAIL_SERVICE=gmail
-   EMAIL_USER=your_email@gmail.com
-   EMAIL_PASS=your_app_password
-   EMAIL_FROM=noreply@medtrax.com
-   FRONTEND_URL=http://localhost:3000
-   ```
-
-5. **Start MongoDB**
-   ```bash
-   # Using MongoDB service
-   mongod
-   
-   # Or using MongoDB Compass/Atlas
-   ```
-
-6. **Seed Super Admin**
-   ```bash
-   npm run seed:admin
-   ```
-
-7. **Start Development Server**
-   ```bash
-   npm run dev
-   ```
 
 The API will be available at `http://localhost:5000`
 
