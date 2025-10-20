@@ -29,16 +29,6 @@ It provides secure authentication, role-based dashboards, appointment scheduling
   - Fully mobile-friendly UI with SCSS styling.
   - Cross-browser compatibility.
 
----
-
-## 🛠 Tech Stack
-
-| **Category**       | **Technology** |
-|--------------------|----------------|
-| Frontend           | React.js, SCSS, CSS |
-| Backend (Planned)  | Node.js, Express.js |
-| Database (Planned) | MongoDB |
-| Version Control    | Git, GitHub |
 
 ---
 
@@ -48,11 +38,3 @@ It provides secure authentication, role-based dashboards, appointment scheduling
 # Clone the repository
 git clone https://github.com/siddardha003/medtrax.git
 
-# Navigate into the folder
-cd medtrax
-
-# Install dependencies
-npm install
-
-# Start the development server
-npm start
