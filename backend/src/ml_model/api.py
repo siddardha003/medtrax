@@ -4,6 +4,7 @@ from flask import Flask, request, jsonify
 import joblib
 import numpy as np
 import re
+import os
 
 app = Flask(__name__)
 CORS(app)
@@ -68,4 +69,5 @@ def get_symptoms():
     return jsonify({'symptoms': clean_symptoms})
 
 if __name__ == '__main__':
-    app.run(port=5001, debug=True)
+    port = int(os.environ.get('PORT', 5001))
+    app.run(host='0.0.0.0', port=port, debug=False)

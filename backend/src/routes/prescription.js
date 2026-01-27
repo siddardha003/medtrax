@@ -9,8 +9,9 @@ router.post('/predict', async (req, res) => {
   try {
     const { symptoms, age, duration, severity } = req.body;
 
-    // Send request to Flask ML API
-    const response = await axios.post('http://localhost:5001/predict', {
+    // Send request to Flask ML API (use environment variable)
+    const mlModelUrl = process.env.ML_MODEL_URL || 'http://localhost:5001';
+    const response = await axios.post(`${mlModelUrl}/predict`, {
       symptoms,
       age,
       duration,
