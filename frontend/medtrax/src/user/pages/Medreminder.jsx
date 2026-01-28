@@ -183,7 +183,25 @@ const MedReminder = () => {
       try {
         const response = await saveMedicineReminderApi(reminderData);
         if (response.data.success) {
-          // Instead of just adding, we should refetch to get the proper _id
+          // Schedule push notifications for each time slot
+          if (pushSubscription && reminderData.times && reminderData.times.length > 0) {
+            for (const time of reminderData.times) {
+              if (time) {
+                const reminderTime = new Date(`${reminderData.startDate}T${time}`);
+                try {
+                  await scheduleReminder({
+                    title: 'Medicine Reminder',
+                    body: `Time to take ${reminderData.name}`,
+                    time: reminderTime,
+                    subscription: pushSubscription
+                  });
+                } catch (err) {
+                  console.error('Failed to schedule reminder:', err);
+                }
+              }
+            }
+          }
+          
           await fetchReminders();
           resetForm();
           alert('Reminder saved successfully!');
@@ -191,7 +209,6 @@ const MedReminder = () => {
             body: `You have set a reminder for ${reminderData.name}.`,
             icon: '/images/Medtrax-logo.png',
           });
-          // Note: The new backend logic handles scheduling, so we can remove the frontend scheduling logic
         }
       } catch (error) {
         alert('Error saving reminder. Please try again.');
