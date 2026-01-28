@@ -11,6 +11,11 @@ const connectDB = require('./src/config/database');
 const ensureAllHospitalsActive = require('./src/utils/ensureHospitalsActive');
 const path = require('path');
 
+// Import models for background job
+const ReminderSchedule = require('./src/models/ReminderSchedule');
+const PushSubscription = require('./src/models/PushSubscription');
+const { sendPushNotification } = require('./src/utils/push');
+
 // Import routes
 const authRoutes = require('./src/routes/auth');
 const adminRoutes = require('./src/routes/admin');
@@ -120,6 +125,36 @@ app.use('*', (req, res) => {
 // Error handling middleware (should be last)
 app.use(errorHandler);
 
+// Reminder processing function (from backgroundJob.js)
+async function processReminders() {
+  const now = new Date();
+  const dueReminders = await ReminderSchedule.find({
+    time: { $lte: now },
+    sent: false
+  }).populate('subscription');
+
+  for (const reminder of dueReminders) {
+    try {
+      if (!reminder.subscription) {
+        console.error(`Reminder ${reminder._id} has no subscription. Marking as sent.`);
+        await ReminderSchedule.findByIdAndUpdate(reminder._id, { sent: true });
+        continue;
+      }
+      
+      await sendPushNotification(reminder.subscription, {
+        title: 'Medtrax Medical Reminder',
+        body: `Time to take your medicine - ${reminder.title}.`,
+        icon: '/images/Medtrax-logo.png',
+      });
+      
+      await ReminderSchedule.findByIdAndUpdate(reminder._id, { sent: true });
+      console.log(`✅ Sent reminder: ${reminder.title}`);
+    } catch (err) {
+      console.error('Failed to send reminder:', err.message);
+    }
+  }
+}
+
 // Start server only after DB is connected to avoid buffering timeouts
 async function start() {
   try {
@@ -128,6 +163,16 @@ async function start() {
     const server = app.listen(PORT, async () => {
       console.log(`Server listening on port ${PORT} (env: ${process.env.NODE_ENV})`);
       await ensureAllHospitalsActive();
+      
+      // Start reminder processing every 60 seconds
+      console.log('🔔 Starting reminder background job...');
+      setInterval(async () => {
+        try {
+          await processReminders();
+        } catch (err) {
+          console.error('Error processing reminders:', err.message);
+        }
+      }, 60000); // Run every 60 seconds
     });
 
     // Handle unhandled promise rejections
