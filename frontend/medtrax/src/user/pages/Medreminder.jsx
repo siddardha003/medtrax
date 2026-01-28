@@ -72,12 +72,15 @@ const MedReminder = () => {
           if (sub) {
             const { sendSubscriptionToBackend } = await import('../../notifications');
             await sendSubscriptionToBackend(sub);
+            console.log('✅ Push subscription sent to backend successfully');
           }
 
           setPushSubscription(sub);
         } catch (err) {
+          console.error('❌ Failed to setup push notifications:', err);
         }
       } else if (!isAuthenticated) {
+        console.log('⚠️ User not authenticated, skipping push setup');
       }
     }
 
