@@ -4,7 +4,19 @@ const express = require('express');
 const router = express.Router();
 const axios = require('axios');
 
-// POST /api/prescription
+// GET /api/prescription/symptoms
+router.get('/symptoms', async (req, res) => {
+  try {
+    const mlModelUrl = process.env.ML_MODEL_URL || 'http://localhost:5001';
+    const response = await axios.get(`${mlModelUrl}/symptoms`);
+    res.status(200).json(response.data);
+  } catch (error) {
+    console.error('Error fetching symptoms from ML model:', error.message);
+    res.status(500).json({ error: 'Failed to fetch symptoms from ML model.' });
+  }
+});
+
+// POST /api/prescription/predict
 router.post('/predict', async (req, res) => {
   try {
     const { symptoms, age, duration, severity } = req.body;

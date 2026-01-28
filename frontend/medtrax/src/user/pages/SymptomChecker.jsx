@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "../css/SymptomChecker.css";
 import axios from "axios";
+import API from "../../Api"; // Use the configured API instance
 import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
 
@@ -16,7 +17,7 @@ const SymptomChecker = () => {
     const severityLevels = ["Low", "Moderate", "High"];
 
     useEffect(() => {
-        axios.get("http://localhost:5001/symptoms")
+        API.get("/api/prescription/symptoms")
             .then(res => setSymptomOptions(res.data.symptoms))
             .catch(err => console.error(err));
     }, []);
@@ -27,7 +28,7 @@ const SymptomChecker = () => {
         const severityMap = { Low: "mild", Moderate: "moderate", High: "severe" };
         const mappedSeverity = severityMap[severity] || (severity ? severity.toLowerCase() : undefined);
         try {
-            const response = await axios.post("/api/prescription/predict", {
+            const response = await API.post("/api/prescription/predict", {
                 symptoms: selectedSymptoms, // send as array
                 age,
                 duration: days, // send as 'duration'
